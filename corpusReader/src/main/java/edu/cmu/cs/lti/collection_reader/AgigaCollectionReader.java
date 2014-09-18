@@ -35,6 +35,7 @@ import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
 import edu.cmu.cs.lti.script.type.StanfordDependencyRelation;
 import edu.cmu.cs.lti.script.type.StanfordTreeAnnotation;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
 import edu.jhu.agiga.AgigaCoref;
 import edu.jhu.agiga.AgigaDocument;
 import edu.jhu.agiga.AgigaMention;
@@ -303,7 +304,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
       }
 
       if (mention.getHead() == null) {
-        mention.setHead(UimaAnnotationUtils.findHeadFromTreeAnnotation(jcas, mention));
+        mention.setHead(UimaNlpUtils.findHeadFromTreeAnnotation(jcas, mention));
       }
     }
 

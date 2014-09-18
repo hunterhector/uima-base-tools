@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** An abstract annotation for event, which is a generalized concept that contains event mentions. It could be seen as we assign some attributes to the event mention clusters.
- * Updated by JCasGen Tue Sep 16 00:38:29 EDT 2014
+ * Updated by JCasGen Wed Sep 17 15:03:36 EDT 2014
  * @generated */
 public class Event_Type extends ComponentTOP_Type {
   /** @generated 
@@ -259,7 +259,34 @@ public class Event_Type extends ComponentTOP_Type {
       jcas.throwFeatMissing("eventMentions", "edu.cmu.cs.lti.script.type.Event");
     ll_cas.ll_setRefValue(addr, casFeatCode_eventMentions, v);}
     
-  
+   /** @generated
+   * @param addr low level Feature Structure reference
+   * @param i index of item in the array
+   * @return value at index i in the array 
+   */
+  public int getEventMentions(int addr, int i) {
+        if (featOkTst && casFeat_eventMentions == null)
+      jcas.throwFeatMissing("eventMentions", "edu.cmu.cs.lti.script.type.Event");
+    if (lowLevelTypeChecks)
+      return ll_cas.ll_getRefArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_eventMentions), i, true);
+    jcas.checkArrayBounds(ll_cas.ll_getRefValue(addr, casFeatCode_eventMentions), i);
+  return ll_cas.ll_getRefArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_eventMentions), i);
+  }
+   
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param i index of item in the array
+   * @param v value to set
+   */ 
+  public void setEventMentions(int addr, int i, int v) {
+        if (featOkTst && casFeat_eventMentions == null)
+      jcas.throwFeatMissing("eventMentions", "edu.cmu.cs.lti.script.type.Event");
+    if (lowLevelTypeChecks)
+      ll_cas.ll_setRefArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_eventMentions), i, v, true);
+    jcas.checkArrayBounds(ll_cas.ll_getRefValue(addr, casFeatCode_eventMentions), i);
+    ll_cas.ll_setRefArrayValue(ll_cas.ll_getRefValue(addr, casFeatCode_eventMentions), i, v);
+  }
+ 
  
   /** @generated */
   final Feature casFeat_isEmpty;
@@ -329,7 +356,7 @@ public class Event_Type extends ComponentTOP_Type {
     casFeatCode_eventIndex  = (null == casFeat_eventIndex) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_eventIndex).getCode();
 
  
-    casFeat_eventMentions = jcas.getRequiredFeatureDE(casType, "eventMentions", "uima.cas.FSList", featOkTst);
+    casFeat_eventMentions = jcas.getRequiredFeatureDE(casType, "eventMentions", "uima.cas.FSArray", featOkTst);
     casFeatCode_eventMentions  = (null == casFeat_eventMentions) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_eventMentions).getCode();
 
  

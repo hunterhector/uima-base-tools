@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** Annotate numbers and their normalized form
- * Updated by JCasGen Tue Sep 16 00:38:29 EDT 2014
+ * Updated by JCasGen Wed Sep 17 15:03:36 EDT 2014
  * @generated */
 public class NumberAnnotation_Type extends ComponentAnnotation_Type {
   /** @generated 

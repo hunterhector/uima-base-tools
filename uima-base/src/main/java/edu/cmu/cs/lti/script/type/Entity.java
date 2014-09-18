@@ -12,7 +12,7 @@ import org.apache.uima.jcas.cas.StringList;
 
 
 /** An entity refers to an underlying entity, it might corresponding to multiple entity mentions. It can be viewed that we assign the attributes to each cluster
- * Updated by JCasGen Tue Sep 16 00:38:29 EDT 2014
+ * Updated by JCasGen Wed Sep 17 15:03:36 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class Entity extends ComponentTOP {

@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import edu.cmu.cs.lti.uima.util.StringConstants.BasicStringConstant;
 import edu.cmu.cs.lti.uima.util.TimeUtils;
 
 /**
@@ -94,7 +93,7 @@ public class XmiCollectionReader extends CollectionReader_ImplBase {
     partOfDirNames.add(mBaseDirectoryName);
 
     String inputDirectory = mParentInputDir + "/"
-            + StringUtils.join(partOfDirNames, BasicStringConstant.UNDERSCORE.toString());
+            + StringUtils.join(partOfDirNames, "_");
     File directory = new File(inputDirectory);
     mCurrentIndex = 0;
 

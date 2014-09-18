@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.cmu.cs.lti.uima.util.CsvFactory;
-import edu.cmu.cs.lti.uima.util.StringConstants.BasicStringConstant;
 import au.com.bytecode.opencsv.CSVWriter;
 
 /**
@@ -62,6 +61,8 @@ public abstract class AbstractCsvWriterAnalysisEngine extends JCasAnnotator_Impl
 
   protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+  String defaultOutputFileSuffix = ".csv";
+
   @Override
   public void initialize(UimaContext context) throws ResourceInitializationException {
     try {
@@ -85,8 +86,7 @@ public abstract class AbstractCsvWriterAnalysisEngine extends JCasAnnotator_Impl
     }
     partOfDirNames.add(baseOutputDirName);
 
-    outputDir = new File(parentOutputDir + File.separator
-            + StringUtils.join(partOfDirNames, BasicStringConstant.UNDERSCORE.toString()));
+    outputDir = new File(parentOutputDir + File.separator + StringUtils.join(partOfDirNames, "_"));
     if (!outputDir.exists()) {
       outputDir.mkdirs();
     }
@@ -121,11 +121,8 @@ public abstract class AbstractCsvWriterAnalysisEngine extends JCasAnnotator_Impl
         outFileName += ("_" + fileLoc.getOffsetInSource());
       }
       if (outputFileSuffix != null && outputFileSuffix.length() > 0) {
-        outFileName += outputFileSuffix;
-      }
-
-      String defaultOutputFileSuffix = ".csv";
-      if (!outFileName.endsWith(defaultOutputFileSuffix)) {
+        outFileName += "." + outputFileSuffix;
+      } else if (!outFileName.endsWith(defaultOutputFileSuffix)) {
         outFileName += defaultOutputFileSuffix;
       }
       outFile = new File(outputDir, outFileName);

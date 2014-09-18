@@ -722,5 +722,5 @@ public class UimaConvenience extends BasicConvenience {
       return null;
     }
     return FilenameUtils.getBaseName(srcDocInfo.getUri()) + "_" + srcDocInfo.getOffsetInSource();
-  }
+  } 
 }

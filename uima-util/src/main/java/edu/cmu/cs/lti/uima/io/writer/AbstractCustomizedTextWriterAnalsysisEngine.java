@@ -19,9 +19,6 @@ import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
-import edu.cmu.cs.lti.uima.util.StringConstants.BasicStringConstant;
-import edu.cmu.cs.lti.uima.util.TimeUtils;
-
 /**
  * A modification from Jun's {@link PlainTextWriterAnalysisEngine} that could provide an funciton to
  * implemented, which allow customizing what text to be printed out
@@ -50,10 +47,10 @@ public abstract class AbstractCustomizedTextWriterAnalsysisEngine extends JCasAn
   @ConfigurationParameter(name = PARAM_STEP_NUMBER, mandatory = true)
   private Integer stepNumber;
 
-  @ConfigurationParameter(name = PARAM_OUTPUT_FILE_SUFFIX)
+  @ConfigurationParameter(name = PARAM_OUTPUT_FILE_SUFFIX, mandatory = false)
   private String outputFileSuffix;
 
-  @ConfigurationParameter(name = PARAM_SOURCE_DOCUMENT_INFO_VIEW_NAME, mandatory = true, description = "The view name that contains source document information")
+  @ConfigurationParameter(name = PARAM_SOURCE_DOCUMENT_INFO_VIEW_NAME, mandatory = false, description = "The view name that contains source document information")
   private String sourceDocumentViewName;
 
   private File outputDir;
@@ -67,16 +64,13 @@ public abstract class AbstractCustomizedTextWriterAnalsysisEngine extends JCasAn
     }
 
     List<Object> partOfDirNames = new ArrayList<Object>();
-    String currentDate = TimeUtils.getCurrentYYYYMMDD();
-    partOfDirNames.add(currentDate);
     if (stepNumber != null) {
       String stepNumberStr = Integer.toString(stepNumber);
       partOfDirNames.add(StringUtils.leftPad(stepNumberStr, 2, '0'));
     }
     partOfDirNames.add(baseOutputDirName);
 
-    outputDir = new File(parentOutputDir + File.separator
-            + StringUtils.join(partOfDirNames, BasicStringConstant.UNDERSCORE.toString()));
+    outputDir = new File(parentOutputDir + File.separator + StringUtils.join(partOfDirNames, "_"));
     if (!outputDir.exists()) {
       outputDir.mkdirs();
     }
@@ -87,10 +81,15 @@ public abstract class AbstractCustomizedTextWriterAnalsysisEngine extends JCasAn
   @Override
   public void process(JCas aJCas) throws AnalysisEngineProcessException {
     JCas sourceDocumentView = null;
-    try {
-      sourceDocumentView = aJCas.getView(sourceDocumentViewName);
-    } catch (CASException e) {
-      throw new AnalysisEngineProcessException(e);
+    if (sourceDocumentViewName != null) {
+      try {
+
+        sourceDocumentView = aJCas.getView(sourceDocumentViewName);
+      } catch (CASException e) {
+        throw new AnalysisEngineProcessException(e);
+      }
+    } else {
+      sourceDocumentView = aJCas;
     }
 
     // Retrieve the filename of the input file from the CAS.
@@ -108,11 +107,11 @@ public abstract class AbstractCustomizedTextWriterAnalsysisEngine extends JCasAn
       }
       if (outputFileSuffix != null && outputFileSuffix.length() > 0) {
         outFileName += outputFileSuffix;
-      }
-
-      String defaultOutputFileSuffix = ".txt";
-      if (!outFileName.endsWith(defaultOutputFileSuffix)) {
-        outFileName += defaultOutputFileSuffix;
+      } else {
+        String defaultOutputFileSuffix = ".txt";
+        if (!outFileName.endsWith(defaultOutputFileSuffix)) {
+          outFileName += defaultOutputFileSuffix;
+        }
       }
       outFile = new File(outputDir, outFileName);
 

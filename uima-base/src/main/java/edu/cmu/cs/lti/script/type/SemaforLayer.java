@@ -11,7 +11,7 @@ import org.apache.uima.jcas.cas.FSArray;
 
 
 /** 
- * Updated by JCasGen Tue Sep 16 00:38:30 EDT 2014
+ * Updated by JCasGen Wed Sep 17 15:03:37 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class SemaforLayer extends ComponentAnnotation {

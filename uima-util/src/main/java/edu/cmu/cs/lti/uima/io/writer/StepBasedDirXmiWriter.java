@@ -94,7 +94,7 @@ public class StepBasedDirXmiWriter extends AbstractStepBasedDirWriter {
         if (StringUtils.isEmpty(outputFileSuffix)) {
           buf.append(".xmi");
         } else {
-          buf.append(outputFileSuffix);
+          buf.append("." + outputFileSuffix);
         }
 
         String outputFileName = buf.toString();

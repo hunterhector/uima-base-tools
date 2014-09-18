@@ -7,11 +7,12 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.JCasRegistry;
 import org.apache.uima.jcas.cas.TOP_Type;
 
+import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.cas.FSList;
 
 
 /** An abstract annotation for event, which is a generalized concept that contains event mentions. It could be seen as we assign some attributes to the event mention clusters.
- * Updated by JCasGen Tue Sep 16 00:38:29 EDT 2014
+ * Updated by JCasGen Wed Sep 17 15:03:36 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class Event extends ComponentTOP {
@@ -247,19 +248,41 @@ public class Event extends ComponentTOP {
    * @generated
    * @return value of the feature 
    */
-  public FSList getEventMentions() {
+  public FSArray getEventMentions() {
     if (Event_Type.featOkTst && ((Event_Type)jcasType).casFeat_eventMentions == null)
       jcasType.jcas.throwFeatMissing("eventMentions", "edu.cmu.cs.lti.script.type.Event");
-    return (FSList)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((Event_Type)jcasType).casFeatCode_eventMentions)));}
+    return (FSArray)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((Event_Type)jcasType).casFeatCode_eventMentions)));}
     
   /** setter for eventMentions - sets  
    * @generated
    * @param v value to set into the feature 
    */
-  public void setEventMentions(FSList v) {
+  public void setEventMentions(FSArray v) {
     if (Event_Type.featOkTst && ((Event_Type)jcasType).casFeat_eventMentions == null)
       jcasType.jcas.throwFeatMissing("eventMentions", "edu.cmu.cs.lti.script.type.Event");
     jcasType.ll_cas.ll_setRefValue(addr, ((Event_Type)jcasType).casFeatCode_eventMentions, jcasType.ll_cas.ll_getFSRef(v));}    
+    
+  /** indexed getter for eventMentions - gets an indexed value - 
+   * @generated
+   * @param i index in the array to get
+   * @return value of the element at index i 
+   */
+  public EventMention getEventMentions(int i) {
+    if (Event_Type.featOkTst && ((Event_Type)jcasType).casFeat_eventMentions == null)
+      jcasType.jcas.throwFeatMissing("eventMentions", "edu.cmu.cs.lti.script.type.Event");
+    jcasType.jcas.checkArrayBounds(jcasType.ll_cas.ll_getRefValue(addr, ((Event_Type)jcasType).casFeatCode_eventMentions), i);
+    return (EventMention)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefArrayValue(jcasType.ll_cas.ll_getRefValue(addr, ((Event_Type)jcasType).casFeatCode_eventMentions), i)));}
+
+  /** indexed setter for eventMentions - sets an indexed value - 
+   * @generated
+   * @param i index in the array to set
+   * @param v value to set into the array 
+   */
+  public void setEventMentions(int i, EventMention v) { 
+    if (Event_Type.featOkTst && ((Event_Type)jcasType).casFeat_eventMentions == null)
+      jcasType.jcas.throwFeatMissing("eventMentions", "edu.cmu.cs.lti.script.type.Event");
+    jcasType.jcas.checkArrayBounds(jcasType.ll_cas.ll_getRefValue(addr, ((Event_Type)jcasType).casFeatCode_eventMentions), i);
+    jcasType.ll_cas.ll_setRefArrayValue(jcasType.ll_cas.ll_getRefValue(addr, ((Event_Type)jcasType).casFeatCode_eventMentions), i, jcasType.ll_cas.ll_getFSRef(v));}
    
     
   //*--------------*

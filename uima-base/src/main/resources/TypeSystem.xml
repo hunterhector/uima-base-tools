@@ -820,8 +820,8 @@
         <featureDescription>
           <name>eventMentions</name>
           <description/>
-          <rangeTypeName>uima.cas.FSList</rangeTypeName>
-          <elementType>edu.cmu.cs.lti.script.type.EntityMention</elementType>
+          <rangeTypeName>uima.cas.FSArray</rangeTypeName>
+          <elementType>edu.cmu.cs.lti.script.type.EventMention</elementType>
         </featureDescription>
       <featureDescription>
           <name>isEmpty</name>
