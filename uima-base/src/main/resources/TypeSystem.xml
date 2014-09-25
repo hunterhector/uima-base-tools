@@ -769,6 +769,11 @@
           <description/>
           <rangeTypeName>edu.cmu.cs.lti.script.type.EntityMention</rangeTypeName>
         </featureDescription>
+      <featureDescription>
+          <name>informative</name>
+          <description/>
+          <rangeTypeName>uima.cas.Boolean</rangeTypeName>
+        </featureDescription>
       </features>
     </typeDescription>
     <typeDescription>

@@ -9,6 +9,7 @@ import edu.cmu.cs.lti.script.type.Entity;
 import edu.cmu.cs.lti.script.type.EntityMention;
 import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
 import edu.cmu.cs.lti.script.type.StanfordTreeAnnotation;
+import edu.cmu.cs.lti.script.type.Word;
 
 public class UimaNlpUtils {
   public static String getLemmatizedAnnotation(Annotation a) {

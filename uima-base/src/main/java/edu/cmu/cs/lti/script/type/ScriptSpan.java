@@ -10,7 +10,7 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** A span that usually a script would occur in.
- * Updated by JCasGen Wed Sep 17 15:03:36 EDT 2014
+ * Updated by JCasGen Wed Sep 24 22:38:09 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class ScriptSpan extends ComponentAnnotation {

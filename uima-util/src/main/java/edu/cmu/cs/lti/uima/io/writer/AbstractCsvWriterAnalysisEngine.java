@@ -63,6 +63,8 @@ public abstract class AbstractCsvWriterAnalysisEngine extends JCasAnnotator_Impl
 
   String defaultOutputFileSuffix = ".csv";
 
+  private char seperator = ',';
+
   @Override
   public void initialize(UimaContext context) throws ResourceInitializationException {
     try {
@@ -108,6 +110,8 @@ public abstract class AbstractCsvWriterAnalysisEngine extends JCasAnnotator_Impl
       sourceDocumentView = aJCas;
     }
 
+    prepare(aJCas);
+
     // Retrieve the filename of the input file from the CAS.
     File outFile = null;
     SourceDocumentInformation fileLoc = JCasUtil.selectSingle(sourceDocumentView,
@@ -127,9 +131,7 @@ public abstract class AbstractCsvWriterAnalysisEngine extends JCasAnnotator_Impl
       }
       outFile = new File(outputDir, outFileName);
 
-      CSVWriter writer = CsvFactory.getCSVWriter(outFile);
-
-      prepare(aJCas);
+      CSVWriter writer = CsvFactory.getCSVWriter(outFile, seperator);
 
       String[] header = getHeader();
 
@@ -164,6 +166,10 @@ public abstract class AbstractCsvWriterAnalysisEngine extends JCasAnnotator_Impl
    */
   protected void subinitialize(UimaContext context) {
 
+  }
+
+  protected void setSeperator(char sep) {
+    seperator = sep;
   }
 
   @Override

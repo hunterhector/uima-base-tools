@@ -21,43 +21,48 @@ public class CsvFactory {
     return getCSVWriter(file);
   }
 
+  public static CSVWriter getCSVWriter(String outputPath, char sep) {
+    File file = new File(outputPath);
+    return getCSVWriter(file);
+  }
+
   public static CSVWriter getCSVWriter(String outputPath, char sep, char escape) {
     File file = new File(outputPath);
     return getCSVWriter(file, sep, escape);
   }
 
-  public static CSVWriter getCSVWriter(File file) {
-    CSVWriter csvWriter = null;
-
+  /**
+   * Will overwrite file
+   * 
+   * @param file
+   * @return
+   */
+  private static FileWriter getFileToWrite(File file) {
     if (file.exists()) {
       file.delete();
     }
 
+    FileWriter fileWriter = null;
     try {
       file.createNewFile();
-      FileWriter fileWriter = new FileWriter(file.getAbsoluteFile(), true);
-      csvWriter = new CSVWriter(fileWriter);
+      fileWriter = new FileWriter(file.getAbsoluteFile(), true);
     } catch (IOException e) {
       e.printStackTrace();
     }
-    return csvWriter;
+
+    return fileWriter;
+  }
+
+  public static CSVWriter getCSVWriter(File file) {
+    return new CSVWriter(getFileToWrite(file));
   }
 
   public static CSVWriter getCSVWriter(File file, char sep, char escape) {
-    CSVWriter csvWriter = null;
+    return new CSVWriter(getFileToWrite(file), sep, escape);
+  }
 
-    if (file.exists()) {
-      file.delete();
-    }
-
-    try {
-      file.createNewFile();
-      FileWriter fileWriter = new FileWriter(file.getAbsoluteFile(), true);
-      csvWriter = new CSVWriter(fileWriter, sep, escape);
-    } catch (IOException e) {
-      e.printStackTrace();
-    }
-    return csvWriter;
+  public static CSVWriter getCSVWriter(File file, char sep) {
+    return new CSVWriter(getFileToWrite(file), sep);
   }
 
   public static CSVReader getCSVReader(String inputPath) {

@@ -11,7 +11,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** A span that usually a script would occur in.
- * Updated by JCasGen Wed Sep 17 15:03:36 EDT 2014
+ * Updated by JCasGen Wed Sep 24 22:38:09 EDT 2014
  * @generated */
 public class ScriptSpan_Type extends ComponentAnnotation_Type {
   /** @generated 

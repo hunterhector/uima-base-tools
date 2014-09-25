@@ -11,7 +11,7 @@ import org.apache.uima.jcas.cas.TOP;
 
 
 /** 
- * Updated by JCasGen Wed Sep 17 15:03:36 EDT 2014
+ * Updated by JCasGen Wed Sep 24 22:38:08 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class ComponentTOP extends TOP {

@@ -12,7 +12,7 @@ import org.apache.uima.jcas.cas.StringList;
 
 
 /** An entity refers to an underlying entity, it might corresponding to multiple entity mentions. It can be viewed that we assign the attributes to each cluster
- * Updated by JCasGen Wed Sep 17 15:03:36 EDT 2014
+ * Updated by JCasGen Wed Sep 24 22:38:08 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class Entity extends ComponentTOP {
@@ -261,6 +261,28 @@ public class Entity extends ComponentTOP {
     if (Entity_Type.featOkTst && ((Entity_Type)jcasType).casFeat_representativeMention == null)
       jcasType.jcas.throwFeatMissing("representativeMention", "edu.cmu.cs.lti.script.type.Entity");
     jcasType.ll_cas.ll_setRefValue(addr, ((Entity_Type)jcasType).casFeatCode_representativeMention, jcasType.ll_cas.ll_getFSRef(v));}    
+   
+    
+  //*--------------*
+  //* Feature: informative
+
+  /** getter for informative - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public boolean getInformative() {
+    if (Entity_Type.featOkTst && ((Entity_Type)jcasType).casFeat_informative == null)
+      jcasType.jcas.throwFeatMissing("informative", "edu.cmu.cs.lti.script.type.Entity");
+    return jcasType.ll_cas.ll_getBooleanValue(addr, ((Entity_Type)jcasType).casFeatCode_informative);}
+    
+  /** setter for informative - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setInformative(boolean v) {
+    if (Entity_Type.featOkTst && ((Entity_Type)jcasType).casFeat_informative == null)
+      jcasType.jcas.throwFeatMissing("informative", "edu.cmu.cs.lti.script.type.Entity");
+    jcasType.ll_cas.ll_setBooleanValue(addr, ((Entity_Type)jcasType).casFeatCode_informative, v);}    
   }
 
     

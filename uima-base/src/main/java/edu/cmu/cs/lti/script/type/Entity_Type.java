@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** An entity refers to an underlying entity, it might corresponding to multiple entity mentions. It can be viewed that we assign the attributes to each cluster
- * Updated by JCasGen Wed Sep 17 15:03:36 EDT 2014
+ * Updated by JCasGen Wed Sep 24 22:38:08 EDT 2014
  * @generated */
 public class Entity_Type extends ComponentTOP_Type {
   /** @generated 
@@ -263,6 +263,30 @@ public class Entity_Type extends ComponentTOP_Type {
     ll_cas.ll_setRefValue(addr, casFeatCode_representativeMention, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_informative;
+  /** @generated */
+  final int     casFeatCode_informative;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public boolean getInformative(int addr) {
+        if (featOkTst && casFeat_informative == null)
+      jcas.throwFeatMissing("informative", "edu.cmu.cs.lti.script.type.Entity");
+    return ll_cas.ll_getBooleanValue(addr, casFeatCode_informative);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setInformative(int addr, boolean v) {
+        if (featOkTst && casFeat_informative == null)
+      jcas.throwFeatMissing("informative", "edu.cmu.cs.lti.script.type.Entity");
+    ll_cas.ll_setBooleanValue(addr, casFeatCode_informative, v);}
+    
+  
 
 
 
@@ -306,6 +330,10 @@ public class Entity_Type extends ComponentTOP_Type {
  
     casFeat_representativeMention = jcas.getRequiredFeatureDE(casType, "representativeMention", "edu.cmu.cs.lti.script.type.EntityMention", featOkTst);
     casFeatCode_representativeMention  = (null == casFeat_representativeMention) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_representativeMention).getCode();
+
+ 
+    casFeat_informative = jcas.getRequiredFeatureDE(casType, "informative", "uima.cas.Boolean", featOkTst);
+    casFeatCode_informative  = (null == casFeat_informative) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_informative).getCode();
 
   }
 }

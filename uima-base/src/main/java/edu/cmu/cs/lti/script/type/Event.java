@@ -12,7 +12,7 @@ import org.apache.uima.jcas.cas.FSList;
 
 
 /** An abstract annotation for event, which is a generalized concept that contains event mentions. It could be seen as we assign some attributes to the event mention clusters.
- * Updated by JCasGen Wed Sep 17 15:03:36 EDT 2014
+ * Updated by JCasGen Wed Sep 24 22:38:09 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class Event extends ComponentTOP {
