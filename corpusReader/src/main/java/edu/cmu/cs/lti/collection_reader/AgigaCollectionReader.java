@@ -188,6 +188,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
         EntityMention mention = new EntityMention(jcas, beginToken.getBegin(), endToken.getEnd());
         mention.setEntityType(lastNETag);
         allMentions.add(mention);
+        index2Mentions.put(beginToken, endToken, mention);
       }
 
       sentEnd = offset;

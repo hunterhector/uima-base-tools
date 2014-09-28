@@ -1,12 +1,16 @@
 package edu.cmu.cs.lti.uima.util;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 
+import edu.cmu.cs.lti.script.type.Entity;
+import edu.cmu.cs.lti.script.type.EntityMention;
 import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
 import edu.cmu.cs.lti.script.type.StanfordTreeAnnotation;
 import edu.cmu.cs.lti.script.type.ComponentAnnotation;
@@ -89,5 +93,26 @@ public class UimaAnnotationUtils {
     for (ComponentTOP anno : annos) {
       anno.setId(Integer.toString(id++));
     }
+  }
+
+  public static void removeEntityMention(JCas aJCas, EntityMention m) {
+    Entity e = m.getReferingEntity();
+
+    if (e.getEntityMentions().size() == 1) {
+      System.out.println("Remove a singleton " + m.getCoveredText() + " " + m.getId());
+      e.removeFromIndexes(aJCas);
+    } else {
+      System.out.println("Remove a non-singleton");
+      List<EntityMention> remainingMentions = new ArrayList<EntityMention>();
+      for (int i = 0; i < e.getEntityMentions().size(); i++) {
+        EntityMention otherMention = e.getEntityMentions(i);
+        if (!otherMention.equals(m)) {
+          remainingMentions.add(otherMention);
+        }
+      }
+      e.setEntityMentions(FSCollectionFactory.createFSArray(aJCas, remainingMentions));
+    }
+
+    m.removeFromIndexes(aJCas);
   }
 }
