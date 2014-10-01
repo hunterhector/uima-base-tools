@@ -19,6 +19,7 @@
 
 package edu.cmu.cs.lti.uima.io.reader;
 
+import edu.cmu.cs.lti.uima.util.NewsNameComparators;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.collection.CollectionException;
@@ -34,116 +35,94 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem,
  * sort them by the offset
  */
 public class OffsetSortedXmiCollectionReader extends CollectionReader_ImplBase {
-  /**
-   * Name of configuration parameter that must be set to the path of a directory containing the XMI
-   * files.
-   */
-  public static final String PARAM_INPUTDIR = "InputDirectory";
+    /**
+     * Name of configuration parameter that must be set to the path of a directory containing the XMI
+     * files.
+     */
+    public static final String PARAM_INPUTDIR = "InputDirectory";
 
-  /**
-   * Name of the configuration parameter that must be set to indicate if the execution fails if an
-   * encountered type is unknown
-   */
-  public static final String PARAM_FAILUNKNOWN = "FailOnUnknownType";
+    /**
+     * Name of the configuration parameter that must be set to indicate if the execution fails if an
+     * encountered type is unknown
+     */
+    public static final String PARAM_FAILUNKNOWN = "FailOnUnknownType";
 
-  private Boolean mFailOnUnknownType;
+    private Boolean mFailOnUnknownType;
 
-  private ArrayList<File> mFiles;
+    private ArrayList<File> mFiles;
 
-  private int mCurrentIndex;
+    private int mCurrentIndex;
 
-  private String inputFileSuffix = ".xmi";
+    private String inputFileSuffix = ".xmi";
 
-  /**
-   * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
-   */
-  public void initialize() throws ResourceInitializationException {
-    mFailOnUnknownType = (Boolean) getConfigParameterValue(PARAM_FAILUNKNOWN);
-    if (null == mFailOnUnknownType) {
-      mFailOnUnknownType = true; // default to true if not specified
-    }
-    File directory = new File(((String) getConfigParameterValue(PARAM_INPUTDIR)).trim());
-    mCurrentIndex = 0;
-
-    // if input directory does not exist or is not a directory, throw exception
-    if (!directory.exists() || !directory.isDirectory()) {
-      throw new ResourceInitializationException(ResourceConfigurationException.DIRECTORY_NOT_FOUND,
-              new Object[] { PARAM_INPUTDIR, this.getMetaData().getName(), directory.getPath() });
-    }
-
-    // get list of .xmi files in the specified directory
-    mFiles = new ArrayList<File>();
-    File[] files = directory.listFiles();
-    for (int i = 0; i < files.length; i++) {
-      if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {
-        mFiles.add(files[i]);
-      }
-    }
-
-    Collections.sort(mFiles, new Comparator<File>() {
-      @Override
-      public int compare(File o1, File o2) {
-        int n1 = extractOffset(o1.getName());
-        int n2 = extractOffset(o2.getName());
-        return n1 - n2;
-      }
-
-      private int extractOffset(String name) {
-        int i = 0;
-        try {
-          int s = name.lastIndexOf('_') + 1;
-          int e = name.lastIndexOf(inputFileSuffix);
-          String number = name.substring(s, e);
-          i = Integer.parseInt(number);
-        } catch (Exception e) {
-          i = 0; // if filename does not match the format
-                 // then default to 0
+    /**
+     * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
+     */
+    public void initialize() throws ResourceInitializationException {
+        mFailOnUnknownType = (Boolean) getConfigParameterValue(PARAM_FAILUNKNOWN);
+        if (null == mFailOnUnknownType) {
+            mFailOnUnknownType = true; // default to true if not specified
         }
-        return i;
-      }
-    });
-  }
+        File directory = new File(((String) getConfigParameterValue(PARAM_INPUTDIR)).trim());
+        mCurrentIndex = 0;
 
-  /**
-   * @see org.apache.uima.collection.CollectionReader#hasNext()
-   */
-  public boolean hasNext() {
-    return mCurrentIndex < mFiles.size();
-  }
+        // if input directory does not exist or is not a directory, throw exception
+        if (!directory.exists() || !directory.isDirectory()) {
+            throw new ResourceInitializationException(ResourceConfigurationException.DIRECTORY_NOT_FOUND,
+                    new Object[]{PARAM_INPUTDIR, this.getMetaData().getName(), directory.getPath()});
+        }
 
-  /**
-   * @see org.apache.uima.collection.CollectionReader#getNext(org.apache.uima.cas.CAS)
-   */
-  public void getNext(CAS aCAS) throws IOException, CollectionException {
-    File currentFile = (File) mFiles.get(mCurrentIndex++);
-    FileInputStream inputStream = new FileInputStream(currentFile);
-    try {
-      XmiCasDeserializer.deserialize(inputStream, aCAS, !mFailOnUnknownType);
-    } catch (SAXException e) {
-      throw new CollectionException(e);
-    } finally {
-      inputStream.close();
+        // get list of .xmi files in the specified directory
+        mFiles = new ArrayList<File>();
+        File[] files = directory.listFiles();
+        for (int i = 0; i < files.length; i++) {
+            if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {
+                mFiles.add(files[i]);
+            }
+        }
+
+        Collections.sort(mFiles, NewsNameComparators.getGigawordDateComparator(inputFileSuffix));
     }
-  }
 
-  /**
-   * @see org.apache.uima.collection.base_cpm.BaseCollectionReader#close()
-   */
-  public void close() throws IOException {
-  }
+    /**
+     * @see org.apache.uima.collection.CollectionReader#hasNext()
+     */
+    public boolean hasNext() {
+        return mCurrentIndex < mFiles.size();
+    }
 
-  /**
-   * @see org.apache.uima.collection.base_cpm.BaseCollectionReader#getProgress()
-   */
-  public Progress[] getProgress() {
-    return new Progress[] { new ProgressImpl(mCurrentIndex, mFiles.size(), Progress.ENTITIES) };
-  }
+    /**
+     * @see org.apache.uima.collection.CollectionReader#getNext(org.apache.uima.cas.CAS)
+     */
+    public void getNext(CAS aCAS) throws IOException, CollectionException {
+        File currentFile = (File) mFiles.get(mCurrentIndex++);
+        FileInputStream inputStream = new FileInputStream(currentFile);
+        try {
+            XmiCasDeserializer.deserialize(inputStream, aCAS, !mFailOnUnknownType);
+        } catch (SAXException e) {
+            throw new CollectionException(e);
+        } finally {
+            inputStream.close();
+        }
+    }
+
+    /**
+     * @see org.apache.uima.collection.base_cpm.BaseCollectionReader#close()
+     */
+    public void close() throws IOException {
+    }
+
+    /**
+     * @see org.apache.uima.collection.base_cpm.BaseCollectionReader#getProgress()
+     */
+    public Progress[] getProgress() {
+        return new Progress[]{new ProgressImpl(mCurrentIndex, mFiles.size(), Progress.ENTITIES)};
+    }
 
 }
