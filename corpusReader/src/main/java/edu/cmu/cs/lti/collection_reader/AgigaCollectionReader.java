@@ -300,6 +300,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
                 entity.setEntityMentions(new FSArray(jcas, 1));
                 entity.setEntityMentions(0, mention);
                 mention.setReferingEntity(entity);
+                entity.setRepresentativeMention(mention);
                 entities.add(entity);
             }
 
