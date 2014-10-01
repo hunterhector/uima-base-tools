@@ -276,6 +276,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
             Entity entity = new Entity(jcas);
             entity.setEntityMentions(new FSArray(jcas, corefMentions.size()));
             entity.setRepresentativeMention(representativeMention);
+//            System.out.println(entity.getRepresentativeMention().getCoveredText());
             int index = 0;
             for (EntityMention mention : corefMentions) {
                 mention.setReferingEntity(entity);
@@ -301,6 +302,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
                 entity.setEntityMentions(0, mention);
                 mention.setReferingEntity(entity);
                 entity.setRepresentativeMention(mention);
+//                System.out.println(entity.getRepresentativeMention().getCoveredText());
                 entities.add(entity);
             }
 
