@@ -82,8 +82,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
     @Override
     public void getNext(JCas jcas) throws IOException, CollectionException {
         if (!reader.hasNext()) {
-            reader = new StreamingDocumentReader(gzFileList[gCurrentIndex].getAbsolutePath(), prefs);
-            fileOffset = 0;
+            readNewGzFile();
         }
 
         AgigaDocument currentDoc = reader.next();
@@ -94,10 +93,14 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
         SourceDocumentInformation enSrcDocInfo = new SourceDocumentInformation(jcas);
         enSrcDocInfo.setUri(gzFileList[gCurrentIndex].toURI().toURL().toString());
         enSrcDocInfo.setOffsetInSource(fileOffset);
-        enSrcDocInfo.setDocumentSize((int) gzFileList[0].length());
+        enSrcDocInfo.setDocumentSize((int) gzFileList[gCurrentIndex].length());
         enSrcDocInfo.setLastSegment(!reader.hasNext());
         enSrcDocInfo.addToIndexes();
-        gCurrentIndex ++;
+    }
+
+    private void readNewGzFile(){
+        reader = new StreamingDocumentReader(gzFileList[gCurrentIndex++].getAbsolutePath(), prefs);
+        fileOffset = 0;
     }
 
     private void uimafyAnnotations(JCas jcas, AgigaDocument doc) {
@@ -355,11 +358,10 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
 
     @Override
     public boolean hasNext() throws IOException, CollectionException {
-
         if (reader.hasNext()) {
             return true;
         } else if (gCurrentIndex < gzFileList.length) {
-            reader = new StreamingDocumentReader(gzFileList[gCurrentIndex++].getAbsolutePath(), prefs);
+            readNewGzFile();
             if (reader.hasNext()) {
                 return true;
             }
