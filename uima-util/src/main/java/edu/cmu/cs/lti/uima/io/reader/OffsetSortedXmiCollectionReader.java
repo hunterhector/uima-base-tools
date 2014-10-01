@@ -17,15 +17,7 @@
  * under the License.
  */
 
-package edu.cmu.cs.lti.collection_reader;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
+package edu.cmu.cs.lti.uima.io.reader;
 
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
@@ -36,6 +28,13 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 import org.xml.sax.SAXException;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem,
@@ -60,6 +59,8 @@ public class OffsetSortedXmiCollectionReader extends CollectionReader_ImplBase {
 
   private int mCurrentIndex;
 
+  private String inputFileSuffix = ".xmi";
+
   /**
    * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
    */
@@ -81,7 +82,7 @@ public class OffsetSortedXmiCollectionReader extends CollectionReader_ImplBase {
     mFiles = new ArrayList<File>();
     File[] files = directory.listFiles();
     for (int i = 0; i < files.length; i++) {
-      if (!files[i].isDirectory() && files[i].getName().endsWith(".xmi")) {
+      if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {
         mFiles.add(files[i]);
       }
     }
@@ -98,7 +99,7 @@ public class OffsetSortedXmiCollectionReader extends CollectionReader_ImplBase {
         int i = 0;
         try {
           int s = name.lastIndexOf('_') + 1;
-          int e = name.lastIndexOf('.');
+          int e = name.lastIndexOf(inputFileSuffix);
           String number = name.substring(s, e);
           i = Integer.parseInt(number);
         } catch (Exception e) {

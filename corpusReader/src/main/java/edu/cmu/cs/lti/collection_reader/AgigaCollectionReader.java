@@ -66,7 +66,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         File inputDir = new File(((String) getConfigParameterValue(PARAM_INPUTDIR)).trim());
-
+        gCurrentIndex = 0;
         gzFileList = inputDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -82,7 +82,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
     @Override
     public void getNext(JCas jcas) throws IOException, CollectionException {
         if (!reader.hasNext()) {
-            reader = new StreamingDocumentReader(gzFileList[gCurrentIndex++].getAbsolutePath(), prefs);
+            reader = new StreamingDocumentReader(gzFileList[gCurrentIndex].getAbsolutePath(), prefs);
             fileOffset = 0;
         }
 
@@ -92,11 +92,12 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
         uimafyAnnotations(jcas, currentDoc);
 
         SourceDocumentInformation enSrcDocInfo = new SourceDocumentInformation(jcas);
-        enSrcDocInfo.setUri(gzFileList[0].toURI().toURL().toString());
+        enSrcDocInfo.setUri(gzFileList[gCurrentIndex].toURI().toURL().toString());
         enSrcDocInfo.setOffsetInSource(fileOffset);
         enSrcDocInfo.setDocumentSize((int) gzFileList[0].length());
         enSrcDocInfo.setLastSegment(!reader.hasNext());
         enSrcDocInfo.addToIndexes();
+        gCurrentIndex ++;
     }
 
     private void uimafyAnnotations(JCas jcas, AgigaDocument doc) {

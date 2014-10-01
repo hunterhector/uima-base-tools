@@ -13,13 +13,15 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
  */
-public class StepBasedDirGzippedXmiCollectionReader extends AbstractStepBasedDirReader {
+public class StepBasedDirOffsetSortedGzippedXmiCollectionReader extends AbstractStepBasedDirReader {
 
   public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
 
@@ -55,6 +57,31 @@ public class StepBasedDirGzippedXmiCollectionReader extends AbstractStepBasedDir
       logger.warn("The directory " + inputDir.getAbsolutePath()
               + " does not have any compressed files ending with " + inputFileSuffix);
     }
+
+      Collections.sort(xmiFiles, new Comparator<File>() {
+          @Override
+          public int compare(File o1, File o2) {
+              int n1 = extractOffset(o1.getName());
+              int n2 = extractOffset(o2.getName());
+              return n1 - n2;
+          }
+
+          private int extractOffset(String name) {
+              int i = 0;
+              try {
+                  int s = name.lastIndexOf('_') + 1;
+                  int e = name.lastIndexOf(inputFileSuffix);
+                  String number = name.substring(s, e);
+                  i = Integer.parseInt(number);
+              } catch (Exception e) {
+                  i = 0; // if filename does not match the format
+                  // then default to 0
+              }
+              return i;
+          }
+      });
+
+
 
     currentDocIndex = 0;
   }
