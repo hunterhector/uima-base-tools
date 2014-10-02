@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Wed Sep 24 22:38:09 EDT 2014
+ * Updated by JCasGen Thu Oct 02 09:06:17 EDT 2014
  * @generated */
 public class EntityMentionAlignment_Type extends ComponentTOP_Type {
   /** @generated 

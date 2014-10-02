@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** An abstract annotation for event, which is a generalized concept that contains event mentions. It could be seen as we assign some attributes to the event mention clusters.
- * Updated by JCasGen Wed Sep 24 22:38:09 EDT 2014
+ * Updated by JCasGen Thu Oct 02 09:06:17 EDT 2014
  * @generated */
 public class Event_Type extends ComponentTOP_Type {
   /** @generated 

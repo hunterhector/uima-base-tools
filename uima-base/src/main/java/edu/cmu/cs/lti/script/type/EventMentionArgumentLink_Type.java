@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** Link between an event mention to its argument (which is an entity mention)
- * Updated by JCasGen Wed Sep 24 22:38:09 EDT 2014
+ * Updated by JCasGen Thu Oct 02 09:06:17 EDT 2014
  * @generated */
 public class EventMentionArgumentLink_Type extends ComponentTOP_Type {
   /** @generated 
