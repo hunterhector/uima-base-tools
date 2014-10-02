@@ -13,7 +13,7 @@ import java.util.Date;
  * Time: 1:04 PM
  */
 public class NewsNameComparators {
-    public static Comparator<File> getGigawordDateComparator(final String inputFileSuffix){
+    public static Comparator<File> getGigawordDateComparator(final String inputFileSuffix, final String dateFormatStr){
         return new Comparator<File>() {
             @Override
             public int compare(File o1, File o2) {
@@ -22,7 +22,7 @@ public class NewsNameComparators {
                 Date d2 = extractDate(o2.getName());
 
                 if (d1 != null && d2 != null) {
-                    if (d1.compareTo(d2) == 0) {
+                    if (d1.compareTo(d2) != 0) {
                         return d1.compareTo(d2);
                     }
                 }
@@ -34,7 +34,7 @@ public class NewsNameComparators {
             }
 
             private Date extractDate(String name) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyymmdd");
+                SimpleDateFormat dateFormat = new SimpleDateFormat(dateFormatStr);
                 Date d = null;
                 try {
                     d = dateFormat.parse(name.substring(8, 14));

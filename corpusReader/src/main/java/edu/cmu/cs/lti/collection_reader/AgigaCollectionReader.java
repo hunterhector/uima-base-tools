@@ -51,6 +51,9 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
 
     private int gCurrentIndex;
 
+    private File currentFile;
+
+
     private int fileOffset;
 
     private StreamingDocumentReader reader;
@@ -75,7 +78,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
         });
 
         if (gzFileList.length > 0) {
-            reader = new StreamingDocumentReader(gzFileList[0].getAbsolutePath(), prefs);
+            readNewGzFile();
         }
     }
 
@@ -91,14 +94,30 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
         uimafyAnnotations(jcas, currentDoc);
 
         SourceDocumentInformation enSrcDocInfo = new SourceDocumentInformation(jcas);
-        enSrcDocInfo.setUri(gzFileList[gCurrentIndex].toURI().toURL().toString());
+        enSrcDocInfo.setUri(currentFile.toURI().toURL().toString());
         enSrcDocInfo.setOffsetInSource(fileOffset);
-        enSrcDocInfo.setDocumentSize((int) gzFileList[gCurrentIndex].length());
+        enSrcDocInfo.setDocumentSize((int) currentFile.length());
         enSrcDocInfo.setLastSegment(!reader.hasNext());
         enSrcDocInfo.addToIndexes();
     }
 
+
+    @Override
+    public boolean hasNext() throws IOException, CollectionException {
+        if (reader.hasNext()) {
+            return true;
+        } else if (gCurrentIndex < gzFileList.length) {
+            readNewGzFile();
+            if (reader.hasNext()) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private void readNewGzFile(){
+        currentFile = gzFileList[gCurrentIndex];
         reader = new StreamingDocumentReader(gzFileList[gCurrentIndex++].getAbsolutePath(), prefs);
         fileOffset = 0;
     }
@@ -356,19 +375,6 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
         return new Progress[]{new ProgressImpl(gCurrentIndex, gzFileList.length, Progress.ENTITIES)};
     }
 
-    @Override
-    public boolean hasNext() throws IOException, CollectionException {
-        if (reader.hasNext()) {
-            return true;
-        } else if (gCurrentIndex < gzFileList.length) {
-            readNewGzFile();
-            if (reader.hasNext()) {
-                return true;
-            }
-        }
-
-        return false;
-    }
 
     private FSArray addTreebankNodeChildrenToIndexes(StanfordTreeAnnotation parent, JCas jCas,
                                                      List<StanfordCorenlpToken> tokens, Tree tree, int offset) {

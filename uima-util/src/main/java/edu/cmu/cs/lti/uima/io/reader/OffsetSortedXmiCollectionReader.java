@@ -20,6 +20,7 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
 import edu.cmu.cs.lti.uima.util.NewsNameComparators;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.collection.CollectionException;
@@ -53,13 +54,15 @@ public class OffsetSortedXmiCollectionReader extends CollectionReader_ImplBase {
      */
     public static final String PARAM_FAILUNKNOWN = "FailOnUnknownType";
 
+    public static final String PARAM_FILE_SUFFIX = "fileSuffix";
+
+    public static final String DEFAULT_FILE_SUFFIX = ".xmi";
+
     private Boolean mFailOnUnknownType;
 
     private ArrayList<File> mFiles;
 
     private int mCurrentIndex;
-
-    private String inputFileSuffix = ".xmi";
 
     /**
      * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
@@ -69,6 +72,13 @@ public class OffsetSortedXmiCollectionReader extends CollectionReader_ImplBase {
         if (null == mFailOnUnknownType) {
             mFailOnUnknownType = true; // default to true if not specified
         }
+
+        String inputFileSuffix = (String) getConfigParameterValue(PARAM_FILE_SUFFIX);
+        if (StringUtils.isEmpty(inputFileSuffix)) {
+            inputFileSuffix = DEFAULT_FILE_SUFFIX;
+        }
+
+
         File directory = new File(((String) getConfigParameterValue(PARAM_INPUTDIR)).trim());
         mCurrentIndex = 0;
 
@@ -87,7 +97,7 @@ public class OffsetSortedXmiCollectionReader extends CollectionReader_ImplBase {
             }
         }
 
-        Collections.sort(mFiles, NewsNameComparators.getGigawordDateComparator(inputFileSuffix));
+        Collections.sort(mFiles, NewsNameComparators.getGigawordDateComparator(inputFileSuffix,"yyyymm"));
     }
 
     /**
