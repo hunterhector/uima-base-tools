@@ -40,7 +40,7 @@ public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase{
         }
     }
 
-    protected void logProgress(JCas aJCas){
-        logger.log(Level.INFO, "Processing " + UimaConvenience.getShortDocumentNameWithOffset(aJCas));
+    protected String progressInfo(JCas aJCas){
+        return "Processing " + UimaConvenience.getShortDocumentNameWithOffset(aJCas);
     }
 }
