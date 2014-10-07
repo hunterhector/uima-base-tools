@@ -26,7 +26,7 @@ public class ReaderTestPipeline {
     // Note that you should change the parameters below for your configuration.
     // //////////////////////////////////////////////////////////////////////////
     // Parameters for the reader
-    String paramInputDir = "/Users/zhengzhongliu/Downloads/agiga_sample";
+    String paramInputDir = "/Users/zhengzhongliu/Documents/data/agiga_sample";
  
     // Parameters for the writer
     String paramParentOutputDir = "data";

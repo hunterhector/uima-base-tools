@@ -29,6 +29,7 @@ import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -70,6 +71,11 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
     public void initialize(UimaContext context) throws ResourceInitializationException {
         File inputDir = new File(((String) getConfigParameterValue(PARAM_INPUTDIR)).trim());
         gCurrentIndex = 0;
+
+        if (!(inputDir.exists() && inputDir.isDirectory())){
+            throw new ResourceInitializationException(new FileNotFoundException(inputDir.getAbsolutePath()));
+        }
+
         gzFileList = inputDir.listFiles(new FilenameFilter() {
             @Override
             public boolean accept(File dir, String name) {
@@ -116,7 +122,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
         return false;
     }
 
-    private void readNewGzFile(){
+    private void readNewGzFile() {
         currentFile = gzFileList[gCurrentIndex];
         reader = new StreamingDocumentReader(gzFileList[gCurrentIndex++].getAbsolutePath(), prefs);
         fileOffset = 0;
@@ -229,11 +235,11 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
 
                 String depType = dep.getType();
 
-                if (depType.equals("root")){
-                    //due to the existence of loops you cannot do this.
-//                if (headIndex == -1) {
+                if (depType.equals("root")) {
                     childToken.setIsDependencyRoot(true);
-                } else {
+                }
+
+                if (headIndex != -1) {
                     StanfordCorenlpToken headToken = sTokens.get(headIndex);
 
                     StanfordDependencyRelation relation = new StanfordDependencyRelation(jcas);
@@ -244,14 +250,19 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
 
                     headRelations.put(childToken, relation);
                     childRelations.put(headToken, relation);
+                }else{
+//                    System.out.println("Head is -1, root is "+ dep.getDepIdx() + " "+dep.getGovIdx());
                 }
             }
 
             for (StanfordCorenlpToken token : headRelations.keys()) {
-                token.setChildDependencyRelations(FSCollectionFactory.createFSList(jcas,
-                        childRelations.get(token)));
                 token.setHeadDependencyRelations(FSCollectionFactory.createFSList(jcas,
                         headRelations.get(token)));
+            }
+
+            for (StanfordCorenlpToken token : childRelations.keys()){
+                token.setChildDependencyRelations(FSCollectionFactory.createFSList(jcas,
+                        childRelations.get(token)));
             }
 
             StanfordCorenlpSentence sSent = new StanfordCorenlpSentence(jcas);

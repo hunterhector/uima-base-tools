@@ -11,7 +11,7 @@ import org.apache.uima.jcas.cas.StringList;
 
 
 /** 
- * Updated by JCasGen Thu Oct 02 09:06:17 EDT 2014
+ * Updated by JCasGen Thu Oct 02 09:18:06 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class PairwiseEventFeatureNames extends ComponentTOP {

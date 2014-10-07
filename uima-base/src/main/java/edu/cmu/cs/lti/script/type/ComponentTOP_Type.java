@@ -14,7 +14,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.cas.TOP_Type;
 
 /** 
- * Updated by JCasGen Thu Oct 02 09:06:17 EDT 2014
+ * Updated by JCasGen Thu Oct 02 09:18:05 EDT 2014
  * @generated */
 public class ComponentTOP_Type extends TOP_Type {
   /** @generated 

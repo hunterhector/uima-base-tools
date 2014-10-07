@@ -1076,9 +1076,9 @@
       </features>
     </typeDescription>
   <typeDescription>
-      <name>edu.cmu.cs.lti.script.type.DiscourseTree</name>
+      <name>edu.cmu.cs.lti.script.type.RstTree</name>
       <description/>
-      <supertypeName>uima.tcas.Annotation</supertypeName>
+      <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
       <features>
         <featureDescription>
           <name>relationLabel</name>
@@ -1094,7 +1094,7 @@
           <name>children</name>
           <description/>
           <rangeTypeName>uima.cas.FSArray</rangeTypeName>
-          <elementType>edu.cmu.cs.lti.script.type.DiscourseTree</elementType>
+          <elementType>edu.cmu.cs.lti.script.type.RstTree</elementType>
         </featureDescription>
         <featureDescription>
           <name>isTerminal</name>
