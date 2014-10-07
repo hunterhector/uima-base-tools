@@ -148,7 +148,6 @@ public class CustomAnalysisEngineFactory {
    * @param baseOutputDirName
    * @param stepNumber
    * @param outputFileSuffix
-   * @param srcDocInfoViewName
    *          the view that contains the source document info
    * @return
    * @throws ResourceInitializationException
@@ -261,7 +260,6 @@ public class CustomAnalysisEngineFactory {
    * @param baseOutputDirName
    * @param stepNumber
    * @param outputFileSuffix
-   * @param configurationData
    * @return
    * @throws ResourceInitializationException
    */
@@ -294,7 +292,6 @@ public class CustomAnalysisEngineFactory {
    * @param stepNumber
    * @param outputFileSuffix
    * @param sourceDocumentInfoViewName
-   * @param configurationData
    * @return
    * @throws ResourceInitializationException
    */
@@ -318,7 +315,6 @@ public class CustomAnalysisEngineFactory {
   /**
    * Creates a customized plain text aggregator.
    * 
-   * @param parentOutputDirPath
    * @return
    * @throws ResourceInitializationException
    */
