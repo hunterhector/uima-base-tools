@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Thu Oct 02 09:18:05 EDT 2014
+ * Updated by JCasGen Tue Oct 07 22:54:45 EDT 2014
  * @generated */
 public class EntityBasedComponentLink_Type extends ComponentTOP_Type {
   /** @generated 

@@ -11,7 +11,7 @@ import org.apache.uima.jcas.cas.StringList;
 
 
 /** Link between an event mention to its argument (which is an entity mention)
- * Updated by JCasGen Thu Oct 02 09:18:05 EDT 2014
+ * Updated by JCasGen Tue Oct 07 22:54:45 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class EventMentionArgumentLink extends ComponentTOP {
@@ -238,6 +238,28 @@ public class EventMentionArgumentLink extends ComponentTOP {
     if (EventMentionArgumentLink_Type.featOkTst && ((EventMentionArgumentLink_Type)jcasType).casFeat_argument == null)
       jcasType.jcas.throwFeatMissing("argument", "edu.cmu.cs.lti.script.type.EventMentionArgumentLink");
     jcasType.ll_cas.ll_setRefValue(addr, ((EventMentionArgumentLink_Type)jcasType).casFeatCode_argument, jcasType.ll_cas.ll_getFSRef(v));}    
+   
+    
+  //*--------------*
+  //* Feature: verbPreposition
+
+  /** getter for verbPreposition - gets The preposition that used to link this argument, for example " put on the clothes", "on" is the preposition to link to the actual argument "clothes"
+   * @generated
+   * @return value of the feature 
+   */
+  public Word getVerbPreposition() {
+    if (EventMentionArgumentLink_Type.featOkTst && ((EventMentionArgumentLink_Type)jcasType).casFeat_verbPreposition == null)
+      jcasType.jcas.throwFeatMissing("verbPreposition", "edu.cmu.cs.lti.script.type.EventMentionArgumentLink");
+    return (Word)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EventMentionArgumentLink_Type)jcasType).casFeatCode_verbPreposition)));}
+    
+  /** setter for verbPreposition - sets The preposition that used to link this argument, for example " put on the clothes", "on" is the preposition to link to the actual argument "clothes" 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setVerbPreposition(Word v) {
+    if (EventMentionArgumentLink_Type.featOkTst && ((EventMentionArgumentLink_Type)jcasType).casFeat_verbPreposition == null)
+      jcasType.jcas.throwFeatMissing("verbPreposition", "edu.cmu.cs.lti.script.type.EventMentionArgumentLink");
+    jcasType.ll_cas.ll_setRefValue(addr, ((EventMentionArgumentLink_Type)jcasType).casFeatCode_verbPreposition, jcasType.ll_cas.ll_getFSRef(v));}    
   }
 
     

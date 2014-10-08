@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** Link between an event mention to its argument (which is an entity mention)
- * Updated by JCasGen Thu Oct 02 09:18:05 EDT 2014
+ * Updated by JCasGen Tue Oct 07 22:54:45 EDT 2014
  * @generated */
 public class EventMentionArgumentLink_Type extends ComponentTOP_Type {
   /** @generated 
@@ -236,6 +236,30 @@ public class EventMentionArgumentLink_Type extends ComponentTOP_Type {
     ll_cas.ll_setRefValue(addr, casFeatCode_argument, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_verbPreposition;
+  /** @generated */
+  final int     casFeatCode_verbPreposition;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public int getVerbPreposition(int addr) {
+        if (featOkTst && casFeat_verbPreposition == null)
+      jcas.throwFeatMissing("verbPreposition", "edu.cmu.cs.lti.script.type.EventMentionArgumentLink");
+    return ll_cas.ll_getRefValue(addr, casFeatCode_verbPreposition);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setVerbPreposition(int addr, int v) {
+        if (featOkTst && casFeat_verbPreposition == null)
+      jcas.throwFeatMissing("verbPreposition", "edu.cmu.cs.lti.script.type.EventMentionArgumentLink");
+    ll_cas.ll_setRefValue(addr, casFeatCode_verbPreposition, v);}
+    
+  
 
 
 
@@ -279,6 +303,10 @@ public class EventMentionArgumentLink_Type extends ComponentTOP_Type {
  
     casFeat_argument = jcas.getRequiredFeatureDE(casType, "argument", "edu.cmu.cs.lti.script.type.EntityMention", featOkTst);
     casFeatCode_argument  = (null == casFeat_argument) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_argument).getCode();
+
+ 
+    casFeat_verbPreposition = jcas.getRequiredFeatureDE(casType, "verbPreposition", "edu.cmu.cs.lti.script.type.Word", featOkTst);
+    casFeatCode_verbPreposition  = (null == casFeat_verbPreposition) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_verbPreposition).getCode();
 
   }
 }

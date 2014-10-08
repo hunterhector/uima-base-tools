@@ -11,7 +11,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** The full context of the event mention
- * Updated by JCasGen Thu Oct 02 09:18:05 EDT 2014
+ * Updated by JCasGen Tue Oct 07 22:54:45 EDT 2014
  * @generated */
 public class EventMentionContext_Type extends ComponentAnnotation_Type {
   /** @generated 
