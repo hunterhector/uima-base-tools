@@ -86,6 +86,7 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
 
             // get Token annotation and convert them to UIMA
             Map<Token, FanseToken> Fanse2UimaMap = new HashMap<Token, FanseToken>();
+            // Id starts from 1 is confusing, but I started it, better not change it.
             int tokenId = 1;
             for (Token token : resultTokens) {
                 Word goldStandardToken = wordList.get(token.getIndex() - 1);

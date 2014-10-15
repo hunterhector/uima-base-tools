@@ -5,6 +5,7 @@
  */
 package edu.cmu.cs.lti.uima.util;
 
+import edu.cmu.cs.lti.uima.model.AnnotationCondition;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.cas.*;
 import org.apache.uima.cas.text.AnnotationFS;
@@ -389,6 +390,38 @@ public class UimaConvenience extends BasicConvenience {
         }
     }
 
+
+    /**
+     *
+     * @param aJCas
+     * @param clazz
+     * @param cond
+     * @param <T> extends TOP
+     * @return
+     */
+    public static <T extends TOP> List<T> getAnnotationListWithFilter(JCas aJCas, final Class<T> clazz, AnnotationCondition cond) {
+        int type;
+        try {
+            type = clazz.getField("type").getInt(clazz);
+
+            List<T> annotationList = new ArrayList<T>();
+            Iterator<?> annotationIter = aJCas.getJFSIndexRepository().getAllIndexedFS(type);
+            while (annotationIter.hasNext()) {
+                T annotation = (T) annotationIter.next();
+                if (cond.check(annotation)) {
+                    annotationList.add(annotation);
+                }
+            }
+            return annotationList;
+        } catch (SecurityException e) {
+            throw new CASRuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new CASRuntimeException(e);
+        } catch (NoSuchFieldException e) {
+            throw new CASRuntimeException(e);
+        }
+    }
+
     /**
      * Returns a FSList with the newItem appended at the end
      *
@@ -629,7 +662,6 @@ public class UimaConvenience extends BasicConvenience {
      * Select the first annotation covered
      *
      * @param aJCas
-     * @param anno
      * @param clazz
      * @return
      */
@@ -681,7 +713,7 @@ public class UimaConvenience extends BasicConvenience {
 
     public static void printProcessLog(JCas aJCas, Logger logger) {
         String fileName = getShortDocumentNameWithOffset(aJCas);
-        logger.log(Level.INFO,String.format("Processing article: %s", fileName));
+        logger.log(Level.INFO, String.format("Processing article: %s", fileName));
     }
 
 
