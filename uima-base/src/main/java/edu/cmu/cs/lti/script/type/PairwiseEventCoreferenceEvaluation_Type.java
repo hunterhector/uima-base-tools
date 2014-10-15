@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** The type storing the information on event coreference.
- * Updated by JCasGen Wed Oct 15 17:18:58 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:23:21 EDT 2014
  * @generated */
 public class PairwiseEventCoreferenceEvaluation_Type extends ComponentTOP_Type {
   /** @generated 

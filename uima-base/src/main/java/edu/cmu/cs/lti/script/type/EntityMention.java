@@ -9,8 +9,11 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 
+import org.apache.uima.jcas.cas.FSList;
+
+
 /** 
- * Updated by JCasGen Wed Oct 15 17:18:57 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:23:20 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class EntityMention extends ComponentAnnotation {
@@ -142,25 +145,25 @@ public class EntityMention extends ComponentAnnotation {
    
     
   //*--------------*
-  //* Feature: argumentLink
+  //* Feature: argumentLinks
 
-  /** getter for argumentLink - gets link between this argument and the event mention
+  /** getter for argumentLinks - gets link between this argument and the event mention
    * @generated
    * @return value of the feature 
    */
-  public EventMentionArgumentLink getArgumentLink() {
-    if (EntityMention_Type.featOkTst && ((EntityMention_Type)jcasType).casFeat_argumentLink == null)
-      jcasType.jcas.throwFeatMissing("argumentLink", "edu.cmu.cs.lti.script.type.EntityMention");
-    return (EventMentionArgumentLink)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EntityMention_Type)jcasType).casFeatCode_argumentLink)));}
+  public FSList getArgumentLinks() {
+    if (EntityMention_Type.featOkTst && ((EntityMention_Type)jcasType).casFeat_argumentLinks == null)
+      jcasType.jcas.throwFeatMissing("argumentLinks", "edu.cmu.cs.lti.script.type.EntityMention");
+    return (FSList)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EntityMention_Type)jcasType).casFeatCode_argumentLinks)));}
     
-  /** setter for argumentLink - sets link between this argument and the event mention 
+  /** setter for argumentLinks - sets link between this argument and the event mention 
    * @generated
    * @param v value to set into the feature 
    */
-  public void setArgumentLink(EventMentionArgumentLink v) {
-    if (EntityMention_Type.featOkTst && ((EntityMention_Type)jcasType).casFeat_argumentLink == null)
-      jcasType.jcas.throwFeatMissing("argumentLink", "edu.cmu.cs.lti.script.type.EntityMention");
-    jcasType.ll_cas.ll_setRefValue(addr, ((EntityMention_Type)jcasType).casFeatCode_argumentLink, jcasType.ll_cas.ll_getFSRef(v));}    
+  public void setArgumentLinks(FSList v) {
+    if (EntityMention_Type.featOkTst && ((EntityMention_Type)jcasType).casFeat_argumentLinks == null)
+      jcasType.jcas.throwFeatMissing("argumentLinks", "edu.cmu.cs.lti.script.type.EntityMention");
+    jcasType.ll_cas.ll_setRefValue(addr, ((EntityMention_Type)jcasType).casFeatCode_argumentLinks, jcasType.ll_cas.ll_getFSRef(v));}    
   }
 
     

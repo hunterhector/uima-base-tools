@@ -10,7 +10,7 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** 
- * Updated by JCasGen Wed Oct 15 17:18:58 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:23:21 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class Sentence extends ComponentAnnotation {

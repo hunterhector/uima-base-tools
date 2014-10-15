@@ -11,7 +11,7 @@ import org.apache.uima.jcas.cas.StringList;
 
 
 /** Link between an event mention to its argument (which is an entity mention)
- * Updated by JCasGen Wed Oct 15 17:18:57 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:23:20 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class EventMentionArgumentLink extends ComponentTOP {

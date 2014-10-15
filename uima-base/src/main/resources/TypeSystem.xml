@@ -35,9 +35,10 @@
           <rangeTypeName>edu.cmu.cs.lti.script.type.Entity</rangeTypeName>
         </featureDescription>
       <featureDescription>
-          <name>argumentLink</name>
+          <name>argumentLinks</name>
           <description>link between this argument and the event mention</description>
-          <rangeTypeName>edu.cmu.cs.lti.script.type.EventMentionArgumentLink</rangeTypeName>
+          <rangeTypeName>uima.cas.FSList</rangeTypeName>
+        <elementType>edu.cmu.cs.lti.script.type.EventMentionArgumentLink</elementType>
         </featureDescription>
       </features>
     </typeDescription>
