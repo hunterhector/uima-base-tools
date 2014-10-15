@@ -10,7 +10,7 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** The full context of the event mention
- * Updated by JCasGen Tue Oct 07 22:54:45 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:18:57 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class EventMentionContext extends ComponentAnnotation {

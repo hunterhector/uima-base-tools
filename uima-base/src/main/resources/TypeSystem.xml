@@ -34,6 +34,11 @@
           <description/>
           <rangeTypeName>edu.cmu.cs.lti.script.type.Entity</rangeTypeName>
         </featureDescription>
+      <featureDescription>
+          <name>argumentLink</name>
+          <description>link between this argument and the event mention</description>
+          <rangeTypeName>edu.cmu.cs.lti.script.type.EventMentionArgumentLink</rangeTypeName>
+        </featureDescription>
       </features>
     </typeDescription>
     

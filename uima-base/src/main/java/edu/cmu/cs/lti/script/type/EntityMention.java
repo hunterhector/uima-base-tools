@@ -10,7 +10,7 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** 
- * Updated by JCasGen Tue Oct 07 22:54:45 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:18:57 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class EntityMention extends ComponentAnnotation {
@@ -139,6 +139,28 @@ public class EntityMention extends ComponentAnnotation {
     if (EntityMention_Type.featOkTst && ((EntityMention_Type)jcasType).casFeat_referingEntity == null)
       jcasType.jcas.throwFeatMissing("referingEntity", "edu.cmu.cs.lti.script.type.EntityMention");
     jcasType.ll_cas.ll_setRefValue(addr, ((EntityMention_Type)jcasType).casFeatCode_referingEntity, jcasType.ll_cas.ll_getFSRef(v));}    
+   
+    
+  //*--------------*
+  //* Feature: argumentLink
+
+  /** getter for argumentLink - gets link between this argument and the event mention
+   * @generated
+   * @return value of the feature 
+   */
+  public EventMentionArgumentLink getArgumentLink() {
+    if (EntityMention_Type.featOkTst && ((EntityMention_Type)jcasType).casFeat_argumentLink == null)
+      jcasType.jcas.throwFeatMissing("argumentLink", "edu.cmu.cs.lti.script.type.EntityMention");
+    return (EventMentionArgumentLink)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EntityMention_Type)jcasType).casFeatCode_argumentLink)));}
+    
+  /** setter for argumentLink - sets link between this argument and the event mention 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setArgumentLink(EventMentionArgumentLink v) {
+    if (EntityMention_Type.featOkTst && ((EntityMention_Type)jcasType).casFeat_argumentLink == null)
+      jcasType.jcas.throwFeatMissing("argumentLink", "edu.cmu.cs.lti.script.type.EntityMention");
+    jcasType.ll_cas.ll_setRefValue(addr, ((EntityMention_Type)jcasType).casFeatCode_argumentLink, jcasType.ll_cas.ll_getFSRef(v));}    
   }
 
     

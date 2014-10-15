@@ -14,7 +14,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Tue Oct 07 22:54:45 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:18:58 EDT 2014
  * @generated */
 public class RstTree_Type extends ComponentAnnotation_Type {
   /** @generated 

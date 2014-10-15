@@ -11,7 +11,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** 
- * Updated by JCasGen Tue Oct 07 22:54:45 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:18:58 EDT 2014
  * @generated */
 public class FanseSemanticRelation_Type extends SemanticRelation_Type {
   /** @generated 

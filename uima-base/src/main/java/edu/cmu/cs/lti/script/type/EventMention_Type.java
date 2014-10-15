@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Tue Oct 07 22:54:45 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:18:57 EDT 2014
  * @generated */
 public class EventMention_Type extends ComponentAnnotation_Type {
   /** @generated 

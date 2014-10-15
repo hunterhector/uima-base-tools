@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Tue Oct 07 22:54:45 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:18:57 EDT 2014
  * @generated */
 public class EntityMention_Type extends ComponentAnnotation_Type {
   /** @generated 
@@ -116,6 +116,30 @@ public class EntityMention_Type extends ComponentAnnotation_Type {
     ll_cas.ll_setRefValue(addr, casFeatCode_referingEntity, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_argumentLink;
+  /** @generated */
+  final int     casFeatCode_argumentLink;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public int getArgumentLink(int addr) {
+        if (featOkTst && casFeat_argumentLink == null)
+      jcas.throwFeatMissing("argumentLink", "edu.cmu.cs.lti.script.type.EntityMention");
+    return ll_cas.ll_getRefValue(addr, casFeatCode_argumentLink);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setArgumentLink(int addr, int v) {
+        if (featOkTst && casFeat_argumentLink == null)
+      jcas.throwFeatMissing("argumentLink", "edu.cmu.cs.lti.script.type.EntityMention");
+    ll_cas.ll_setRefValue(addr, casFeatCode_argumentLink, v);}
+    
+  
 
 
 
@@ -139,6 +163,10 @@ public class EntityMention_Type extends ComponentAnnotation_Type {
  
     casFeat_referingEntity = jcas.getRequiredFeatureDE(casType, "referingEntity", "edu.cmu.cs.lti.script.type.Entity", featOkTst);
     casFeatCode_referingEntity  = (null == casFeat_referingEntity) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_referingEntity).getCode();
+
+ 
+    casFeat_argumentLink = jcas.getRequiredFeatureDE(casType, "argumentLink", "edu.cmu.cs.lti.script.type.EventMentionArgumentLink", featOkTst);
+    casFeatCode_argumentLink  = (null == casFeat_argumentLink) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_argumentLink).getCode();
 
   }
 }

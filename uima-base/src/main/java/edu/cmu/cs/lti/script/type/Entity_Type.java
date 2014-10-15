@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** An entity refers to an underlying entity, it might corresponding to multiple entity mentions. It can be viewed that we assign the attributes to each cluster
- * Updated by JCasGen Tue Oct 07 22:54:44 EDT 2014
+ * Updated by JCasGen Wed Oct 15 17:18:57 EDT 2014
  * @generated */
 public class Entity_Type extends ComponentTOP_Type {
   /** @generated 
