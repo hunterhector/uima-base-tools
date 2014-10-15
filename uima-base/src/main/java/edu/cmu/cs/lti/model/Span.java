@@ -1,8 +1,6 @@
 package edu.cmu.cs.lti.model;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
 
 public class Span implements Comparable<Span> {
   private int begin;
@@ -16,6 +14,10 @@ public class Span implements Comparable<Span> {
 
     this.begin = begin;
     this.end = end;
+  }
+
+  public static Span of(int b, int e){
+    return new Span(b,e);
   }
 
   public int getBegin() {

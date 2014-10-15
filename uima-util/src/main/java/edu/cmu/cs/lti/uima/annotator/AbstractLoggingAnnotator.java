@@ -30,8 +30,8 @@ public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase{
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
         keepQuiet = (Boolean) aContext.getConfigParameterValue(PARAM_KEEP_QUIET);
-        //default is quiet
-        keepQuiet = keepQuiet == null ? true : keepQuiet;
+        //default should not be quiet
+        keepQuiet = keepQuiet == null ? false : keepQuiet;
 
         if (keepQuiet) {
             logger.setLevel(Level.SEVERE);
