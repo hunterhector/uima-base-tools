@@ -11,7 +11,7 @@ import org.apache.uima.jcas.cas.FSList;
 
 
 /** 
- * Updated by JCasGen Wed Oct 15 17:23:20 EDT 2014
+ * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class EventMention extends ComponentAnnotation {
@@ -470,6 +470,28 @@ public class EventMention extends ComponentAnnotation {
     if (EventMention_Type.featOkTst && ((EventMention_Type)jcasType).casFeat_frameName == null)
       jcasType.jcas.throwFeatMissing("frameName", "edu.cmu.cs.lti.script.type.EventMention");
     jcasType.ll_cas.ll_setStringValue(addr, ((EventMention_Type)jcasType).casFeatCode_frameName, v);}    
+   
+    
+  //*--------------*
+  //* Feature: goalLinks
+
+  /** getter for goalLinks - gets Link to the goal of this event
+   * @generated
+   * @return value of the feature 
+   */
+  public FSList getGoalLinks() {
+    if (EventMention_Type.featOkTst && ((EventMention_Type)jcasType).casFeat_goalLinks == null)
+      jcasType.jcas.throwFeatMissing("goalLinks", "edu.cmu.cs.lti.script.type.EventMention");
+    return (FSList)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EventMention_Type)jcasType).casFeatCode_goalLinks)));}
+    
+  /** setter for goalLinks - sets Link to the goal of this event 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setGoalLinks(FSList v) {
+    if (EventMention_Type.featOkTst && ((EventMention_Type)jcasType).casFeat_goalLinks == null)
+      jcasType.jcas.throwFeatMissing("goalLinks", "edu.cmu.cs.lti.script.type.EventMention");
+    jcasType.ll_cas.ll_setRefValue(addr, ((EventMention_Type)jcasType).casFeatCode_goalLinks, jcasType.ll_cas.ll_getFSRef(v));}    
   }
 
     

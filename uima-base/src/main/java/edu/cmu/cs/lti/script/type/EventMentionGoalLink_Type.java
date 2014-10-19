@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Mon Sep 15 15:04:26 EDT 2014 */
+/* First created by JCasGen Fri Oct 17 16:20:36 EDT 2014 */
 package edu.cmu.cs.lti.script.type;
 
 import org.apache.uima.jcas.JCas;
@@ -15,7 +15,7 @@ import org.apache.uima.cas.Feature;
 /** 
  * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
  * @generated */
-public class EntityBasedComponentLink_Type extends ComponentTOP_Type {
+public class EventMentionGoalLink_Type extends ComponentTOP_Type {
   /** @generated 
    * @return the generator for this type
    */
@@ -25,25 +25,25 @@ public class EntityBasedComponentLink_Type extends ComponentTOP_Type {
   private final FSGenerator fsGenerator = 
     new FSGenerator() {
       public FeatureStructure createFS(int addr, CASImpl cas) {
-  			 if (EntityBasedComponentLink_Type.this.useExistingInstance) {
+  			 if (EventMentionGoalLink_Type.this.useExistingInstance) {
   			   // Return eq fs instance if already created
-  		     FeatureStructure fs = EntityBasedComponentLink_Type.this.jcas.getJfsFromCaddr(addr);
+  		     FeatureStructure fs = EventMentionGoalLink_Type.this.jcas.getJfsFromCaddr(addr);
   		     if (null == fs) {
-  		       fs = new EntityBasedComponentLink(addr, EntityBasedComponentLink_Type.this);
-  			   EntityBasedComponentLink_Type.this.jcas.putJfsFromCaddr(addr, fs);
+  		       fs = new EventMentionGoalLink(addr, EventMentionGoalLink_Type.this);
+  			   EventMentionGoalLink_Type.this.jcas.putJfsFromCaddr(addr, fs);
   			   return fs;
   		     }
   		     return fs;
-        } else return new EntityBasedComponentLink(addr, EntityBasedComponentLink_Type.this);
+        } else return new EventMentionGoalLink(addr, EventMentionGoalLink_Type.this);
   	  }
     };
   /** @generated */
   @SuppressWarnings ("hiding")
-  public final static int typeIndexID = EntityBasedComponentLink.typeIndexID;
+  public final static int typeIndexID = EventMentionGoalLink.typeIndexID;
   /** @generated 
      @modifiable */
   @SuppressWarnings ("hiding")
-  public final static boolean featOkTst = JCasRegistry.getFeatOkTst("edu.cmu.cs.lti.script.type.EntityBasedComponentLink");
+  public final static boolean featOkTst = JCasRegistry.getFeatOkTst("edu.cmu.cs.lti.script.type.EventMentionGoalLink");
  
   /** @generated */
   final Feature casFeat_eventMention;
@@ -55,7 +55,7 @@ public class EntityBasedComponentLink_Type extends ComponentTOP_Type {
    */ 
   public int getEventMention(int addr) {
         if (featOkTst && casFeat_eventMention == null)
-      jcas.throwFeatMissing("eventMention", "edu.cmu.cs.lti.script.type.EntityBasedComponentLink");
+      jcas.throwFeatMissing("eventMention", "edu.cmu.cs.lti.script.type.EventMentionGoalLink");
     return ll_cas.ll_getRefValue(addr, casFeatCode_eventMention);
   }
   /** @generated
@@ -64,32 +64,32 @@ public class EntityBasedComponentLink_Type extends ComponentTOP_Type {
    */    
   public void setEventMention(int addr, int v) {
         if (featOkTst && casFeat_eventMention == null)
-      jcas.throwFeatMissing("eventMention", "edu.cmu.cs.lti.script.type.EntityBasedComponentLink");
+      jcas.throwFeatMissing("eventMention", "edu.cmu.cs.lti.script.type.EventMentionGoalLink");
     ll_cas.ll_setRefValue(addr, casFeatCode_eventMention, v);}
     
   
  
   /** @generated */
-  final Feature casFeat_argument;
+  final Feature casFeat_goalMention;
   /** @generated */
-  final int     casFeatCode_argument;
+  final int     casFeatCode_goalMention;
   /** @generated
    * @param addr low level Feature Structure reference
    * @return the feature value 
    */ 
-  public int getArgument(int addr) {
-        if (featOkTst && casFeat_argument == null)
-      jcas.throwFeatMissing("argument", "edu.cmu.cs.lti.script.type.EntityBasedComponentLink");
-    return ll_cas.ll_getRefValue(addr, casFeatCode_argument);
+  public int getGoalMention(int addr) {
+        if (featOkTst && casFeat_goalMention == null)
+      jcas.throwFeatMissing("goalMention", "edu.cmu.cs.lti.script.type.EventMentionGoalLink");
+    return ll_cas.ll_getRefValue(addr, casFeatCode_goalMention);
   }
   /** @generated
    * @param addr low level Feature Structure reference
    * @param v value to set 
    */    
-  public void setArgument(int addr, int v) {
-        if (featOkTst && casFeat_argument == null)
-      jcas.throwFeatMissing("argument", "edu.cmu.cs.lti.script.type.EntityBasedComponentLink");
-    ll_cas.ll_setRefValue(addr, casFeatCode_argument, v);}
+  public void setGoalMention(int addr, int v) {
+        if (featOkTst && casFeat_goalMention == null)
+      jcas.throwFeatMissing("goalMention", "edu.cmu.cs.lti.script.type.EventMentionGoalLink");
+    ll_cas.ll_setRefValue(addr, casFeatCode_goalMention, v);}
     
   
 
@@ -100,7 +100,7 @@ public class EntityBasedComponentLink_Type extends ComponentTOP_Type {
 	 * @param jcas JCas
 	 * @param casType Type 
 	 */
-  public EntityBasedComponentLink_Type(JCas jcas, Type casType) {
+  public EventMentionGoalLink_Type(JCas jcas, Type casType) {
     super(jcas, casType);
     casImpl.getFSClassRegistry().addGeneratorForType((TypeImpl)this.casType, getFSGenerator());
 
@@ -109,8 +109,8 @@ public class EntityBasedComponentLink_Type extends ComponentTOP_Type {
     casFeatCode_eventMention  = (null == casFeat_eventMention) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_eventMention).getCode();
 
  
-    casFeat_argument = jcas.getRequiredFeatureDE(casType, "argument", "edu.cmu.cs.lti.script.type.EntityBasedComponent", featOkTst);
-    casFeatCode_argument  = (null == casFeat_argument) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_argument).getCode();
+    casFeat_goalMention = jcas.getRequiredFeatureDE(casType, "goalMention", "edu.cmu.cs.lti.script.type.GoalMention", featOkTst);
+    casFeatCode_goalMention  = (null == casFeat_goalMention) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_goalMention).getCode();
 
   }
 }

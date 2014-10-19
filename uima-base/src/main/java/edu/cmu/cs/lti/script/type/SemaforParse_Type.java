@@ -14,7 +14,7 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Wed Oct 15 17:23:21 EDT 2014
+ * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
  * @generated */
 public class SemaforParse_Type extends Annotation_Type {
   /** @generated 

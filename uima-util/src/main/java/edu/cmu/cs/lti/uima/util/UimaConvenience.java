@@ -392,11 +392,10 @@ public class UimaConvenience extends BasicConvenience {
 
 
     /**
-     *
      * @param aJCas
      * @param clazz
      * @param cond
-     * @param <T> extends TOP
+     * @param <T>   extends TOP
      * @return
      */
     public static <T extends TOP> List<T> getAnnotationListWithFilter(JCas aJCas, final Class<T> clazz, AnnotationCondition cond) {
@@ -702,7 +701,18 @@ public class UimaConvenience extends BasicConvenience {
         return false;
     }
 
+    /**
+     *
+     * @param fslist
+     * @param clazz
+     * @param <T>
+     * @return A list of the annotations, will return empty list if the FSList is null
+     */
     public static <T extends TOP> List<T> convertFSListToList(FSList fslist, Class<T> clazz) {
+        if (fslist == null) {
+            return new ArrayList<T>();
+        }
+
         return new ArrayList<T>(FSCollectionFactory.create(fslist, clazz));
     }
 

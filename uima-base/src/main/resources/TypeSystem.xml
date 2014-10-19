@@ -473,6 +473,12 @@
           <description>The frame name an event evoke (it is still questionable whether we should put this attribute here)</description>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
+      <featureDescription>
+          <name>goalLinks</name>
+          <description>Link to the goal of this event</description>
+          <rangeTypeName>uima.cas.FSList</rangeTypeName>
+          <elementType>edu.cmu.cs.lti.script.type.EventMentionGoalLink</elementType>
+        </featureDescription>
       </features>
     </typeDescription>
     <typeDescription>
@@ -1111,6 +1117,41 @@
           <name>isTerminal</name>
           <description/>
           <rangeTypeName>uima.cas.Boolean</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+  <typeDescription>
+      <name>edu.cmu.cs.lti.script.type.GoalMention</name>
+      <description>annotate a goal mention in text,  of a certain event mention. For example, "He work hard to get higher grade.", the mention "get higher grade" is the goal.</description>
+      <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+      <features>
+        <featureDescription>
+          <name>eventMentionLinks</name>
+          <description/>
+          <rangeTypeName>uima.cas.FSList</rangeTypeName>
+          <elementType>edu.cmu.cs.lti.script.type.EventMentionGoalLink</elementType>
+        </featureDescription>
+        <featureDescription>
+          <name>head</name>
+          <description>Head word of this goal</description>
+          <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>edu.cmu.cs.lti.script.type.EventMentionGoalLink</name>
+      <description/>
+      <supertypeName>edu.cmu.cs.lti.script.type.ComponentTOP</supertypeName>
+      <features>
+        <featureDescription>
+          <name>eventMention</name>
+          <description/>
+          <rangeTypeName>edu.cmu.cs.lti.script.type.EventMention</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>goalMention</name>
+          <description/>
+          <rangeTypeName>edu.cmu.cs.lti.script.type.GoalMention</rangeTypeName>
         </featureDescription>
       </features>
     </typeDescription>

@@ -11,7 +11,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** 
- * Updated by JCasGen Wed Oct 15 17:23:21 EDT 2014
+ * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
  * @generated */
 public class StanfordCorenlpToken_Type extends Word_Type {
   /** @generated 

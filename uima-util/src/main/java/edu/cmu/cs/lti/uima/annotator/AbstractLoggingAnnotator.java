@@ -16,7 +16,7 @@ import java.util.logging.Logger;
  * Date: 10/7/14
  * Time: 1:45 PM
  */
-public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase{
+public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase {
     public static final String PARAM_KEEP_QUIET = "kee_quiet";
 
     private String className = this.getClass().getName();
@@ -29,18 +29,19 @@ public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase{
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
+
         keepQuiet = (Boolean) aContext.getConfigParameterValue(PARAM_KEEP_QUIET);
         //default should not be quiet
         keepQuiet = keepQuiet == null ? false : keepQuiet;
 
         if (keepQuiet) {
             logger.setLevel(Level.SEVERE);
-        }else{
+        } else {
             logger.setLevel(Level.INFO);
         }
     }
 
-    protected String progressInfo(JCas aJCas){
+    protected String progressInfo(JCas aJCas) {
         return "Processing " + UimaConvenience.getShortDocumentNameWithOffset(aJCas);
     }
 }

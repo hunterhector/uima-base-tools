@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Wed Oct 15 17:23:20 EDT 2014
+ * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
  * @generated */
 public class EventMention_Type extends ComponentAnnotation_Type {
   /** @generated 
@@ -476,6 +476,30 @@ public class EventMention_Type extends ComponentAnnotation_Type {
     ll_cas.ll_setStringValue(addr, casFeatCode_frameName, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_goalLinks;
+  /** @generated */
+  final int     casFeatCode_goalLinks;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public int getGoalLinks(int addr) {
+        if (featOkTst && casFeat_goalLinks == null)
+      jcas.throwFeatMissing("goalLinks", "edu.cmu.cs.lti.script.type.EventMention");
+    return ll_cas.ll_getRefValue(addr, casFeatCode_goalLinks);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setGoalLinks(int addr, int v) {
+        if (featOkTst && casFeat_goalLinks == null)
+      jcas.throwFeatMissing("goalLinks", "edu.cmu.cs.lti.script.type.EventMention");
+    ll_cas.ll_setRefValue(addr, casFeatCode_goalLinks, v);}
+    
+  
 
 
 
@@ -559,6 +583,10 @@ public class EventMention_Type extends ComponentAnnotation_Type {
  
     casFeat_frameName = jcas.getRequiredFeatureDE(casType, "frameName", "uima.cas.String", featOkTst);
     casFeatCode_frameName  = (null == casFeat_frameName) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_frameName).getCode();
+
+ 
+    casFeat_goalLinks = jcas.getRequiredFeatureDE(casType, "goalLinks", "uima.cas.FSList", featOkTst);
+    casFeatCode_goalLinks  = (null == casFeat_goalLinks) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_goalLinks).getCode();
 
   }
 }
