@@ -23,7 +23,7 @@ public class GzippedXmiCollectionReader extends AbstractDirReader {
 
     public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
 
-    private static final String DEFAULT_FILE_SUFFIX = ".xmi";
+    private static final String DEFAULT_FILE_SUFFIX = ".xmi.gz";
 
     private String inputViewName;
 
