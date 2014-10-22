@@ -19,7 +19,7 @@ import java.util.zip.GZIPInputStream;
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
  */
-public class StepBasedDirGzippedXmiCollectionReader extends AbstractStepBasedDirReader {
+public class GzippedXmiCollectionReader extends AbstractDirReader {
 
     public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
 
@@ -63,7 +63,11 @@ public class StepBasedDirGzippedXmiCollectionReader extends AbstractStepBasedDir
     public void subInitialize() {
     }
 
-  
+    @Override
+    protected String getDefaultFileSuffix() {
+        return DEFAULT_FILE_SUFFIX;
+    }
+
     /**
      * @see org.apache.uima.collection.CollectionReader#hasNext()
      */

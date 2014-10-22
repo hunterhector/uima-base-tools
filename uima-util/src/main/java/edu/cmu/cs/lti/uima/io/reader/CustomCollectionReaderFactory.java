@@ -21,14 +21,13 @@ public class CustomCollectionReaderFactory {
                                                               String baseInputDirName, Integer stepNumber, Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+
+        return CollectionReaderFactory.createReaderDescription(
                 StepBasedDirXmiCollectionReader.class,
                 StepBasedDirXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
                 StepBasedDirXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
                 StepBasedDirXmiCollectionReader.PARAM_INPUT_STEP_NUMBER, stepNumber,
                 StepBasedDirXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
-
-        return reader;
     }
 
     /**
@@ -48,49 +47,56 @@ public class CustomCollectionReaderFactory {
             String baseInputDirName, Integer stepNumber, Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+        return CollectionReaderFactory.createReaderDescription(
                 XmiCollectionReader.class, typeSystemDescription,
                 XmiCollectionReader.PARAM_PARENT_INPUT_DIR, parentInputDirName,
                 XmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
                 XmiCollectionReader.PARAM_STEP_NUMBER, stepNumber,
                 XmiCollectionReader.PARAM_FAILUNKNOWN, failOnUnkown);
-        return reader;
     }
 
     public static CollectionReaderDescription createTimeSortedXmiReader(
             TypeSystemDescription typeSystemDescription, String inputDirName, Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+        return CollectionReaderFactory.createReaderDescription(
                 OffsetSortedXmiCollectionReader.class, typeSystemDescription,
                 OffsetSortedXmiCollectionReader.PARAM_INPUTDIR, inputDirName,
                 OffsetSortedXmiCollectionReader.PARAM_FAILUNKNOWN, failOnUnkown);
-        return reader;
     }
 
     /**
      * Create a gzipped XMI reader assuming the directory naming convention.
      *
-     * @param parentInputDirName
-     * @param baseInputDirName
-     * @param stepNumber
      * @param failOnUnkown
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createGzippedXmiReader(String parentInputDirName,
-                                                                     String baseInputDirName, Integer stepNumber, Boolean failOnUnkown)
+    public static CollectionReaderDescription createGzippedXmiReader(String inputDirName, Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
-                StepBasedDirGzippedXmiCollectionReader.class,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_INPUT_STEP_NUMBER, stepNumber,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
-
-        return reader;
+        return CollectionReaderFactory.createReaderDescription(
+                GzippedXmiCollectionReader.class,
+                GzippedXmiCollectionReader.PARAM_INPUTDIR, inputDirName,
+                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
     }
+
+    /**
+     * Create a gzipped XMI reader assuming the directory naming convention.
+     *
+     * @param failOnUnkown
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createGzippedXmiReader(TypeSystemDescription typeSystemDescription, String inputDirName, Boolean failOnUnkown)
+            throws ResourceInitializationException {
+        // Instantiate a collection reader to get XMI as input.
+        return CollectionReaderFactory.createReaderDescription(
+                GzippedXmiCollectionReader.class, typeSystemDescription,
+                GzippedXmiCollectionReader.PARAM_INPUTDIR, inputDirName,
+                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
+    }
+
 
     /**
      * Create a gzipped XMI reader, with specified type system. Assuming the directory naming
@@ -104,23 +110,23 @@ public class CustomCollectionReaderFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createGzippedXmiReader(
+    public static CollectionReaderDescription createStepBasedGzippedXmiReader(
             TypeSystemDescription typeSystemDescription, String parentInputDirName,
             String baseInputDirName, Integer stepNumber, Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+
+        return CollectionReaderFactory.createReaderDescription(
                 StepBasedDirGzippedXmiCollectionReader.class, typeSystemDescription,
                 StepBasedDirGzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
                 StepBasedDirGzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
                 StepBasedDirGzippedXmiCollectionReader.PARAM_INPUT_STEP_NUMBER, stepNumber,
                 StepBasedDirGzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
-
-        return reader;
     }
 
+
     /**
-     * Creates a Gzipped XMI reader assuming the directory naming convention
+     * Create a gzipped XMI reader assuming the directory naming convention.
      *
      * @param parentInputDirName
      * @param baseInputDirName
@@ -129,55 +135,28 @@ public class CustomCollectionReaderFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createGzipXmiReader(String parentInputDirName,
-                                                                  String baseInputDirName, Integer stepNumber, Boolean failOnUnkown)
+    public static CollectionReaderDescription createStepBasedGzippedXmiReader(String parentInputDirName,
+                                                                              String baseInputDirName, Integer stepNumber, Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+
+        return CollectionReaderFactory.createReaderDescription(
                 StepBasedDirGzippedXmiCollectionReader.class,
                 StepBasedDirGzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
                 StepBasedDirGzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
                 StepBasedDirGzippedXmiCollectionReader.PARAM_INPUT_STEP_NUMBER, stepNumber,
                 StepBasedDirGzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
-
-        return reader;
-    }
-
-    /**
-     * Creates a Gzipped XMI reader assuming the directory naming convention
-     *
-     * @param parentInputDirName
-     * @param baseInputDirName
-     * @param stepNumber
-     * @param failOnUnkown
-     * @return
-     * @throws ResourceInitializationException
-     */
-    public static CollectionReaderDescription createGzipXmiReader(
-            TypeSystemDescription typeSystemDescription, String parentInputDirName,
-            String baseInputDirName, Integer stepNumber, Boolean failOnUnkown)
-            throws ResourceInitializationException {
-        // Instantiate a collection reader to get XMI as input.
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
-                StepBasedDirGzippedXmiCollectionReader.class, typeSystemDescription,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_INPUT_STEP_NUMBER, stepNumber,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
-
-        return reader;
     }
 
     public static CollectionReaderDescription createTimeSortedGzipXmiReader(
             TypeSystemDescription typeSystemDescription, String inputDirName, Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+
+        return CollectionReaderFactory.createReaderDescription(
                 OffsetSortedGzippedXmiCollectionReader.class, typeSystemDescription,
                 OffsetSortedGzippedXmiCollectionReader.PARAM_INPUTDIR, inputDirName,
                 OffsetSortedGzippedXmiCollectionReader.PARAM_FAILUNKNOWN, failOnUnkown);
-
-        return reader;
     }
 
 
@@ -194,25 +173,23 @@ public class CustomCollectionReaderFactory {
                                                                     String parentInputDirName, String encoding, String[] textSuffix)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get plain text as input.
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+        return CollectionReaderFactory.createReaderDescription(
                 PlainTextCollectionReader.class, PlainTextCollectionReader.PARAM_INPUT_VIEW_NAME,
                 inputViewName, PlainTextCollectionReader.PARAM_INPUTDIR, parentInputDirName,
                 PlainTextCollectionReader.PARAM_ENCODING, encoding,
                 PlainTextCollectionReader.PARAM_TEXT_SUFFIX, textSuffix);
-        return reader;
     }
 
     public static CollectionReaderDescription createPlainTextReader(String inputViewName,
                                                                     String[] srcDocInfoViewNames, String parentInputDirName, String encoding,
                                                                     String[] textSuffix) throws ResourceInitializationException {
         // Instantiate a collection reader to get plain text as input.
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+        return CollectionReaderFactory.createReaderDescription(
                 PlainTextCollectionReader.class, PlainTextCollectionReader.PARAM_INPUT_VIEW_NAME,
                 inputViewName, PlainTextCollectionReader.PARAM_SRC_DOC_INFO_VIEW_NAMES,
                 srcDocInfoViewNames, PlainTextCollectionReader.PARAM_INPUTDIR, parentInputDirName,
                 PlainTextCollectionReader.PARAM_ENCODING, encoding,
                 PlainTextCollectionReader.PARAM_TEXT_SUFFIX, textSuffix);
-        return reader;
     }
 
 }
