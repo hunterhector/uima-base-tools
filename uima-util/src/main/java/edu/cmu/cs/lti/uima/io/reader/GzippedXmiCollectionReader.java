@@ -26,7 +26,7 @@ public class GzippedXmiCollectionReader extends AbstractDirReader {
 
     public static final String PARAM_RECURSIVE = "recursive";
 
-    private static final String DEFAULT_FILE_SUFFIX = ".xmi.gz";
+    private static final String DEFAULT_FILE_SUFFIX = "xmi.gz";
 
     private String inputViewName;
 
@@ -54,6 +54,7 @@ public class GzippedXmiCollectionReader extends AbstractDirReader {
         String[] exts = new String[1];
         exts[0] = inputFileSuffix;
 
+        logger.info("Looking for files in " + inputDir + " with recursive set to " + recursive);
         xmiFiles = new ArrayList<>(FileUtils.listFiles(inputDir, exts, recursive));
 
 //        File[] files = inputDir.listFiles();
