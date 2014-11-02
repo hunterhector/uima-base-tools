@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
@@ -23,6 +24,8 @@ public class GzippedXmiCollectionReader extends AbstractDirReader {
 
     public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
 
+    public static final String PARAM_RECURSIVE = "recursive";
+
     private static final String DEFAULT_FILE_SUFFIX = ".xmi.gz";
 
     private String inputViewName;
@@ -42,14 +45,23 @@ public class GzippedXmiCollectionReader extends AbstractDirReader {
             inputFileSuffix = DEFAULT_FILE_SUFFIX;
         }
 
-        // Get a list of XMI files in the specified directory
-        xmiFiles = new ArrayList<>();
-        File[] files = inputDir.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {
-                xmiFiles.add(files[i]);
-            }
+        Boolean recursive = (Boolean) getConfigParameterValue(PARAM_RECURSIVE);
+        if (recursive == null) {
+            recursive = false;
         }
+
+        // Get a list of XMI files in the specified directory
+        String[] exts = new String[1];
+        exts[0] = inputFileSuffix;
+
+        xmiFiles = new ArrayList<>(FileUtils.listFiles(inputDir, exts, recursive));
+
+//        File[] files = inputDir.listFiles();
+//        for (int i = 0; i < files.length; i++) {
+//            if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {
+//                xmiFiles.add(files[i]);
+//            }
+//        }
 
         if (xmiFiles.size() == 0) {
             logger.warn("The directory " + inputDir.getAbsolutePath()

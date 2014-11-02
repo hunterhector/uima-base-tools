@@ -97,6 +97,23 @@ public class CustomCollectionReaderFactory {
                 GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
     }
 
+    /**
+     * Create a gzipped XMI reader assuming the directory naming convention.
+     *
+     * @param failOnUnkown
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createRecursiveGzippedXmiReader(TypeSystemDescription typeSystemDescription, String inputDirName, Boolean failOnUnkown)
+            throws ResourceInitializationException {
+        // Instantiate a collection reader to get XMI as input.
+        return CollectionReaderFactory.createReaderDescription(
+                GzippedXmiCollectionReader.class, typeSystemDescription,
+                GzippedXmiCollectionReader.PARAM_INPUTDIR, inputDirName,
+                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown,
+                GzippedXmiCollectionReader.PARAM_RECURSIVE, true);
+    }
+
 
     /**
      * Create a gzipped XMI reader, with specified type system. Assuming the directory naming
