@@ -702,7 +702,6 @@ public class UimaConvenience extends BasicConvenience {
     }
 
     /**
-     *
      * @param fslist
      * @param clazz
      * @param <T>
@@ -744,4 +743,14 @@ public class UimaConvenience extends BasicConvenience {
         }
         return FilenameUtils.getBaseName(srcDocInfo.getUri()) + "_" + srcDocInfo.getOffsetInSource();
     }
+
+    public static int getOffsetInSource(JCas aJCas) {
+        SourceDocumentInformation srcDocInfo = JCasUtil.selectSingle(aJCas,
+                SourceDocumentInformation.class);
+        if (srcDocInfo == null) {
+            return -1;
+        }
+        return srcDocInfo.getOffsetInSource();
+    }
+
 }
