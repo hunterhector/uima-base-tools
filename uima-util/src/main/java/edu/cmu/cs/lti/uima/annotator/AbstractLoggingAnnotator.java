@@ -7,6 +7,8 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import java.io.IOException;
+import java.util.logging.FileHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,7 +19,9 @@ import java.util.logging.Logger;
  * Time: 1:45 PM
  */
 public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase {
-    public static final String PARAM_KEEP_QUIET = "kee_quiet";
+    public static final String PARAM_KEEP_QUIET = "keepQuiet";
+
+    public static final String PARAM_LOGGING_OUT_FILE = "loggingOutFile";
 
     private String className = this.getClass().getName();
 
@@ -26,11 +30,17 @@ public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase {
     @ConfigurationParameter(name = PARAM_KEEP_QUIET, mandatory = false)
     private Boolean keepQuiet;
 
+    @ConfigurationParameter(name = PARAM_LOGGING_OUT_FILE, mandatory = false)
+    private String loggingFileName;
+
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
 
         keepQuiet = (Boolean) aContext.getConfigParameterValue(PARAM_KEEP_QUIET);
+
+        loggingFileName = (String) aContext.getConfigParameterValue(PARAM_LOGGING_OUT_FILE);
+
         //default should not be quiet
         keepQuiet = keepQuiet == null ? false : keepQuiet;
 
@@ -38,6 +48,14 @@ public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase {
             logger.setLevel(Level.SEVERE);
         } else {
             logger.setLevel(Level.INFO);
+        }
+
+        if (loggingFileName != null) {
+            try {
+                logger.addHandler(new FileHandler(loggingFileName));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
