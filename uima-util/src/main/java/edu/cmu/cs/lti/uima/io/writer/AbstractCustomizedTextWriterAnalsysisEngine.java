@@ -14,7 +14,6 @@ import org.apache.uima.resource.ResourceInitializationException;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -90,36 +89,36 @@ public abstract class AbstractCustomizedTextWriterAnalsysisEngine extends Abstra
             sourceDocumentView = aJCas;
         }
 
-        // Retrieve the filename of the input file from the CAS.
-        File outFile = null;
+        String text = getTextToPrint(aJCas);
 
-        SourceDocumentInformation fileLoc = JCasUtil.selectSingle(sourceDocumentView,
-                SourceDocumentInformation.class);
+        if (text != null) {
+            // Retrieve the filename of the input file from the CAS.
+            File outFile = null;
 
-        File inFile;
-        try {
-            inFile = new File(new URL(fileLoc.getUri()).getPath());
-            String outFileName = inFile.getName();
-            if (fileLoc.getOffsetInSource() > 0) {
-                outFileName += ("_" + fileLoc.getOffsetInSource());
-            }
-            if (outputFileSuffix != null && outputFileSuffix.length() > 0) {
-                outFileName += outputFileSuffix;
-            } else {
-                String defaultOutputFileSuffix = ".txt";
-                if (!outFileName.endsWith(defaultOutputFileSuffix)) {
-                    outFileName += defaultOutputFileSuffix;
+            SourceDocumentInformation fileLoc = JCasUtil.selectSingle(sourceDocumentView,
+                    SourceDocumentInformation.class);
+            File inFile;
+            try {
+                inFile = new File(new URL(fileLoc.getUri()).getPath());
+                String outFileName = inFile.getName();
+                if (fileLoc.getOffsetInSource() > 0) {
+                    outFileName += ("_" + fileLoc.getOffsetInSource());
                 }
+                if (outputFileSuffix != null && outputFileSuffix.length() > 0) {
+                    outFileName += outputFileSuffix;
+                } else {
+                    String defaultOutputFileSuffix = ".txt";
+                    if (!outFileName.endsWith(defaultOutputFileSuffix)) {
+                        outFileName += defaultOutputFileSuffix;
+                    }
+                }
+                outFile = new File(outputDir, outFileName);
+
+
+                FileUtils.write(outFile, text);
+            } catch (IOException e) {
+                throw new AnalysisEngineProcessException(e);
             }
-            outFile = new File(outputDir, outFileName);
-
-            String text = getTextToPrint(aJCas);
-
-            FileUtils.write(outFile, text);
-        } catch (MalformedURLException e) {
-            throw new AnalysisEngineProcessException(e);
-        } catch (IOException e) {
-            throw new AnalysisEngineProcessException(e);
         }
     }
 
