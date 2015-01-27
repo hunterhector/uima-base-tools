@@ -13,12 +13,13 @@ import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.*;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
-import edu.stanford.nlp.ling.Word;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
+import edu.stanford.nlp.trees.HeadFinder;
+import edu.stanford.nlp.trees.SemanticHeadFinder;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
@@ -53,6 +54,8 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     private StanfordCoreNLP pipeline;
 
     private final static String PARSE_TREE_ROOT_NODE_LABEL = "ROOT";
+
+    SemanticHeadFinder hf = new SemanticHeadFinder();
 
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
@@ -142,7 +145,8 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
             // The following deals with tree annotation
             Tree tree = sentAnno.get(TreeAnnotation.class);
-            addPennTreeAnnotation(tree, aJCas, null, textOffset);
+
+            addPennTreeAnnotation(aJCas, tree, null, null, textOffset, hf);
 
             // the following add the collapsed cc processed dependencies of each
             // sentence into CAS
@@ -287,8 +291,26 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         }
     }
 
-    private StanfordTreeAnnotation addPennTreeAnnotation(Tree currentNode, JCas aJCas, StanfordTreeAnnotation parent, int textOffset) {
+    public static StanfordTreeAnnotation addPennTreeAnnotation(JCas aJCas, Tree currentNode, Tree parentNode,
+                                                               StanfordTreeAnnotation parent, int textOffset, HeadFinder hf) {
         StanfordTreeAnnotation treeAnno = new StanfordTreeAnnotation(aJCas);
+        Tree headLeaf = currentNode.headTerminal(hf, parentNode);
+
+        if (headLeaf != null) {
+            List<edu.stanford.nlp.ling.Word> words = headLeaf.yieldWords();
+            int leafBegin = words.get(0).beginPosition() + textOffset;
+            int leafEnd = words.get(words.size() - 1).endPosition() + textOffset;
+
+            List<StanfordCorenlpToken> leafNodes = org.apache.uima.fit.util.JCasUtil.selectCovered(aJCas,
+                    StanfordCorenlpToken.class, leafBegin, leafEnd);
+
+            if (leafNodes.size() != 1) {
+                System.out.println("Incorrect leave span " + leafBegin + " " + leafEnd);
+            } else {
+                treeAnno.setHead(leafNodes.get(0));
+            }
+
+        }
 
         if (!currentNode.isLeaf()) {
             int thisBegin = 0;
@@ -299,7 +321,8 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
             List<StanfordTreeAnnotation> childrenList = new ArrayList<StanfordTreeAnnotation>();
             for (Tree child : currentNode.children()) {
-                StanfordTreeAnnotation childTree = addPennTreeAnnotation(child, aJCas, treeAnno, textOffset);
+                StanfordTreeAnnotation childTree = addPennTreeAnnotation(aJCas, child, currentNode,
+                        treeAnno, textOffset, hf);
                 childrenList.add(childTree);
                 if (count == 0) {
                     thisBegin = childTree.getBegin();
@@ -320,20 +343,23 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             treeAnno.setEnd(thisEnd + textOffset);
             treeAnno.setPennTreeLabel(currentNodeLabel);
             treeAnno.setParent(parent);
-
             treeAnno.setChildren(UimaConvenience.makeFsArray(childrenList, aJCas));
             treeAnno.setIsLeaf(false);
-            UimaAnnotationUtils.finishAnnotation(treeAnno, ANNOTATOR_COMPONENT_ID, 0, aJCas);
+            treeAnno.setComponentId(ANNOTATOR_COMPONENT_ID);
+            treeAnno.addToIndexes(aJCas);
             return treeAnno;
         } else {
-            List<Word> words = currentNode.yieldWords();
+            ArrayList<edu.stanford.nlp.ling.Word> words = currentNode.yieldWords();
             StanfordTreeAnnotation leafTree = new StanfordTreeAnnotation(aJCas);
             leafTree.setBegin(words.get(0).beginPosition() + textOffset);
             leafTree.setEnd(words.get(words.size() - 1).endPosition() + textOffset);
             leafTree.setPennTreeLabel(currentNode.value());
             leafTree.setIsLeaf(true);
-            UimaAnnotationUtils.finishAnnotation(leafTree, ANNOTATOR_COMPONENT_ID, 0, aJCas);
+            leafTree.setComponentId(ANNOTATOR_COMPONENT_ID);
+            leafTree.addToIndexes(aJCas);
+
             return leafTree;
         }
     }
+
 }

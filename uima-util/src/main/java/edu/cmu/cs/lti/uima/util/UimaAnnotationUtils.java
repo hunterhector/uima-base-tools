@@ -1,9 +1,6 @@
 package edu.cmu.cs.lti.uima.util;
 
-import edu.cmu.cs.lti.script.type.ComponentAnnotation;
-import edu.cmu.cs.lti.script.type.ComponentTOP;
-import edu.cmu.cs.lti.script.type.Entity;
-import edu.cmu.cs.lti.script.type.EntityMention;
+import edu.cmu.cs.lti.script.type.*;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
@@ -112,4 +109,33 @@ public class UimaAnnotationUtils {
 
         m.removeFromIndexes(aJCas);
     }
+
+
+    /**
+     * Required all tree annotation annotated with a head.
+     *
+     * @param aJCas
+     * @param anno
+     * @return
+     */
+    public static StanfordCorenlpToken findHeadFromTreeAnnotation(JCas aJCas, Annotation anno) {
+        StanfordTreeAnnotation largestContainingTree = null;
+
+        for (StanfordTreeAnnotation tree : JCasUtil.selectCovered(aJCas, StanfordTreeAnnotation.class,
+                anno)) {
+            if (tree.getIsLeaf()) {
+                continue;
+            }
+
+            if (largestContainingTree == null) {
+                largestContainingTree = tree;
+            } else if (largestContainingTree.getEnd() - largestContainingTree.getBegin() < tree.getEnd()
+                    - tree.getBegin()) {
+
+            }
+        }
+        return largestContainingTree.getHead();
+    }
+
+
 }
