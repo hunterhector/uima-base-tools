@@ -3,6 +3,7 @@ package edu.cmu.cs.lti.annotators;
 import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
+import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -28,6 +29,8 @@ import java.util.Map;
 public class FanseAnnotator extends AbstractLoggingAnnotator {
 
     public static final String PARAM_MODEL_BASE_DIR = "modelBaseDirectory";
+
+    public static final String COMPONENT_ID = FanseAnnotator.class.getSimpleName();
 
     @ConfigurationParameter(name = PARAM_MODEL_BASE_DIR, mandatory = true)
     private String modelBaseDir;
@@ -90,7 +93,7 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
             // get Token annotation and convert them to UIMA
             Map<Token, FanseToken> Fanse2UimaMap = new HashMap<Token, FanseToken>();
             // Id starts from 1 is confusing, but I started it, better not change it.
-            int tokenId = 1;
+            int tokenId = 0;
             for (Token token : resultTokens) {
                 Word goldStandardToken = wordList.get(token.getIndex() - 1);
                 String fTokenStr = token.getText();
@@ -103,11 +106,10 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                 int begin = goldStandardToken.getBegin();
                 int end = goldStandardToken.getEnd();
                 FanseToken fToken = new FanseToken(aJCas, begin, end);
-                fToken.setId(Integer.toString(tokenId));
                 fToken.setCoarsePos(token.getCoarsePos());
                 fToken.setPos(token.getPos());
                 fToken.setLexicalSense(token.getLexSense());
-                fToken.addToIndexes();
+                UimaAnnotationUtils.finishAnnotation(fToken, COMPONENT_ID, tokenId++, aJCas);
                 tokenId++;
 
                 Fanse2UimaMap.put(token, fToken);
@@ -136,7 +138,7 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                     dependencyHeadRelationMap.put(childToken, fArc);
                     dependencyChildRelationMap.put(headToken, fArc);
 
-                    fArc.addToIndexes(aJCas);
+                    UimaAnnotationUtils.finishTop(fArc, COMPONENT_ID, 0, aJCas);
                 }
             }
 
@@ -162,8 +164,7 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
 
                     semanticHeadRelationMap.put(childToken, fArc);
                     semanticChildRelationMap.put(headToken, fArc);
-
-                    fArc.addToIndexes(aJCas);
+                    UimaAnnotationUtils.finishTop(fArc, COMPONENT_ID, 0, aJCas);
                 }
             }
 
@@ -185,8 +186,6 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                     fToken.setChildSemanticRelations(FSCollectionFactory.createFSList(aJCas,
                             semanticChildRelationMap.get(fToken)));
                 }
-
-                fToken.addToIndexes(aJCas);
             }
         }
     }
