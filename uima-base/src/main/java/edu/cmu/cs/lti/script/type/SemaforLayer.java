@@ -11,7 +11,7 @@ import org.apache.uima.jcas.cas.FSArray;
 
 
 /** 
- * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
+ * Updated by JCasGen Sun Jan 25 23:36:32 EST 2015
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class SemaforLayer extends ComponentAnnotation {
@@ -162,6 +162,28 @@ public class SemaforLayer extends ComponentAnnotation {
     if (SemaforLayer_Type.featOkTst && ((SemaforLayer_Type)jcasType).casFeat_rank == null)
       jcasType.jcas.throwFeatMissing("rank", "edu.cmu.cs.lti.script.type.SemaforLayer");
     jcasType.ll_cas.ll_setIntValue(addr, ((SemaforLayer_Type)jcasType).casFeatCode_rank, v);}    
+   
+    
+  //*--------------*
+  //* Feature: score
+
+  /** getter for score - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public double getScore() {
+    if (SemaforLayer_Type.featOkTst && ((SemaforLayer_Type)jcasType).casFeat_score == null)
+      jcasType.jcas.throwFeatMissing("score", "edu.cmu.cs.lti.script.type.SemaforLayer");
+    return jcasType.ll_cas.ll_getDoubleValue(addr, ((SemaforLayer_Type)jcasType).casFeatCode_score);}
+    
+  /** setter for score - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setScore(double v) {
+    if (SemaforLayer_Type.featOkTst && ((SemaforLayer_Type)jcasType).casFeat_score == null)
+      jcasType.jcas.throwFeatMissing("score", "edu.cmu.cs.lti.script.type.SemaforLayer");
+    jcasType.ll_cas.ll_setDoubleValue(addr, ((SemaforLayer_Type)jcasType).casFeatCode_score, v);}    
   }
 
     

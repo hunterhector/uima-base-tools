@@ -11,7 +11,7 @@ import org.apache.uima.jcas.cas.FSList;
 
 
 /** 
- * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
+ * Updated by JCasGen Sun Jan 25 23:36:32 EST 2015
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class EventMention extends ComponentAnnotation {
@@ -492,6 +492,50 @@ public class EventMention extends ComponentAnnotation {
     if (EventMention_Type.featOkTst && ((EventMention_Type)jcasType).casFeat_goalLinks == null)
       jcasType.jcas.throwFeatMissing("goalLinks", "edu.cmu.cs.lti.script.type.EventMention");
     jcasType.ll_cas.ll_setRefValue(addr, ((EventMention_Type)jcasType).casFeatCode_goalLinks, jcasType.ll_cas.ll_getFSRef(v));}    
+   
+    
+  //*--------------*
+  //* Feature: mentionTokens
+
+  /** getter for mentionTokens - gets subtokens of this mention, which might be discontinous
+   * @generated
+   * @return value of the feature 
+   */
+  public FSList getMentionTokens() {
+    if (EventMention_Type.featOkTst && ((EventMention_Type)jcasType).casFeat_mentionTokens == null)
+      jcasType.jcas.throwFeatMissing("mentionTokens", "edu.cmu.cs.lti.script.type.EventMention");
+    return (FSList)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EventMention_Type)jcasType).casFeatCode_mentionTokens)));}
+    
+  /** setter for mentionTokens - sets subtokens of this mention, which might be discontinous 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setMentionTokens(FSList v) {
+    if (EventMention_Type.featOkTst && ((EventMention_Type)jcasType).casFeat_mentionTokens == null)
+      jcasType.jcas.throwFeatMissing("mentionTokens", "edu.cmu.cs.lti.script.type.EventMention");
+    jcasType.ll_cas.ll_setRefValue(addr, ((EventMention_Type)jcasType).casFeatCode_mentionTokens, jcasType.ll_cas.ll_getFSRef(v));}    
+   
+    
+  //*--------------*
+  //* Feature: realisType
+
+  /** getter for realisType - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public String getRealisType() {
+    if (EventMention_Type.featOkTst && ((EventMention_Type)jcasType).casFeat_realisType == null)
+      jcasType.jcas.throwFeatMissing("realisType", "edu.cmu.cs.lti.script.type.EventMention");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((EventMention_Type)jcasType).casFeatCode_realisType);}
+    
+  /** setter for realisType - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setRealisType(String v) {
+    if (EventMention_Type.featOkTst && ((EventMention_Type)jcasType).casFeat_realisType == null)
+      jcasType.jcas.throwFeatMissing("realisType", "edu.cmu.cs.lti.script.type.EventMention");
+    jcasType.ll_cas.ll_setStringValue(addr, ((EventMention_Type)jcasType).casFeatCode_realisType, v);}    
   }
 
     

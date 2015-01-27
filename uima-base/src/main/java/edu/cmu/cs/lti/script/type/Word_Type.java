@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
+ * Updated by JCasGen Sun Jan 25 23:36:33 EST 2015
  * @generated */
 public class Word_Type extends ComponentAnnotation_Type {
   /** @generated 
@@ -284,6 +284,30 @@ public class Word_Type extends ComponentAnnotation_Type {
     ll_cas.ll_setRefValue(addr, casFeatCode_childSemanticRelations, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_coarsePos;
+  /** @generated */
+  final int     casFeatCode_coarsePos;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getCoarsePos(int addr) {
+        if (featOkTst && casFeat_coarsePos == null)
+      jcas.throwFeatMissing("coarsePos", "edu.cmu.cs.lti.script.type.Word");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_coarsePos);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setCoarsePos(int addr, String v) {
+        if (featOkTst && casFeat_coarsePos == null)
+      jcas.throwFeatMissing("coarsePos", "edu.cmu.cs.lti.script.type.Word");
+    ll_cas.ll_setStringValue(addr, casFeatCode_coarsePos, v);}
+    
+  
 
 
 
@@ -335,6 +359,10 @@ public class Word_Type extends ComponentAnnotation_Type {
  
     casFeat_childSemanticRelations = jcas.getRequiredFeatureDE(casType, "childSemanticRelations", "uima.cas.FSList", featOkTst);
     casFeatCode_childSemanticRelations  = (null == casFeat_childSemanticRelations) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_childSemanticRelations).getCode();
+
+ 
+    casFeat_coarsePos = jcas.getRequiredFeatureDE(casType, "coarsePos", "uima.cas.String", featOkTst);
+    casFeatCode_coarsePos  = (null == casFeat_coarsePos) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_coarsePos).getCode();
 
   }
 }

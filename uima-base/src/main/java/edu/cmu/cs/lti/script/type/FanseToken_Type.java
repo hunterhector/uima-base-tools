@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
+ * Updated by JCasGen Sun Jan 25 23:36:32 EST 2015
  * @generated */
 public class FanseToken_Type extends Word_Type {
   /** @generated 
@@ -44,54 +44,6 @@ public class FanseToken_Type extends Word_Type {
      @modifiable */
   @SuppressWarnings ("hiding")
   public final static boolean featOkTst = JCasRegistry.getFeatOkTst("edu.cmu.cs.lti.script.type.FanseToken");
- 
-  /** @generated */
-  final Feature casFeat_coarsePos;
-  /** @generated */
-  final int     casFeatCode_coarsePos;
-  /** @generated
-   * @param addr low level Feature Structure reference
-   * @return the feature value 
-   */ 
-  public String getCoarsePos(int addr) {
-        if (featOkTst && casFeat_coarsePos == null)
-      jcas.throwFeatMissing("coarsePos", "edu.cmu.cs.lti.script.type.FanseToken");
-    return ll_cas.ll_getStringValue(addr, casFeatCode_coarsePos);
-  }
-  /** @generated
-   * @param addr low level Feature Structure reference
-   * @param v value to set 
-   */    
-  public void setCoarsePos(int addr, String v) {
-        if (featOkTst && casFeat_coarsePos == null)
-      jcas.throwFeatMissing("coarsePos", "edu.cmu.cs.lti.script.type.FanseToken");
-    ll_cas.ll_setStringValue(addr, casFeatCode_coarsePos, v);}
-    
-  
- 
-  /** @generated */
-  final Feature casFeat_pos;
-  /** @generated */
-  final int     casFeatCode_pos;
-  /** @generated
-   * @param addr low level Feature Structure reference
-   * @return the feature value 
-   */ 
-  public String getPos(int addr) {
-        if (featOkTst && casFeat_pos == null)
-      jcas.throwFeatMissing("pos", "edu.cmu.cs.lti.script.type.FanseToken");
-    return ll_cas.ll_getStringValue(addr, casFeatCode_pos);
-  }
-  /** @generated
-   * @param addr low level Feature Structure reference
-   * @param v value to set 
-   */    
-  public void setPos(int addr, String v) {
-        if (featOkTst && casFeat_pos == null)
-      jcas.throwFeatMissing("pos", "edu.cmu.cs.lti.script.type.FanseToken");
-    ll_cas.ll_setStringValue(addr, casFeatCode_pos, v);}
-    
-  
  
   /** @generated */
   final Feature casFeat_lexicalSense;
@@ -127,14 +79,6 @@ public class FanseToken_Type extends Word_Type {
   public FanseToken_Type(JCas jcas, Type casType) {
     super(jcas, casType);
     casImpl.getFSClassRegistry().addGeneratorForType((TypeImpl)this.casType, getFSGenerator());
-
- 
-    casFeat_coarsePos = jcas.getRequiredFeatureDE(casType, "coarsePos", "uima.cas.String", featOkTst);
-    casFeatCode_coarsePos  = (null == casFeat_coarsePos) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_coarsePos).getCode();
-
- 
-    casFeat_pos = jcas.getRequiredFeatureDE(casType, "pos", "uima.cas.String", featOkTst);
-    casFeatCode_pos  = (null == casFeat_pos) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_pos).getCode();
 
  
     casFeat_lexicalSense = jcas.getRequiredFeatureDE(casType, "lexicalSense", "uima.cas.String", featOkTst);

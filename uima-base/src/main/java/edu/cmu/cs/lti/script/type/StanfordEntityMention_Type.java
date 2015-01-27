@@ -11,7 +11,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** 
- * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
+ * Updated by JCasGen Sun Jan 25 23:36:33 EST 2015
  * @generated */
 public class StanfordEntityMention_Type extends EntityMention_Type {
   /** @generated 

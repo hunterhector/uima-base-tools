@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
+import org.apache.uima.cas.CAS;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -206,6 +207,24 @@ public class CustomCollectionReaderFactory {
                 inputViewName, PlainTextCollectionReader.PARAM_SRC_DOC_INFO_VIEW_NAMES,
                 srcDocInfoViewNames, PlainTextCollectionReader.PARAM_INPUTDIR, parentInputDirName,
                 PlainTextCollectionReader.PARAM_ENCODING, encoding,
+                PlainTextCollectionReader.PARAM_TEXT_SUFFIX, textSuffix);
+    }
+
+    /**
+     * Creates a simple plain text reader for the text under the specified directory.
+     *
+     * @param parentInputDirName
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createPlainTextReader(String parentInputDirName)
+            throws ResourceInitializationException {
+        // Instantiate a collection reader to get plain text as input.
+        String[] textSuffix = {""};
+        return CollectionReaderFactory.createReaderDescription(
+                PlainTextCollectionReader.class, PlainTextCollectionReader.PARAM_INPUT_VIEW_NAME,
+                CAS.NAME_DEFAULT_SOFA, PlainTextCollectionReader.PARAM_INPUTDIR, parentInputDirName,
+                PlainTextCollectionReader.PARAM_ENCODING, "utf-8",
                 PlainTextCollectionReader.PARAM_TEXT_SUFFIX, textSuffix);
     }
 

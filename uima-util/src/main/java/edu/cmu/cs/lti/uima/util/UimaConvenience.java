@@ -725,7 +725,6 @@ public class UimaConvenience extends BasicConvenience {
         logger.log(Level.INFO, String.format("Processing article: %s", fileName));
     }
 
-
     public static String getShortDocumentName(JCas aJCas) {
         SourceDocumentInformation srcDocInfo = JCasUtil.selectSingle(aJCas,
                 SourceDocumentInformation.class);

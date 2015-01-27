@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** annotate a goal mention in text,  of a certain event mention. For example, "He work hard to get higher grade.", the mention "get higher grade" is the goal.
- * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
+ * Updated by JCasGen Sun Jan 25 23:36:32 EST 2015
  * @generated */
 public class GoalMention_Type extends ComponentAnnotation_Type {
   /** @generated 

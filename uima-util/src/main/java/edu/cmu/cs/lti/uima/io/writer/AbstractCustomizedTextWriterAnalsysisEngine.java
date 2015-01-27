@@ -114,7 +114,6 @@ public abstract class AbstractCustomizedTextWriterAnalsysisEngine extends Abstra
                 }
                 outFile = new File(outputDir, outFileName);
 
-
                 FileUtils.write(outFile, text);
             } catch (IOException e) {
                 throw new AnalysisEngineProcessException(e);

@@ -11,7 +11,7 @@ import org.apache.uima.jcas.cas.FSList;
 
 
 /** 
- * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
+ * Updated by JCasGen Sun Jan 25 23:36:33 EST 2015
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class Word extends ComponentAnnotation {
@@ -294,6 +294,28 @@ public class Word extends ComponentAnnotation {
     if (Word_Type.featOkTst && ((Word_Type)jcasType).casFeat_childSemanticRelations == null)
       jcasType.jcas.throwFeatMissing("childSemanticRelations", "edu.cmu.cs.lti.script.type.Word");
     jcasType.ll_cas.ll_setRefValue(addr, ((Word_Type)jcasType).casFeatCode_childSemanticRelations, jcasType.ll_cas.ll_getFSRef(v));}    
+   
+    
+  //*--------------*
+  //* Feature: coarsePos
+
+  /** getter for coarsePos - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public String getCoarsePos() {
+    if (Word_Type.featOkTst && ((Word_Type)jcasType).casFeat_coarsePos == null)
+      jcasType.jcas.throwFeatMissing("coarsePos", "edu.cmu.cs.lti.script.type.Word");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((Word_Type)jcasType).casFeatCode_coarsePos);}
+    
+  /** setter for coarsePos - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setCoarsePos(String v) {
+    if (Word_Type.featOkTst && ((Word_Type)jcasType).casFeat_coarsePos == null)
+      jcasType.jcas.throwFeatMissing("coarsePos", "edu.cmu.cs.lti.script.type.Word");
+    jcasType.ll_cas.ll_setStringValue(addr, ((Word_Type)jcasType).casFeatCode_coarsePos, v);}    
   }
 
     

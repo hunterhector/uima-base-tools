@@ -3,7 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
     <build>
         <pluginManagement>
             <plugins>
@@ -21,6 +20,7 @@
 
     <artifactId>corpus-reader</artifactId>
     <version>0.0.1</version>
+
     <dependencies>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -40,24 +40,40 @@
         <dependency>
             <groupId>edu.stanford.nlp</groupId>
             <artifactId>stanford-corenlp</artifactId>
-            <version>3.4</version>
+            <version>3.4.1</version>
         </dependency>
         <dependency>
-        	<groupId>edu.cmu.cs.lti</groupId>
-        	<artifactId>uima-util</artifactId>
-        	<version>0.0.1</version>
+            <groupId>edu.cmu.cs.lti</groupId>
+            <artifactId>uima-util</artifactId>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
-        	<groupId>edu.jhu.agiga</groupId>
-        	<artifactId>agiga</artifactId>
-        	<version>1.4</version>
+            <groupId>edu.jhu.agiga</groupId>
+            <artifactId>agiga</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>org.javatuples</groupId>
+            <artifactId>javatuples</artifactId>
+            <version>1.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.l3s.boilerpipe</groupId>
+            <artifactId>boilerpipe</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.cyberneko.html</groupId>
+            <artifactId>nekohtml</artifactId>
+            <version>1.9.21</version>
         </dependency>
     </dependencies>
-    
+
     <parent>
-    	<groupId>edu.cmu.cs.lti</groupId>
-    	<artifactId>uima-tools</artifactId>
-    	<version>0.0.1-SNAPSHOT</version>
+        <groupId>edu.cmu.cs.lti</groupId>
+        <artifactId>uima-tools</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
     </parent>
     <name>Uima Based Corpus Reader</name>
 </project>

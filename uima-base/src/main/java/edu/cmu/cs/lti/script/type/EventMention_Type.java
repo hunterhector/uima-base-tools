@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
+ * Updated by JCasGen Sun Jan 25 23:36:32 EST 2015
  * @generated */
 public class EventMention_Type extends ComponentAnnotation_Type {
   /** @generated 
@@ -500,6 +500,54 @@ public class EventMention_Type extends ComponentAnnotation_Type {
     ll_cas.ll_setRefValue(addr, casFeatCode_goalLinks, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_mentionTokens;
+  /** @generated */
+  final int     casFeatCode_mentionTokens;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public int getMentionTokens(int addr) {
+        if (featOkTst && casFeat_mentionTokens == null)
+      jcas.throwFeatMissing("mentionTokens", "edu.cmu.cs.lti.script.type.EventMention");
+    return ll_cas.ll_getRefValue(addr, casFeatCode_mentionTokens);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setMentionTokens(int addr, int v) {
+        if (featOkTst && casFeat_mentionTokens == null)
+      jcas.throwFeatMissing("mentionTokens", "edu.cmu.cs.lti.script.type.EventMention");
+    ll_cas.ll_setRefValue(addr, casFeatCode_mentionTokens, v);}
+    
+  
+ 
+  /** @generated */
+  final Feature casFeat_realisType;
+  /** @generated */
+  final int     casFeatCode_realisType;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getRealisType(int addr) {
+        if (featOkTst && casFeat_realisType == null)
+      jcas.throwFeatMissing("realisType", "edu.cmu.cs.lti.script.type.EventMention");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_realisType);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setRealisType(int addr, String v) {
+        if (featOkTst && casFeat_realisType == null)
+      jcas.throwFeatMissing("realisType", "edu.cmu.cs.lti.script.type.EventMention");
+    ll_cas.ll_setStringValue(addr, casFeatCode_realisType, v);}
+    
+  
 
 
 
@@ -587,6 +635,14 @@ public class EventMention_Type extends ComponentAnnotation_Type {
  
     casFeat_goalLinks = jcas.getRequiredFeatureDE(casType, "goalLinks", "uima.cas.FSList", featOkTst);
     casFeatCode_goalLinks  = (null == casFeat_goalLinks) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_goalLinks).getCode();
+
+ 
+    casFeat_mentionTokens = jcas.getRequiredFeatureDE(casType, "mentionTokens", "uima.cas.FSList", featOkTst);
+    casFeatCode_mentionTokens  = (null == casFeat_mentionTokens) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_mentionTokens).getCode();
+
+ 
+    casFeat_realisType = jcas.getRequiredFeatureDE(casType, "realisType", "uima.cas.String", featOkTst);
+    casFeatCode_realisType  = (null == casFeat_realisType) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_realisType).getCode();
 
   }
 }

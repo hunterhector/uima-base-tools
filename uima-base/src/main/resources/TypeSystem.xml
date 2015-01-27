@@ -64,16 +64,6 @@
       <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
       <features>
         <featureDescription>
-          <name>coarsePos</name>
-          <description/>
-          <rangeTypeName>uima.cas.String</rangeTypeName>
-        </featureDescription>
-        <featureDescription>
-          <name>pos</name>
-          <description/>
-          <rangeTypeName>uima.cas.String</rangeTypeName>
-        </featureDescription>
-        <featureDescription>
           <name>lexicalSense</name>
           <description/>
           <rangeTypeName>uima.cas.String</rangeTypeName>
@@ -124,6 +114,11 @@
           <name>rank</name>
           <description/>
           <rangeTypeName>uima.cas.Integer</rangeTypeName>
+        </featureDescription>
+      <featureDescription>
+          <name>score</name>
+          <description/>
+          <rangeTypeName>uima.cas.Double</rangeTypeName>
         </featureDescription>
       </features>
     </typeDescription>
@@ -338,6 +333,11 @@
           <rangeTypeName>uima.cas.FSList</rangeTypeName>
           <elementType>edu.cmu.cs.lti.script.type.SemanticRelation</elementType>
         </featureDescription>
+      <featureDescription>
+          <name>coarsePos</name>
+          <description/>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
       </features>
     </typeDescription>
     <typeDescription>
@@ -478,6 +478,17 @@
           <description>Link to the goal of this event</description>
           <rangeTypeName>uima.cas.FSList</rangeTypeName>
           <elementType>edu.cmu.cs.lti.script.type.EventMentionGoalLink</elementType>
+        </featureDescription>
+      <featureDescription>
+          <name>mentionTokens</name>
+          <description>subtokens of this mention, which might be discontinous</description>
+          <rangeTypeName>uima.cas.FSList</rangeTypeName>
+          <elementType>edu.cmu.cs.lti.script.type.Word</elementType>
+        </featureDescription>
+        <featureDescription>
+          <name>realisType</name>
+          <description/>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
       </features>
     </typeDescription>

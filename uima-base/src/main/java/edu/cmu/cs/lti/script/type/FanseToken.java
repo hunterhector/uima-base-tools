@@ -10,7 +10,7 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** 
- * Updated by JCasGen Fri Oct 17 16:20:36 EDT 2014
+ * Updated by JCasGen Sun Jan 25 23:36:32 EST 2015
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class FanseToken extends Word {
@@ -74,50 +74,6 @@ public class FanseToken extends Word {
   private void readObject() {/*default - does nothing empty block */}
      
  
-    
-  //*--------------*
-  //* Feature: coarsePos
-
-  /** getter for coarsePos - gets 
-   * @generated
-   * @return value of the feature 
-   */
-  public String getCoarsePos() {
-    if (FanseToken_Type.featOkTst && ((FanseToken_Type)jcasType).casFeat_coarsePos == null)
-      jcasType.jcas.throwFeatMissing("coarsePos", "edu.cmu.cs.lti.script.type.FanseToken");
-    return jcasType.ll_cas.ll_getStringValue(addr, ((FanseToken_Type)jcasType).casFeatCode_coarsePos);}
-    
-  /** setter for coarsePos - sets  
-   * @generated
-   * @param v value to set into the feature 
-   */
-  public void setCoarsePos(String v) {
-    if (FanseToken_Type.featOkTst && ((FanseToken_Type)jcasType).casFeat_coarsePos == null)
-      jcasType.jcas.throwFeatMissing("coarsePos", "edu.cmu.cs.lti.script.type.FanseToken");
-    jcasType.ll_cas.ll_setStringValue(addr, ((FanseToken_Type)jcasType).casFeatCode_coarsePos, v);}    
-   
-    
-  //*--------------*
-  //* Feature: pos
-
-  /** getter for pos - gets 
-   * @generated
-   * @return value of the feature 
-   */
-  public String getPos() {
-    if (FanseToken_Type.featOkTst && ((FanseToken_Type)jcasType).casFeat_pos == null)
-      jcasType.jcas.throwFeatMissing("pos", "edu.cmu.cs.lti.script.type.FanseToken");
-    return jcasType.ll_cas.ll_getStringValue(addr, ((FanseToken_Type)jcasType).casFeatCode_pos);}
-    
-  /** setter for pos - sets  
-   * @generated
-   * @param v value to set into the feature 
-   */
-  public void setPos(String v) {
-    if (FanseToken_Type.featOkTst && ((FanseToken_Type)jcasType).casFeat_pos == null)
-      jcasType.jcas.throwFeatMissing("pos", "edu.cmu.cs.lti.script.type.FanseToken");
-    jcasType.ll_cas.ll_setStringValue(addr, ((FanseToken_Type)jcasType).casFeatCode_pos, v);}    
-   
     
   //*--------------*
   //* Feature: lexicalSense
