@@ -27,6 +27,9 @@
             <id>project.local</id>
             <name>project local repository</name>
             <url>file://${project.basedir}/lib</url>
+            <releases>
+                <updatePolicy>always</updatePolicy>
+            </releases>
         </repository>
     </repositories>
 
