@@ -29,14 +29,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <!-- install 3rd party jars here-->
-    <repositories>
-        <repository>
-            <id>project.local</id>
-            <name>project local repository</name>
-            <url>file://${project.basedir}/lib</url>
-        </repository>
-    </repositories>
-
 </project>
