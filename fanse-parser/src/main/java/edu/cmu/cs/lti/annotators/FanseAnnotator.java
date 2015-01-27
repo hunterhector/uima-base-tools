@@ -25,6 +25,7 @@ import java.util.Map;
 
 /**
  * Runs FANSE parser, and annotate associated types.
+ * Required Stanford Parse
  */
 public class FanseAnnotator extends AbstractLoggingAnnotator {
 
@@ -75,7 +76,7 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
         List<Sentence> sentList = UimaConvenience.getAnnotationList(aJCas, Sentence.class);
 
         for (Sentence sent : sentList) {
-            List<Word> wordList = JCasUtil.selectCovered(Word.class, sent);
+            List<Word> wordList = getUniqueWordList(sent);
 
             Parse par = wordListToParse(wordList);
             tratz.parse.types.Sentence fSent = par.getSentence();
@@ -111,7 +112,6 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                 fToken.setLexicalSense(token.getLexSense());
                 UimaAnnotationUtils.finishAnnotation(fToken, COMPONENT_ID, tokenId++, aJCas);
                 tokenId++;
-
                 Fanse2UimaMap.put(token, fToken);
             }
 
@@ -134,10 +134,8 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                     fArc.setHead(headToken);
                     fArc.setChild(childToken);
                     fArc.setDependencyType(arc.getDependency());
-
                     dependencyHeadRelationMap.put(childToken, fArc);
                     dependencyChildRelationMap.put(headToken, fArc);
-
                     UimaAnnotationUtils.finishTop(fArc, COMPONENT_ID, 0, aJCas);
                 }
             }
@@ -190,6 +188,14 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
         }
     }
 
+    private List<Word> getUniqueWordList(Sentence sent) {
+        List<Word> wordList = new ArrayList<>();
+        for (StanfordCorenlpToken token : JCasUtil.selectCovered(StanfordCorenlpToken.class, sent)) {
+            wordList.add(token);
+        }
+        return wordList;
+    }
+
     private Parse wordListToParse(List<Word> words) {
         Token root = new Token("[ROOT]", 0);
         List<Token> tokens = new ArrayList<Token>();
@@ -202,14 +208,11 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
             Token token = new Token(wordString, tokenNum);
             tokens.add(token);
         }
-
         // Currently does not implement the Quote converstion by Tratz in TokenizingSentenceReader
         // line = mDoubleQuoteMatcher.reset(line).replaceAll("\"");
         // line = mSingleQuoteMatcher.reset(line).replaceAll("'");
 
         Parse result = new Parse(new tratz.parse.types.Sentence(tokens), root, arcs);
-
         return result;
     }
-
 }
