@@ -7,8 +7,8 @@ import edu.cmu.cs.lti.script.type.Word;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.util.NoiseTextFormatter;
+import edu.cmu.cs.lti.utils.StringUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
@@ -58,8 +58,6 @@ public class EventMentionDetectionDataReader extends JCasCollectionReader_ImplBa
 
     private String tokenExt;
 
-    private String bratExt;
-
     private int currentPointer;
 
     private List<Triplet<String, File, File>> fileList;
@@ -99,6 +97,8 @@ public class EventMentionDetectionDataReader extends JCasCollectionReader_ImplBa
             File sourceFile = sourceBaseNameFile.getValue();
             if (tokenBaseNames.containsKey(baseName)) {
                 fileList.add(new Triplet<>(baseName, sourceFile, tokenBaseNames.get(baseName)));
+            } else {
+                System.err.println("token based name not found " + baseName);
             }
         }
 
@@ -132,7 +132,7 @@ public class EventMentionDetectionDataReader extends JCasCollectionReader_ImplBa
         Map<String, File> baseName2File = new HashMap<>();
 
         for (File file : fileList) {
-            baseName2File.put(StringUtils.stripEnd(file.getName(), ext), file);
+            baseName2File.put(StringUtils.removeEnd(file.getName(), ext), file);
         }
 
         return baseName2File;
