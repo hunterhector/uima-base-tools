@@ -40,6 +40,11 @@
           <rangeTypeName>uima.cas.FSList</rangeTypeName>
         <elementType>edu.cmu.cs.lti.script.type.EventMentionArgumentLink</elementType>
         </featureDescription>
+      <featureDescription>
+          <name>headAnnotation</name>
+          <description>used to hold ACE head value, which could be multiple words</description>
+          <rangeTypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</rangeTypeName>
+        </featureDescription>
       </features>
     </typeDescription>
     
@@ -1163,6 +1168,28 @@
           <name>goalMention</name>
           <description/>
           <rangeTypeName>edu.cmu.cs.lti.script.type.GoalMention</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+  <typeDescription>
+      <name>edu.cmu.cs.lti.script.type.EventArgumentLink</name>
+      <description/>
+      <supertypeName>edu.cmu.cs.lti.script.type.ComponentTOP</supertypeName>
+      <features>
+        <featureDescription>
+          <name>event</name>
+          <description/>
+          <rangeTypeName>edu.cmu.cs.lti.script.type.Event</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>entity</name>
+          <description/>
+          <rangeTypeName>edu.cmu.cs.lti.script.type.Entity</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>argumentRole</name>
+          <description/>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
       </features>
     </typeDescription>

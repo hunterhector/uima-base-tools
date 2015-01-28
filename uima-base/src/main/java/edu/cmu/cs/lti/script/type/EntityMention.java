@@ -13,7 +13,7 @@ import org.apache.uima.jcas.cas.FSList;
 
 
 /** 
- * Updated by JCasGen Sun Jan 25 23:36:32 EST 2015
+ * Updated by JCasGen Wed Jan 28 12:54:28 EST 2015
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class EntityMention extends ComponentAnnotation {
@@ -164,6 +164,28 @@ public class EntityMention extends ComponentAnnotation {
     if (EntityMention_Type.featOkTst && ((EntityMention_Type)jcasType).casFeat_argumentLinks == null)
       jcasType.jcas.throwFeatMissing("argumentLinks", "edu.cmu.cs.lti.script.type.EntityMention");
     jcasType.ll_cas.ll_setRefValue(addr, ((EntityMention_Type)jcasType).casFeatCode_argumentLinks, jcasType.ll_cas.ll_getFSRef(v));}    
+   
+    
+  //*--------------*
+  //* Feature: headAnnotation
+
+  /** getter for headAnnotation - gets used to hold ACE head value, which could be multiple words
+   * @generated
+   * @return value of the feature 
+   */
+  public ComponentAnnotation getHeadAnnotation() {
+    if (EntityMention_Type.featOkTst && ((EntityMention_Type)jcasType).casFeat_headAnnotation == null)
+      jcasType.jcas.throwFeatMissing("headAnnotation", "edu.cmu.cs.lti.script.type.EntityMention");
+    return (ComponentAnnotation)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EntityMention_Type)jcasType).casFeatCode_headAnnotation)));}
+    
+  /** setter for headAnnotation - sets used to hold ACE head value, which could be multiple words 
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setHeadAnnotation(ComponentAnnotation v) {
+    if (EntityMention_Type.featOkTst && ((EntityMention_Type)jcasType).casFeat_headAnnotation == null)
+      jcasType.jcas.throwFeatMissing("headAnnotation", "edu.cmu.cs.lti.script.type.EntityMention");
+    jcasType.ll_cas.ll_setRefValue(addr, ((EntityMention_Type)jcasType).casFeatCode_headAnnotation, jcasType.ll_cas.ll_getFSRef(v));}    
   }
 
     

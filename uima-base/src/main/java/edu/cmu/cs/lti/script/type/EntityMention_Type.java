@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Sun Jan 25 23:36:32 EST 2015
+ * Updated by JCasGen Wed Jan 28 12:54:28 EST 2015
  * @generated */
 public class EntityMention_Type extends ComponentAnnotation_Type {
   /** @generated 
@@ -140,6 +140,30 @@ public class EntityMention_Type extends ComponentAnnotation_Type {
     ll_cas.ll_setRefValue(addr, casFeatCode_argumentLinks, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_headAnnotation;
+  /** @generated */
+  final int     casFeatCode_headAnnotation;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public int getHeadAnnotation(int addr) {
+        if (featOkTst && casFeat_headAnnotation == null)
+      jcas.throwFeatMissing("headAnnotation", "edu.cmu.cs.lti.script.type.EntityMention");
+    return ll_cas.ll_getRefValue(addr, casFeatCode_headAnnotation);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setHeadAnnotation(int addr, int v) {
+        if (featOkTst && casFeat_headAnnotation == null)
+      jcas.throwFeatMissing("headAnnotation", "edu.cmu.cs.lti.script.type.EntityMention");
+    ll_cas.ll_setRefValue(addr, casFeatCode_headAnnotation, v);}
+    
+  
 
 
 
@@ -167,6 +191,10 @@ public class EntityMention_Type extends ComponentAnnotation_Type {
  
     casFeat_argumentLinks = jcas.getRequiredFeatureDE(casType, "argumentLinks", "uima.cas.FSList", featOkTst);
     casFeatCode_argumentLinks  = (null == casFeat_argumentLinks) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_argumentLinks).getCode();
+
+ 
+    casFeat_headAnnotation = jcas.getRequiredFeatureDE(casType, "headAnnotation", "edu.cmu.cs.lti.script.type.ComponentAnnotation", featOkTst);
+    casFeatCode_headAnnotation  = (null == casFeat_headAnnotation) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_headAnnotation).getCode();
 
   }
 }
