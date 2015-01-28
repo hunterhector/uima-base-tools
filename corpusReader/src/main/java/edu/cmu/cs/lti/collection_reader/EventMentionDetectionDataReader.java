@@ -24,10 +24,7 @@ import org.javatuples.Triplet;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -163,31 +160,31 @@ public class EventMentionDetectionDataReader extends JCasCollectionReader_ImplBa
         jCas.setDocumentText(documentText);
         goldView.setDocumentText(documentText);
 
-        Map<String, EventMention> tokenId2EventMention;
+        ArrayListMultimap<String, EventMention> tokenId2EventMention;
         if (hasGoldStandard) {
             tokenId2EventMention = annotateGoldStandard(goldView, getBaseName());
         } else {
-            tokenId2EventMention = new HashMap<>();
+            tokenId2EventMention = ArrayListMultimap.create();
         }
 
         annotateTokens(jCas, goldView, tokenId2EventMention);
 
-        for (Map.Entry<String, EventMention> mentionEntry : tokenId2EventMention.entrySet()) {
-            EventMention mention = mentionEntry.getValue();
+        for (Map.Entry<String, Collection<EventMention>> mentionEntry : tokenId2EventMention.asMap().entrySet()) {
+            for (EventMention mention : mentionEntry.getValue()) {
+                int start = -1;
+                int end = -1;
+                for (Word word : FSCollectionFactory.create(mention.getMentionTokens(), Word.class)) {
+                    if (start == -1 || word.getBegin() < start) {
+                        start = word.getBegin();
+                    }
+                    if (end == -1 || word.getEnd() > end) {
+                        end = word.getEnd();
+                    }
+                }
 
-            int start = -1;
-            int end = -1;
-            for (Word word : FSCollectionFactory.create(mention.getMentionTokens(), Word.class)) {
-                if (start == -1 || word.getBegin() < start) {
-                    start = word.getBegin();
-                }
-                if (end == -1 || word.getEnd() > end) {
-                    end = word.getEnd();
-                }
+                mention.setBegin(start);
+                mention.setEnd(end);
             }
-
-            mention.setBegin(start);
-            mention.setEnd(end);
         }
 
         Article article = new Article(jCas);
@@ -208,7 +205,7 @@ public class EventMentionDetectionDataReader extends JCasCollectionReader_ImplBa
         return currentFile.getValue0();
     }
 
-    private void annotateTokens(JCas aJCas, JCas goldView, Map<String, EventMention> tokenId2EventMention) throws IOException {
+    private void annotateTokens(JCas aJCas, JCas goldView, ArrayListMultimap<String, EventMention> tokenId2EventMention) throws IOException {
         File tokenFile = getTokenFile();
 
         int lineNum = 0;
@@ -226,8 +223,9 @@ public class EventMentionDetectionDataReader extends JCasCollectionReader_ImplBa
                     UimaAnnotationUtils.finishAnnotation(word, componentId, tId, aJCas);
 
                     if (tokenId2EventMention.containsKey(tId)) {
-                        EventMention tokenMention = tokenId2EventMention.get(tId);
-                        tokenMention.setMentionTokens(UimaConvenience.appendFSList(goldView, tokenMention.getMentionTokens(), word, Word.class));
+                        for (EventMention tokenMention : tokenId2EventMention.get(tId)) {
+                            tokenMention.setMentionTokens(UimaConvenience.appendFSList(goldView, tokenMention.getMentionTokens(), word, Word.class));
+                        }
                     }
                 }
             }
@@ -235,8 +233,8 @@ public class EventMentionDetectionDataReader extends JCasCollectionReader_ImplBa
         }
     }
 
-    private Map<String, EventMention> annotateGoldStandard(JCas goldView, String baseName) throws IOException {
-        Map<String, EventMention> tokenId2EventMention = new HashMap<>();
+    private ArrayListMultimap<String, EventMention> annotateGoldStandard(JCas goldView, String baseName) throws IOException {
+        ArrayListMultimap<String, EventMention> tokenId2EventMention = ArrayListMultimap.create();
         for (String goldAnno : goldStandards.asMap().get(baseName)) {
             String[] annos = goldAnno.split("\t");
             if (annos.length == 8) {

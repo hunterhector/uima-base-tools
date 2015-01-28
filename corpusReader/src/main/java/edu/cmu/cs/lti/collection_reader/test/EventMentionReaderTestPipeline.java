@@ -23,7 +23,8 @@ public class EventMentionReaderTestPipeline {
         String paramInputDir =
                 "/Users/zhengzhongliu/Documents/projects" +
                         "/cmu-script/event-mention-detection" +
-                        "/data/LDC2014E121_DEFT_Event_Nugget_Evaluation_Training_Data/data/";
+                        "/data/Event-mention-detection-2014" +
+                        "/LDC2014E121_DEFT_Event_Nugget_Evaluation_Training_Data/data/";
 
         String goldStandardFilePath = paramInputDir + "converted.tbf";
         String sourceDataPath = paramInputDir + "source";
