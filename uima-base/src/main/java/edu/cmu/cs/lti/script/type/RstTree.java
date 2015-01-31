@@ -12,8 +12,8 @@ import org.apache.uima.jcas.tcas.Annotation;
 
 
 /** 
- * Updated by JCasGen Wed Jan 28 12:54:28 EST 2015
- * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
+ * Updated by JCasGen Fri Jan 30 12:07:09 EST 2015
+ * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/EventMentionDetectionTypeSystem.xml
  * @generated */
 public class RstTree extends ComponentAnnotation {
   /** @generated

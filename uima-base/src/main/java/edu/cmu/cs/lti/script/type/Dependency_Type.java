@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** A generic dependency type, specific annotator dependency should inherite this. In principle, dependency nodes can be different as words, that's why it was annotated individually.
- * Updated by JCasGen Wed Jan 28 12:54:28 EST 2015
+ * Updated by JCasGen Fri Jan 30 12:07:09 EST 2015
  * @generated */
 public class Dependency_Type extends ComponentTOP_Type {
   /** @generated 
