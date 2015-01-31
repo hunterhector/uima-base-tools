@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Fri Jan 30 12:07:09 EST 2015
+ * Updated by JCasGen Sat Jan 31 01:41:24 EST 2015
  * @generated */
 public class EntityBasedComponent_Type extends ComponentAnnotation_Type {
   /** @generated 

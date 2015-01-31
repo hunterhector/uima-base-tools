@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Fri Jan 30 12:07:08 EST 2015
+ * Updated by JCasGen Sat Jan 31 01:41:24 EST 2015
  * @generated */
 public class CandidateEventMention_Type extends ComponentAnnotation_Type {
   /** @generated 
@@ -116,6 +116,30 @@ public class CandidateEventMention_Type extends ComponentAnnotation_Type {
     ll_cas.ll_setRefValue(addr, casFeatCode_headWord, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_goldStandardMentionType;
+  /** @generated */
+  final int     casFeatCode_goldStandardMentionType;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getGoldStandardMentionType(int addr) {
+        if (featOkTst && casFeat_goldStandardMentionType == null)
+      jcas.throwFeatMissing("goldStandardMentionType", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_goldStandardMentionType);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setGoldStandardMentionType(int addr, String v) {
+        if (featOkTst && casFeat_goldStandardMentionType == null)
+      jcas.throwFeatMissing("goldStandardMentionType", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    ll_cas.ll_setStringValue(addr, casFeatCode_goldStandardMentionType, v);}
+    
+  
 
 
 
@@ -137,8 +161,12 @@ public class CandidateEventMention_Type extends ComponentAnnotation_Type {
     casFeatCode_argument  = (null == casFeat_argument) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_argument).getCode();
 
  
-    casFeat_headWord = jcas.getRequiredFeatureDE(casType, "headWord", "edu.cmu.cs.lti.script.type.Word", featOkTst);
+    casFeat_headWord = jcas.getRequiredFeatureDE(casType, "headWord", "edu.cmu.cs.lti.script.type.StanfordCorenlpToken", featOkTst);
     casFeatCode_headWord  = (null == casFeat_headWord) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_headWord).getCode();
+
+ 
+    casFeat_goldStandardMentionType = jcas.getRequiredFeatureDE(casType, "goldStandardMentionType", "uima.cas.String", featOkTst);
+    casFeatCode_goldStandardMentionType  = (null == casFeat_goldStandardMentionType) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_goldStandardMentionType).getCode();
 
   }
 }

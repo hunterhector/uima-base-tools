@@ -12,7 +12,7 @@ import org.apache.uima.jcas.cas.StringList;
 
 
 /** 
- * Updated by JCasGen Fri Jan 30 12:07:08 EST 2015
+ * Updated by JCasGen Sat Jan 31 01:41:24 EST 2015
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/EventMentionDetectionTypeSystem.xml
  * @generated */
 public class CandidateEventMention extends ComponentAnnotation {
@@ -128,19 +128,41 @@ public class CandidateEventMention extends ComponentAnnotation {
    * @generated
    * @return value of the feature 
    */
-  public Word getHeadWord() {
+  public StanfordCorenlpToken getHeadWord() {
     if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_headWord == null)
       jcasType.jcas.throwFeatMissing("headWord", "edu.cmu.cs.lti.script.type.CandidateEventMention");
-    return (Word)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_headWord)));}
+    return (StanfordCorenlpToken)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_headWord)));}
     
   /** setter for headWord - sets  
    * @generated
    * @param v value to set into the feature 
    */
-  public void setHeadWord(Word v) {
+  public void setHeadWord(StanfordCorenlpToken v) {
     if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_headWord == null)
       jcasType.jcas.throwFeatMissing("headWord", "edu.cmu.cs.lti.script.type.CandidateEventMention");
     jcasType.ll_cas.ll_setRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_headWord, jcasType.ll_cas.ll_getFSRef(v));}    
+   
+    
+  //*--------------*
+  //* Feature: goldStandardMentionType
+
+  /** getter for goldStandardMentionType - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public String getGoldStandardMentionType() {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_goldStandardMentionType == null)
+      jcasType.jcas.throwFeatMissing("goldStandardMentionType", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_goldStandardMentionType);}
+    
+  /** setter for goldStandardMentionType - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setGoldStandardMentionType(String v) {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_goldStandardMentionType == null)
+      jcasType.jcas.throwFeatMissing("goldStandardMentionType", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    jcasType.ll_cas.ll_setStringValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_goldStandardMentionType, v);}    
   }
 
     

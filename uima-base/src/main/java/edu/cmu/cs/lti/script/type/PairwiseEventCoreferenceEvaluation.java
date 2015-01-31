@@ -11,7 +11,7 @@ import org.apache.uima.jcas.cas.FSList;
 
 
 /** The type storing the information on event coreference.
- * Updated by JCasGen Fri Jan 30 12:07:09 EST 2015
+ * Updated by JCasGen Sat Jan 31 01:41:25 EST 2015
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/EventMentionDetectionTypeSystem.xml
  * @generated */
 public class PairwiseEventCoreferenceEvaluation extends ComponentTOP {
