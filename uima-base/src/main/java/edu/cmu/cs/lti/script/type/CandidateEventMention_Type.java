@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Fri Jan 30 12:07:08 EST 2015 */
+/* First created by JCasGen Sat Jan 31 03:33:55 EST 2015 */
 package edu.cmu.cs.lti.script.type;
 
 import org.apache.uima.jcas.JCas;
@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Sat Jan 31 01:41:24 EST 2015
+ * Updated by JCasGen Sat Jan 31 13:44:09 EST 2015
  * @generated */
 public class CandidateEventMention_Type extends ComponentAnnotation_Type {
   /** @generated 
@@ -46,50 +46,50 @@ public class CandidateEventMention_Type extends ComponentAnnotation_Type {
   public final static boolean featOkTst = JCasRegistry.getFeatOkTst("edu.cmu.cs.lti.script.type.CandidateEventMention");
  
   /** @generated */
-  final Feature casFeat_relatedFrame;
+  final Feature casFeat_potentialFrames;
   /** @generated */
-  final int     casFeatCode_relatedFrame;
+  final int     casFeatCode_potentialFrames;
   /** @generated
    * @param addr low level Feature Structure reference
    * @return the feature value 
    */ 
-  public int getRelatedFrame(int addr) {
-        if (featOkTst && casFeat_relatedFrame == null)
-      jcas.throwFeatMissing("relatedFrame", "edu.cmu.cs.lti.script.type.CandidateEventMention");
-    return ll_cas.ll_getRefValue(addr, casFeatCode_relatedFrame);
+  public int getPotentialFrames(int addr) {
+        if (featOkTst && casFeat_potentialFrames == null)
+      jcas.throwFeatMissing("potentialFrames", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return ll_cas.ll_getRefValue(addr, casFeatCode_potentialFrames);
   }
   /** @generated
    * @param addr low level Feature Structure reference
    * @param v value to set 
    */    
-  public void setRelatedFrame(int addr, int v) {
-        if (featOkTst && casFeat_relatedFrame == null)
-      jcas.throwFeatMissing("relatedFrame", "edu.cmu.cs.lti.script.type.CandidateEventMention");
-    ll_cas.ll_setRefValue(addr, casFeatCode_relatedFrame, v);}
+  public void setPotentialFrames(int addr, int v) {
+        if (featOkTst && casFeat_potentialFrames == null)
+      jcas.throwFeatMissing("potentialFrames", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    ll_cas.ll_setRefValue(addr, casFeatCode_potentialFrames, v);}
     
   
  
   /** @generated */
-  final Feature casFeat_argument;
+  final Feature casFeat_arguments;
   /** @generated */
-  final int     casFeatCode_argument;
+  final int     casFeatCode_arguments;
   /** @generated
    * @param addr low level Feature Structure reference
    * @return the feature value 
    */ 
-  public int getArgument(int addr) {
-        if (featOkTst && casFeat_argument == null)
-      jcas.throwFeatMissing("argument", "edu.cmu.cs.lti.script.type.CandidateEventMention");
-    return ll_cas.ll_getRefValue(addr, casFeatCode_argument);
+  public int getArguments(int addr) {
+        if (featOkTst && casFeat_arguments == null)
+      jcas.throwFeatMissing("arguments", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return ll_cas.ll_getRefValue(addr, casFeatCode_arguments);
   }
   /** @generated
    * @param addr low level Feature Structure reference
    * @param v value to set 
    */    
-  public void setArgument(int addr, int v) {
-        if (featOkTst && casFeat_argument == null)
-      jcas.throwFeatMissing("argument", "edu.cmu.cs.lti.script.type.CandidateEventMention");
-    ll_cas.ll_setRefValue(addr, casFeatCode_argument, v);}
+  public void setArguments(int addr, int v) {
+        if (featOkTst && casFeat_arguments == null)
+      jcas.throwFeatMissing("arguments", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    ll_cas.ll_setRefValue(addr, casFeatCode_arguments, v);}
     
   
  
@@ -153,12 +153,12 @@ public class CandidateEventMention_Type extends ComponentAnnotation_Type {
     casImpl.getFSClassRegistry().addGeneratorForType((TypeImpl)this.casType, getFSGenerator());
 
  
-    casFeat_relatedFrame = jcas.getRequiredFeatureDE(casType, "relatedFrame", "uima.cas.StringList", featOkTst);
-    casFeatCode_relatedFrame  = (null == casFeat_relatedFrame) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_relatedFrame).getCode();
+    casFeat_potentialFrames = jcas.getRequiredFeatureDE(casType, "potentialFrames", "uima.cas.StringList", featOkTst);
+    casFeatCode_potentialFrames  = (null == casFeat_potentialFrames) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_potentialFrames).getCode();
 
  
-    casFeat_argument = jcas.getRequiredFeatureDE(casType, "argument", "uima.cas.FSList", featOkTst);
-    casFeatCode_argument  = (null == casFeat_argument) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_argument).getCode();
+    casFeat_arguments = jcas.getRequiredFeatureDE(casType, "arguments", "uima.cas.FSList", featOkTst);
+    casFeatCode_arguments  = (null == casFeat_arguments) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_arguments).getCode();
 
  
     casFeat_headWord = jcas.getRequiredFeatureDE(casType, "headWord", "edu.cmu.cs.lti.script.type.StanfordCorenlpToken", featOkTst);

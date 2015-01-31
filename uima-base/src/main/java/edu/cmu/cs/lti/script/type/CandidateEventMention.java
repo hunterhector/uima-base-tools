@@ -1,6 +1,6 @@
 
 
-/* First created by JCasGen Fri Jan 30 12:07:08 EST 2015 */
+/* First created by JCasGen Sat Jan 31 03:33:55 EST 2015 */
 package edu.cmu.cs.lti.script.type;
 
 import org.apache.uima.jcas.JCas; 
@@ -8,12 +8,15 @@ import org.apache.uima.jcas.JCasRegistry;
 import org.apache.uima.jcas.cas.TOP_Type;
 
 import org.apache.uima.jcas.cas.FSList;
+import org.apache.uima.jcas.cas.StringArray;
+
+
 import org.apache.uima.jcas.cas.StringList;
 
 
 /** 
- * Updated by JCasGen Sat Jan 31 01:41:24 EST 2015
- * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/EventMentionDetectionTypeSystem.xml
+ * Updated by JCasGen Sat Jan 31 13:44:09 EST 2015
+ * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class CandidateEventMention extends ComponentAnnotation {
   /** @generated
@@ -78,47 +81,47 @@ public class CandidateEventMention extends ComponentAnnotation {
  
     
   //*--------------*
-  //* Feature: relatedFrame
+  //* Feature: potentialFrames
 
-  /** getter for relatedFrame - gets possible frame that this event mention could invoke
+  /** getter for potentialFrames - gets possible frame that this event mention could invoke
    * @generated
    * @return value of the feature 
    */
-  public StringList getRelatedFrame() {
-    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_relatedFrame == null)
-      jcasType.jcas.throwFeatMissing("relatedFrame", "edu.cmu.cs.lti.script.type.CandidateEventMention");
-    return (StringList)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_relatedFrame)));}
+  public StringList getPotentialFrames() {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_potentialFrames == null)
+      jcasType.jcas.throwFeatMissing("potentialFrames", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return (StringList)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_potentialFrames)));}
     
-  /** setter for relatedFrame - sets possible frame that this event mention could invoke 
+  /** setter for potentialFrames - sets possible frame that this event mention could invoke 
    * @generated
    * @param v value to set into the feature 
    */
-  public void setRelatedFrame(StringList v) {
-    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_relatedFrame == null)
-      jcasType.jcas.throwFeatMissing("relatedFrame", "edu.cmu.cs.lti.script.type.CandidateEventMention");
-    jcasType.ll_cas.ll_setRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_relatedFrame, jcasType.ll_cas.ll_getFSRef(v));}    
+  public void setPotentialFrames(StringList v) {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_potentialFrames == null)
+      jcasType.jcas.throwFeatMissing("potentialFrames", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    jcasType.ll_cas.ll_setRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_potentialFrames, jcasType.ll_cas.ll_getFSRef(v));}    
    
     
   //*--------------*
-  //* Feature: argument
+  //* Feature: arguments
 
-  /** getter for argument - gets 
+  /** getter for arguments - gets 
    * @generated
    * @return value of the feature 
    */
-  public FSList getArgument() {
-    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_argument == null)
-      jcasType.jcas.throwFeatMissing("argument", "edu.cmu.cs.lti.script.type.CandidateEventMention");
-    return (FSList)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_argument)));}
+  public FSList getArguments() {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_arguments == null)
+      jcasType.jcas.throwFeatMissing("arguments", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return (FSList)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_arguments)));}
     
-  /** setter for argument - sets  
+  /** setter for arguments - sets  
    * @generated
    * @param v value to set into the feature 
    */
-  public void setArgument(FSList v) {
-    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_argument == null)
-      jcasType.jcas.throwFeatMissing("argument", "edu.cmu.cs.lti.script.type.CandidateEventMention");
-    jcasType.ll_cas.ll_setRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_argument, jcasType.ll_cas.ll_getFSRef(v));}    
+  public void setArguments(FSList v) {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_arguments == null)
+      jcasType.jcas.throwFeatMissing("arguments", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    jcasType.ll_cas.ll_setRefValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_arguments, jcasType.ll_cas.ll_getFSRef(v));}    
    
     
   //*--------------*

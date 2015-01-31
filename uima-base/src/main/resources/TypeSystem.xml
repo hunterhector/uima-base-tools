@@ -1193,5 +1193,52 @@
         </featureDescription>
       </features>
     </typeDescription>
+    
+    <typeDescription>
+      <name>edu.cmu.cs.lti.script.type.CandidateEventMention</name>
+      <description/>
+      <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+      <features>
+        <featureDescription>
+          <name>potentialFrames</name>
+          <description>possible frame that this event mention could invoke</description>
+          <rangeTypeName>uima.cas.StringList</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>arguments</name>
+          <description/>
+          <rangeTypeName>uima.cas.FSList</rangeTypeName>
+          <elementType>edu.cmu.cs.lti.script.type.CandidateEventMentionArgument</elementType>
+        </featureDescription>
+        <featureDescription>
+          <name>headWord</name>
+          <description/>
+          <rangeTypeName>edu.cmu.cs.lti.script.type.StanfordCorenlpToken</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>goldStandardMentionType</name>
+          <description/>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>edu.cmu.cs.lti.script.type.CandidateEventMentionArgument</name>
+      <description/>
+      <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+      <features>
+        <featureDescription>
+          <name>roleName</name>
+          <description/>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>headWord</name>
+          <description/>
+          <rangeTypeName>edu.cmu.cs.lti.script.type.StanfordCorenlpToken</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    
   </types>
 </typeSystemDescription>

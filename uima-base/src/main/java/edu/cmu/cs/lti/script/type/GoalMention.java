@@ -1,6 +1,6 @@
 
 
-/* First created by JCasGen Fri Oct 17 16:20:36 EDT 2014 */
+/* First created by JCasGen Sat Jan 31 03:33:55 EST 2015 */
 package edu.cmu.cs.lti.script.type;
 
 import org.apache.uima.jcas.JCas; 
@@ -11,8 +11,8 @@ import org.apache.uima.jcas.cas.FSList;
 
 
 /** annotate a goal mention in text,  of a certain event mention. For example, "He work hard to get higher grade.", the mention "get higher grade" is the goal.
- * Updated by JCasGen Sat Jan 31 01:41:25 EST 2015
- * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/EventMentionDetectionTypeSystem.xml
+ * Updated by JCasGen Sat Jan 31 13:44:09 EST 2015
+ * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class GoalMention extends ComponentAnnotation {
   /** @generated

@@ -1,6 +1,6 @@
 
 
-/* First created by JCasGen Mon Sep 15 15:04:26 EDT 2014 */
+/* First created by JCasGen Sat Jan 31 03:33:55 EST 2015 */
 package edu.cmu.cs.lti.script.type;
 
 import org.apache.uima.jcas.JCas; 
@@ -10,8 +10,8 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** 
- * Updated by JCasGen Sat Jan 31 01:41:24 EST 2015
- * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/EventMentionDetectionTypeSystem.xml
+ * Updated by JCasGen Sat Jan 31 13:44:09 EST 2015
+ * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class AbstractFeature extends ComponentTOP {
   /** @generated

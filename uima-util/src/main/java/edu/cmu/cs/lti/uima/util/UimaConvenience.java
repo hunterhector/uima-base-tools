@@ -442,6 +442,20 @@ public class UimaConvenience extends BasicConvenience {
         return FSCollectionFactory.createFSList(aJCas, newList);
     }
 
+    public static StringList appendStringList(JCas aJCas, StringList oldStringList, String newItem) {
+        List<String> newList;
+
+        if (oldStringList != null) {
+            newList = new ArrayList<>(FSCollectionFactory.create(oldStringList));
+        } else {
+            newList = new ArrayList<>();
+        }
+
+        newList.add(newItem);
+
+        return FSCollectionFactory.createStringList(aJCas, newList);
+    }
+
     public static <T extends TOP> FSList replaceFSList(JCas aJCas, FSList oldFSList, T oldItem,
                                                        T newItem, Class<T> clazz) {
         List<T> newList = new ArrayList<T>();

@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Fri Oct 17 16:20:36 EDT 2014 */
+/* First created by JCasGen Sat Jan 31 03:33:55 EST 2015 */
 package edu.cmu.cs.lti.script.type;
 
 import org.apache.uima.jcas.JCas;
@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** annotate a goal mention in text,  of a certain event mention. For example, "He work hard to get higher grade.", the mention "get higher grade" is the goal.
- * Updated by JCasGen Sat Jan 31 01:41:25 EST 2015
+ * Updated by JCasGen Sat Jan 31 13:44:09 EST 2015
  * @generated */
 public class GoalMention_Type extends ComponentAnnotation_Type {
   /** @generated 

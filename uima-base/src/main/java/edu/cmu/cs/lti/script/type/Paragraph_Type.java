@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Mon Sep 15 15:04:26 EDT 2014 */
+/* First created by JCasGen Sat Jan 31 03:33:55 EST 2015 */
 package edu.cmu.cs.lti.script.type;
 
 import org.apache.uima.jcas.JCas;
@@ -11,7 +11,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** 
- * Updated by JCasGen Sat Jan 31 01:41:25 EST 2015
+ * Updated by JCasGen Sat Jan 31 13:44:10 EST 2015
  * @generated */
 public class Paragraph_Type extends ComponentAnnotation_Type {
   /** @generated 

@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Fri Jan 30 12:07:08 EST 2015 */
+/* First created by JCasGen Sat Jan 31 03:33:55 EST 2015 */
 package edu.cmu.cs.lti.script.type;
 
 import org.apache.uima.jcas.JCas;
@@ -9,12 +9,11 @@ import org.apache.uima.cas.impl.FSGenerator;
 import org.apache.uima.cas.FeatureStructure;
 import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
-
 import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Sat Jan 31 01:41:24 EST 2015
+ * Updated by JCasGen Sat Jan 31 13:44:09 EST 2015
  * @generated */
 public class CandidateEventMentionArgument_Type extends ComponentAnnotation_Type {
   /** @generated 
@@ -45,9 +44,7 @@ public class CandidateEventMentionArgument_Type extends ComponentAnnotation_Type
      @modifiable */
   @SuppressWarnings ("hiding")
   public final static boolean featOkTst = JCasRegistry.getFeatOkTst("edu.cmu.cs.lti.script.type.CandidateEventMentionArgument");
-
-
-
+ 
   /** @generated */
   final Feature casFeat_roleName;
   /** @generated */
