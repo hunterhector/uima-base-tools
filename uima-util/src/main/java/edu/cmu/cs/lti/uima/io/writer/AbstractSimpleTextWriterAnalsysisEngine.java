@@ -31,8 +31,7 @@ public abstract class AbstractSimpleTextWriterAnalsysisEngine extends AbstractLo
         super.initialize(context);
         outputFile = new File(outputPath);
 
-        File parentDir = outputFile.getParentFile();
-
+        File parentDir = outputFile.getAbsoluteFile().getParentFile();
         if (!parentDir.exists()) {
             parentDir.mkdirs();
         }
