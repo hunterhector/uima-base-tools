@@ -11,7 +11,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** 
- * Updated by JCasGen Sat Jan 31 13:44:10 EST 2015
+ * Updated by JCasGen Sun Feb 01 19:19:41 EST 2015
  * @generated */
 public class StanfordDependencyRelation_Type extends Dependency_Type {
   /** @generated 

@@ -15,7 +15,7 @@ import org.apache.uima.jcas.cas.StringList;
 
 
 /** 
- * Updated by JCasGen Sat Jan 31 13:44:09 EST 2015
+ * Updated by JCasGen Sun Feb 01 19:19:39 EST 2015
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class CandidateEventMention extends ComponentAnnotation {
@@ -166,6 +166,28 @@ public class CandidateEventMention extends ComponentAnnotation {
     if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_goldStandardMentionType == null)
       jcasType.jcas.throwFeatMissing("goldStandardMentionType", "edu.cmu.cs.lti.script.type.CandidateEventMention");
     jcasType.ll_cas.ll_setStringValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_goldStandardMentionType, v);}    
+   
+    
+  //*--------------*
+  //* Feature: predictedType
+
+  /** getter for predictedType - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public String getPredictedType() {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_predictedType == null)
+      jcasType.jcas.throwFeatMissing("predictedType", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_predictedType);}
+    
+  /** setter for predictedType - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setPredictedType(String v) {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_predictedType == null)
+      jcasType.jcas.throwFeatMissing("predictedType", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    jcasType.ll_cas.ll_setStringValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_predictedType, v);}    
   }
 
     

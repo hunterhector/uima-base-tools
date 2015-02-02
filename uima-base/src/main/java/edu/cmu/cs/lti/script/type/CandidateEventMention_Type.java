@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Sat Jan 31 13:44:09 EST 2015
+ * Updated by JCasGen Sun Feb 01 19:19:39 EST 2015
  * @generated */
 public class CandidateEventMention_Type extends ComponentAnnotation_Type {
   /** @generated 
@@ -140,6 +140,30 @@ public class CandidateEventMention_Type extends ComponentAnnotation_Type {
     ll_cas.ll_setStringValue(addr, casFeatCode_goldStandardMentionType, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_predictedType;
+  /** @generated */
+  final int     casFeatCode_predictedType;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getPredictedType(int addr) {
+        if (featOkTst && casFeat_predictedType == null)
+      jcas.throwFeatMissing("predictedType", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_predictedType);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setPredictedType(int addr, String v) {
+        if (featOkTst && casFeat_predictedType == null)
+      jcas.throwFeatMissing("predictedType", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    ll_cas.ll_setStringValue(addr, casFeatCode_predictedType, v);}
+    
+  
 
 
 
@@ -167,6 +191,10 @@ public class CandidateEventMention_Type extends ComponentAnnotation_Type {
  
     casFeat_goldStandardMentionType = jcas.getRequiredFeatureDE(casType, "goldStandardMentionType", "uima.cas.String", featOkTst);
     casFeatCode_goldStandardMentionType  = (null == casFeat_goldStandardMentionType) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_goldStandardMentionType).getCode();
+
+ 
+    casFeat_predictedType = jcas.getRequiredFeatureDE(casType, "predictedType", "uima.cas.String", featOkTst);
+    casFeatCode_predictedType  = (null == casFeat_predictedType) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_predictedType).getCode();
 
   }
 }

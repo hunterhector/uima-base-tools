@@ -10,7 +10,7 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** 
- * Updated by JCasGen Sat Jan 31 13:44:09 EST 2015
+ * Updated by JCasGen Sun Feb 01 19:19:40 EST 2015
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class EventMentionGoalLink extends ComponentTOP {

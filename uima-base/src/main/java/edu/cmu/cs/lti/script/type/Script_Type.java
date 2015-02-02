@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** Intend to be use for script based analysis. Still tentative
- * Updated by JCasGen Sat Jan 31 13:44:10 EST 2015
+ * Updated by JCasGen Sun Feb 01 19:19:41 EST 2015
  * @generated */
 public class Script_Type extends ComponentAnnotation_Type {
   /** @generated 
