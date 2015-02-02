@@ -1225,6 +1225,21 @@
           <description/>
           <rangeTypeName>uima.cas.String</rangeTypeName>
         </featureDescription>
+        <featureDescription>
+          <name>goldRealis</name>
+          <description/>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+        <featureDescription>
+          <name>predictedRealis</name>
+          <description/>
+          <rangeTypeName>uima.cas.String</rangeTypeName>
+        </featureDescription>
+      <featureDescription>
+          <name>typePredictionConfidence</name>
+          <description/>
+          <rangeTypeName>uima.cas.Double</rangeTypeName>
+        </featureDescription>
       </features>
     </typeDescription>
     <typeDescription>

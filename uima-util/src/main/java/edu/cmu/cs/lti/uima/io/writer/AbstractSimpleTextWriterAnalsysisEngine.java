@@ -35,6 +35,12 @@ public abstract class AbstractSimpleTextWriterAnalsysisEngine extends AbstractLo
         if (!parentDir.exists()) {
             parentDir.mkdirs();
         }
+
+        try {
+            FileUtils.write(outputFile, "");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

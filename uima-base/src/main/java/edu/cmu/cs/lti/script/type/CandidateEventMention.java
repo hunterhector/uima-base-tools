@@ -15,7 +15,7 @@ import org.apache.uima.jcas.cas.StringList;
 
 
 /** 
- * Updated by JCasGen Sun Feb 01 19:19:39 EST 2015
+ * Updated by JCasGen Mon Feb 02 12:27:31 EST 2015
  * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
  * @generated */
 public class CandidateEventMention extends ComponentAnnotation {
@@ -188,6 +188,72 @@ public class CandidateEventMention extends ComponentAnnotation {
     if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_predictedType == null)
       jcasType.jcas.throwFeatMissing("predictedType", "edu.cmu.cs.lti.script.type.CandidateEventMention");
     jcasType.ll_cas.ll_setStringValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_predictedType, v);}    
+   
+    
+  //*--------------*
+  //* Feature: goldRealis
+
+  /** getter for goldRealis - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public String getGoldRealis() {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_goldRealis == null)
+      jcasType.jcas.throwFeatMissing("goldRealis", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_goldRealis);}
+    
+  /** setter for goldRealis - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setGoldRealis(String v) {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_goldRealis == null)
+      jcasType.jcas.throwFeatMissing("goldRealis", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    jcasType.ll_cas.ll_setStringValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_goldRealis, v);}    
+   
+    
+  //*--------------*
+  //* Feature: predictedRealis
+
+  /** getter for predictedRealis - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public String getPredictedRealis() {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_predictedRealis == null)
+      jcasType.jcas.throwFeatMissing("predictedRealis", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return jcasType.ll_cas.ll_getStringValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_predictedRealis);}
+    
+  /** setter for predictedRealis - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setPredictedRealis(String v) {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_predictedRealis == null)
+      jcasType.jcas.throwFeatMissing("predictedRealis", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    jcasType.ll_cas.ll_setStringValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_predictedRealis, v);}    
+   
+    
+  //*--------------*
+  //* Feature: typePredictionConfidence
+
+  /** getter for typePredictionConfidence - gets 
+   * @generated
+   * @return value of the feature 
+   */
+  public double getTypePredictionConfidence() {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_typePredictionConfidence == null)
+      jcasType.jcas.throwFeatMissing("typePredictionConfidence", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return jcasType.ll_cas.ll_getDoubleValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_typePredictionConfidence);}
+    
+  /** setter for typePredictionConfidence - sets  
+   * @generated
+   * @param v value to set into the feature 
+   */
+  public void setTypePredictionConfidence(double v) {
+    if (CandidateEventMention_Type.featOkTst && ((CandidateEventMention_Type)jcasType).casFeat_typePredictionConfidence == null)
+      jcasType.jcas.throwFeatMissing("typePredictionConfidence", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    jcasType.ll_cas.ll_setDoubleValue(addr, ((CandidateEventMention_Type)jcasType).casFeatCode_typePredictionConfidence, v);}    
   }
 
     

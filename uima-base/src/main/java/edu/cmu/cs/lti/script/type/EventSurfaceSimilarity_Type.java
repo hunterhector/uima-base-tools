@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Sun Feb 01 19:19:40 EST 2015
+ * Updated by JCasGen Mon Feb 02 12:27:31 EST 2015
  * @generated */
 public class EventSurfaceSimilarity_Type extends ComponentTOP_Type {
   /** @generated 

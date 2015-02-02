@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Sun Feb 01 19:19:39 EST 2015
+ * Updated by JCasGen Mon Feb 02 12:27:31 EST 2015
  * @generated */
 public class CandidateEventMention_Type extends ComponentAnnotation_Type {
   /** @generated 
@@ -164,6 +164,78 @@ public class CandidateEventMention_Type extends ComponentAnnotation_Type {
     ll_cas.ll_setStringValue(addr, casFeatCode_predictedType, v);}
     
   
+ 
+  /** @generated */
+  final Feature casFeat_goldRealis;
+  /** @generated */
+  final int     casFeatCode_goldRealis;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getGoldRealis(int addr) {
+        if (featOkTst && casFeat_goldRealis == null)
+      jcas.throwFeatMissing("goldRealis", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_goldRealis);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setGoldRealis(int addr, String v) {
+        if (featOkTst && casFeat_goldRealis == null)
+      jcas.throwFeatMissing("goldRealis", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    ll_cas.ll_setStringValue(addr, casFeatCode_goldRealis, v);}
+    
+  
+ 
+  /** @generated */
+  final Feature casFeat_predictedRealis;
+  /** @generated */
+  final int     casFeatCode_predictedRealis;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public String getPredictedRealis(int addr) {
+        if (featOkTst && casFeat_predictedRealis == null)
+      jcas.throwFeatMissing("predictedRealis", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return ll_cas.ll_getStringValue(addr, casFeatCode_predictedRealis);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setPredictedRealis(int addr, String v) {
+        if (featOkTst && casFeat_predictedRealis == null)
+      jcas.throwFeatMissing("predictedRealis", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    ll_cas.ll_setStringValue(addr, casFeatCode_predictedRealis, v);}
+    
+  
+ 
+  /** @generated */
+  final Feature casFeat_typePredictionConfidence;
+  /** @generated */
+  final int     casFeatCode_typePredictionConfidence;
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @return the feature value 
+   */ 
+  public double getTypePredictionConfidence(int addr) {
+        if (featOkTst && casFeat_typePredictionConfidence == null)
+      jcas.throwFeatMissing("typePredictionConfidence", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    return ll_cas.ll_getDoubleValue(addr, casFeatCode_typePredictionConfidence);
+  }
+  /** @generated
+   * @param addr low level Feature Structure reference
+   * @param v value to set 
+   */    
+  public void setTypePredictionConfidence(int addr, double v) {
+        if (featOkTst && casFeat_typePredictionConfidence == null)
+      jcas.throwFeatMissing("typePredictionConfidence", "edu.cmu.cs.lti.script.type.CandidateEventMention");
+    ll_cas.ll_setDoubleValue(addr, casFeatCode_typePredictionConfidence, v);}
+    
+  
 
 
 
@@ -195,6 +267,18 @@ public class CandidateEventMention_Type extends ComponentAnnotation_Type {
  
     casFeat_predictedType = jcas.getRequiredFeatureDE(casType, "predictedType", "uima.cas.String", featOkTst);
     casFeatCode_predictedType  = (null == casFeat_predictedType) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_predictedType).getCode();
+
+ 
+    casFeat_goldRealis = jcas.getRequiredFeatureDE(casType, "goldRealis", "uima.cas.String", featOkTst);
+    casFeatCode_goldRealis  = (null == casFeat_goldRealis) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_goldRealis).getCode();
+
+ 
+    casFeat_predictedRealis = jcas.getRequiredFeatureDE(casType, "predictedRealis", "uima.cas.String", featOkTst);
+    casFeatCode_predictedRealis  = (null == casFeat_predictedRealis) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_predictedRealis).getCode();
+
+ 
+    casFeat_typePredictionConfidence = jcas.getRequiredFeatureDE(casType, "typePredictionConfidence", "uima.cas.Double", featOkTst);
+    casFeatCode_typePredictionConfidence  = (null == casFeat_typePredictionConfidence) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_typePredictionConfidence).getCode();
 
   }
 }
