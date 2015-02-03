@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<typeSystemDescription xmlns="http://uima.apache.org/resourceSpecifier">
+    <name>TaskMCTestTypeSystem</name>
+    <description>A extended type system for the development of MC (Machine Comprehension) task, extending the core TypeSystem</description>
+    <version>1.0</version>
+    <vendor/>
+  <imports>
+    <import name="TypeSystem"/>
+  </imports>
+</typeSystemDescription>

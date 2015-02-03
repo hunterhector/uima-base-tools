@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Mon Feb 02 12:27:32 EST 2015
+ * Updated by JCasGen Tue Feb 03 14:44:05 EST 2015
  * @generated */
 public class SemaforAnnotationSet_Type extends ComponentAnnotation_Type {
   /** @generated 

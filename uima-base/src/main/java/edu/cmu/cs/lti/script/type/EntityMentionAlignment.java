@@ -10,8 +10,8 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** 
- * Updated by JCasGen Mon Feb 02 12:27:31 EST 2015
- * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TypeSystem.xml
+ * Updated by JCasGen Tue Feb 03 14:44:05 EST 2015
+ * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TaskEventMentionDetectionTypeSystem.xml
  * @generated */
 public class EntityMentionAlignment extends ComponentTOP {
   /** @generated
@@ -114,16 +114,16 @@ public class EntityMentionAlignment extends ComponentTOP {
    * @generated
    * @return value of the feature 
    */
-  public StanfordEntityMention getSourceEntityMention() {
+  public EntityMention getSourceEntityMention() {
     if (EntityMentionAlignment_Type.featOkTst && ((EntityMentionAlignment_Type)jcasType).casFeat_sourceEntityMention == null)
       jcasType.jcas.throwFeatMissing("sourceEntityMention", "edu.cmu.cs.lti.script.type.EntityMentionAlignment");
-    return (StanfordEntityMention)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EntityMentionAlignment_Type)jcasType).casFeatCode_sourceEntityMention)));}
+    return (EntityMention)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EntityMentionAlignment_Type)jcasType).casFeatCode_sourceEntityMention)));}
     
   /** setter for sourceEntityMention - sets  
    * @generated
    * @param v value to set into the feature 
    */
-  public void setSourceEntityMention(StanfordEntityMention v) {
+  public void setSourceEntityMention(EntityMention v) {
     if (EntityMentionAlignment_Type.featOkTst && ((EntityMentionAlignment_Type)jcasType).casFeat_sourceEntityMention == null)
       jcasType.jcas.throwFeatMissing("sourceEntityMention", "edu.cmu.cs.lti.script.type.EntityMentionAlignment");
     jcasType.ll_cas.ll_setRefValue(addr, ((EntityMentionAlignment_Type)jcasType).casFeatCode_sourceEntityMention, jcasType.ll_cas.ll_getFSRef(v));}    
@@ -136,16 +136,16 @@ public class EntityMentionAlignment extends ComponentTOP {
    * @generated
    * @return value of the feature 
    */
-  public StanfordEntityMention getTargetEntityMention() {
+  public EntityMention getTargetEntityMention() {
     if (EntityMentionAlignment_Type.featOkTst && ((EntityMentionAlignment_Type)jcasType).casFeat_targetEntityMention == null)
       jcasType.jcas.throwFeatMissing("targetEntityMention", "edu.cmu.cs.lti.script.type.EntityMentionAlignment");
-    return (StanfordEntityMention)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EntityMentionAlignment_Type)jcasType).casFeatCode_targetEntityMention)));}
+    return (EntityMention)(jcasType.ll_cas.ll_getFSForRef(jcasType.ll_cas.ll_getRefValue(addr, ((EntityMentionAlignment_Type)jcasType).casFeatCode_targetEntityMention)));}
     
   /** setter for targetEntityMention - sets  
    * @generated
    * @param v value to set into the feature 
    */
-  public void setTargetEntityMention(StanfordEntityMention v) {
+  public void setTargetEntityMention(EntityMention v) {
     if (EntityMentionAlignment_Type.featOkTst && ((EntityMentionAlignment_Type)jcasType).casFeat_targetEntityMention == null)
       jcasType.jcas.throwFeatMissing("targetEntityMention", "edu.cmu.cs.lti.script.type.EntityMentionAlignment");
     jcasType.ll_cas.ll_setRefValue(addr, ((EntityMentionAlignment_Type)jcasType).casFeatCode_targetEntityMention, jcasType.ll_cas.ll_getFSRef(v));}    

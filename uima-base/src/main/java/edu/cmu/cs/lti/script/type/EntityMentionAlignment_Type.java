@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** 
- * Updated by JCasGen Mon Feb 02 12:27:31 EST 2015
+ * Updated by JCasGen Tue Feb 03 14:44:05 EST 2015
  * @generated */
 public class EntityMentionAlignment_Type extends ComponentTOP_Type {
   /** @generated 
@@ -161,11 +161,11 @@ public class EntityMentionAlignment_Type extends ComponentTOP_Type {
     casFeatCode_targetViewName  = (null == casFeat_targetViewName) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_targetViewName).getCode();
 
  
-    casFeat_sourceEntityMention = jcas.getRequiredFeatureDE(casType, "sourceEntityMention", "edu.cmu.cs.lti.script.type.StanfordEntityMention", featOkTst);
+    casFeat_sourceEntityMention = jcas.getRequiredFeatureDE(casType, "sourceEntityMention", "edu.cmu.cs.lti.script.type.EntityMention", featOkTst);
     casFeatCode_sourceEntityMention  = (null == casFeat_sourceEntityMention) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_sourceEntityMention).getCode();
 
  
-    casFeat_targetEntityMention = jcas.getRequiredFeatureDE(casType, "targetEntityMention", "edu.cmu.cs.lti.script.type.StanfordEntityMention", featOkTst);
+    casFeat_targetEntityMention = jcas.getRequiredFeatureDE(casType, "targetEntityMention", "edu.cmu.cs.lti.script.type.EntityMention", featOkTst);
     casFeatCode_targetEntityMention  = (null == casFeat_targetEntityMention) ? JCas.INVALID_FEATURE_CODE : ((FeatureImpl)casFeat_targetEntityMention).getCode();
 
   }
