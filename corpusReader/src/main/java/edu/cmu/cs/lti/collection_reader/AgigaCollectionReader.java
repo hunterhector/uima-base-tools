@@ -7,6 +7,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import edu.cmu.cs.lti.script.type.*;
+import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
 import edu.jhu.agiga.*;
@@ -16,15 +17,22 @@ import edu.stanford.nlp.trees.HeadFinder;
 import edu.stanford.nlp.trees.SemanticHeadFinder;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.util.CoreMap;
+import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
+import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionException;
+import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.examples.SourceDocumentInformation;
 import org.apache.uima.fit.component.JCasCollectionReader_ImplBase;
+import org.apache.uima.fit.factory.CollectionReaderFactory;
+import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
+import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
@@ -54,7 +62,6 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
 
     private File currentFile;
 
-
     private int fileOffset;
 
     private StreamingDocumentReader reader;
@@ -67,12 +74,14 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
 
     int treeId = 0;
 
+    private static String className = AgigaCollectionReader.class.getSimpleName();
+
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         File inputDir = new File(((String) getConfigParameterValue(PARAM_INPUTDIR)).trim());
         gCurrentIndex = 0;
 
-        if (!(inputDir.exists() && inputDir.isDirectory())){
+        if (!(inputDir.exists() && inputDir.isDirectory())) {
             throw new ResourceInitializationException(new FileNotFoundException(inputDir.getAbsolutePath()));
         }
 
@@ -250,7 +259,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
 
                     headRelations.put(childToken, relation);
                     childRelations.put(headToken, relation);
-                }else{
+                } else {
 //                    System.out.println("Head is -1, root is "+ dep.getDepIdx() + " "+dep.getGovIdx());
                 }
             }
@@ -260,7 +269,7 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
                         headRelations.get(token)));
             }
 
-            for (StanfordCorenlpToken token : childRelations.keys()){
+            for (StanfordCorenlpToken token : childRelations.keys()) {
                 token.setChildDependencyRelations(FSCollectionFactory.createFSList(jcas,
                         childRelations.get(token)));
             }
@@ -452,5 +461,41 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
 
         StanfordCorenlpToken leafToken = leafTokens.get(leaveIndex);
         node.setHead(leafToken);
+    }
+
+
+    public static void main(String[] args) throws UIMAException {
+        System.out.println(className + " started...");
+
+        String paramInputDir = "/Users/zhengzhongliu/Documents/data/agiga_sample";
+
+        // Parameters for the writer
+        String paramParentOutputDir = "data";
+        String paramBaseOutputDirName = "xmi";
+        String paramOutputFileSuffix = null;
+        // ////////////////////////////////////////////////////////////////
+
+        String paramTypeSystemDescriptor = "TypeSystem";
+
+        TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
+                .createTypeSystemDescription(paramTypeSystemDescriptor);
+
+        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+                AgigaCollectionReader.class, typeSystemDescription,
+                AgigaCollectionReader.PARAM_INPUTDIR, paramInputDir);
+
+        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
+                paramParentOutputDir, paramBaseOutputDirName, 0,
+                paramOutputFileSuffix);
+
+        // Run the pipeline.
+        try {
+            SimplePipeline.runPipeline(reader, writer);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+
+        System.out.println(className + " successfully completed.");
     }
 }

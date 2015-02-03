@@ -7,4 +7,49 @@
   <imports>
     <import name="TypeSystem"/>
   </imports>
+<types>
+    <typeDescription>
+      <name>edu.cmu.cs.lti.script.type.MCStory</name>
+      <description/>
+      <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+      <features>
+        <featureDescription>
+          <name>mcQuestions</name>
+          <description/>
+          <rangeTypeName>uima.cas.FSArray</rangeTypeName>
+          <elementType>edu.cmu.cs.lti.script.type.MCQuestion</elementType>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>edu.cmu.cs.lti.script.type.MCQuestion</name>
+      <description/>
+      <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+      <features>
+        <featureDescription>
+          <name>mcAnswerChoices</name>
+          <description/>
+          <rangeTypeName>uima.cas.FSArray</rangeTypeName>
+          <elementType>edu.cmu.cs.lti.script.type.MCAnswerChoice</elementType>
+        </featureDescription>
+      <featureDescription>
+          <name>isMultipleChoice</name>
+          <description/>
+          <rangeTypeName>uima.cas.Boolean</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+    <typeDescription>
+      <name>edu.cmu.cs.lti.script.type.MCAnswerChoice</name>
+      <description/>
+      <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+      <features>
+        <featureDescription>
+          <name>isCorrect</name>
+          <description/>
+          <rangeTypeName>uima.cas.Boolean</rangeTypeName>
+        </featureDescription>
+      </features>
+    </typeDescription>
+  </types>
 </typeSystemDescription>

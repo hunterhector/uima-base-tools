@@ -11,8 +11,8 @@ import org.apache.uima.jcas.cas.FSArray;
 
 
 /** 
- * Updated by JCasGen Tue Feb 03 14:44:05 EST 2015
- * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TaskEventMentionDetectionTypeSystem.xml
+ * Updated by JCasGen Tue Feb 03 16:25:10 EST 2015
+ * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TaskMCTestTypeSystem.xml
  * @generated */
 public class SemaforLayer extends ComponentAnnotation {
   /** @generated

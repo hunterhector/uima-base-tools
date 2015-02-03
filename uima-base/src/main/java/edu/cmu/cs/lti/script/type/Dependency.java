@@ -10,8 +10,8 @@ import org.apache.uima.jcas.cas.TOP_Type;
 
 
 /** A generic dependency type, specific annotator dependency should inherite this. In principle, dependency nodes can be different as words, that's why it was annotated individually.
- * Updated by JCasGen Tue Feb 03 14:44:05 EST 2015
- * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TaskEventMentionDetectionTypeSystem.xml
+ * Updated by JCasGen Tue Feb 03 16:25:09 EST 2015
+ * XML source: /Users/zhengzhongliu/Documents/projects/uimafied-tools/uima-base/src/main/resources/TaskMCTestTypeSystem.xml
  * @generated */
 public class Dependency extends ComponentTOP {
   /** @generated

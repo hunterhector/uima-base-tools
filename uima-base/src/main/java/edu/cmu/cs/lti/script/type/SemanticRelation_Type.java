@@ -13,7 +13,7 @@ import org.apache.uima.cas.impl.FeatureImpl;
 import org.apache.uima.cas.Feature;
 
 /** Generic Semantic Relation
- * Updated by JCasGen Tue Feb 03 14:44:05 EST 2015
+ * Updated by JCasGen Tue Feb 03 16:25:10 EST 2015
  * @generated */
 public class SemanticRelation_Type extends ComponentTOP_Type {
   /** @generated 

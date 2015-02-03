@@ -11,7 +11,7 @@ import org.apache.uima.cas.impl.TypeImpl;
 import org.apache.uima.cas.Type;
 
 /** 
- * Updated by JCasGen Tue Feb 03 14:44:05 EST 2015
+ * Updated by JCasGen Tue Feb 03 16:25:09 EST 2015
  * @generated */
 public class FanseDependencyRelation_Type extends Dependency_Type {
   /** @generated 
