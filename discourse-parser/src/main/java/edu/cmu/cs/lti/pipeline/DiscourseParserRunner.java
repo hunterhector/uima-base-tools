@@ -21,6 +21,7 @@ import java.util.logging.Logger;
  * Time: 9:37 PM
  */
 public class DiscourseParserRunner {
+    //TODO make sure this can be run outside, figure out the scala version problem
     private static String className = DiscourseParserRunner.class.getSimpleName();
 
     static Logger logger = Logger.getLogger(className);
@@ -33,19 +34,13 @@ public class DiscourseParserRunner {
     public static void main(String[] args) throws UIMAException, IOException {
         logger.log(Level.INFO, className + " started...");
 
-        if (args.length < 3){
+        if (args.length < 3) {
             logger.log(Level.INFO, "Please provide input and output directory and step number");
             System.exit(1);
         }
 
-        // ///////////////////////// Parameter Setting ////////////////////////////
-        // Note that you should change the parameters below for your configuration.
-        // //////////////////////////////////////////////////////////////////////////
-        // Parameters for the reader
         String paramInputDir = args[0]; //"data/01_event_tuples";
         int inputStepNum = Integer.parseInt(args[1]);
-
-//        String paramInputDir = "data/test";
 
         // Parameters for the writer
         String paramParentOutputDir = "data";
@@ -54,10 +49,9 @@ public class DiscourseParserRunner {
 
         boolean quiet = false;
         // Quiet or not
-        if (args.length >=4) {
-             quiet = args[3].equals("quiet");
+        if (args.length >= 4) {
+            quiet = args[3].equals("quiet");
         }
-        // ////////////////////////////////////////////////////////////////
 
         String paramTypeSystemDescriptor = "TypeSystem";
 
@@ -70,13 +64,16 @@ public class DiscourseParserRunner {
         // Instantiate a collection reader to get XMI as input.
         // Note that you should change the following parameters for your setting.
         CollectionReaderDescription reader =
-                CustomCollectionReaderFactory.createTimeSortedGzipXmiReader(typeSystemDescription, paramInputDir, false);
+//                CustomCollectionReaderFactory.createTimeSortedGzipXmiReader(typeSystemDescription, paramInputDir, false);
+                CustomCollectionReaderFactory.createXmiReader(typeSystemDescription, paramInputDir, false);
 
         AnalysisEngineDescription discourseParser = CustomAnalysisEngineFactory.createAnalysisEngine(
                 DiscourseParserAnnotator.class, typeSystemDescription, DiscourseParserAnnotator.PARAM_KEEP_QUIET, quiet);
 
-        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createGzipWriter(
-                paramParentOutputDir, paramBaseOutputDirName, outputStepNum, paramOutputFileSuffix, null);
+        AnalysisEngineDescription writer =
+//                CustomAnalysisEngineFactory.createGzipWriter(
+                CustomAnalysisEngineFactory.createXmiWriter(
+                        paramParentOutputDir, paramBaseOutputDirName, outputStepNum, paramOutputFileSuffix, null);
 
         SimplePipeline.runPipeline(reader, discourseParser, writer);
     }
