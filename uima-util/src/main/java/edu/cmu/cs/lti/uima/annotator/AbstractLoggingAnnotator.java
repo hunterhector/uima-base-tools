@@ -70,8 +70,10 @@ public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase {
         }
 
         JCas[] additionalViews = new JCas[targetViews.length];
+        int i = 0;
         for (String viewName : targetViews) {
-            UimaConvenience.getView(mainView, viewName);
+            additionalViews[i] = UimaConvenience.getView(mainView, viewName);
+            i++;
         }
         return additionalViews;
     }
