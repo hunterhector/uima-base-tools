@@ -5,6 +5,7 @@
  */
 package edu.cmu.cs.lti.uima.util;
 
+import com.google.common.collect.Iterables;
 import edu.cmu.cs.lti.uima.model.AnnotationCondition;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.cas.*;
@@ -740,7 +741,7 @@ public class UimaConvenience extends BasicConvenience {
     }
 
     public static String getShortDocumentName(JCas aJCas) {
-        SourceDocumentInformation srcDocInfo = JCasUtil.selectSingle(aJCas,
+        SourceDocumentInformation srcDocInfo = selectSingle(aJCas,
                 SourceDocumentInformation.class);
         if (srcDocInfo == null) {
             return null;
@@ -749,12 +750,26 @@ public class UimaConvenience extends BasicConvenience {
     }
 
     public static String getShortDocumentNameWithOffset(JCas aJCas) {
-        SourceDocumentInformation srcDocInfo = JCasUtil.selectSingle(aJCas,
-                SourceDocumentInformation.class);
+        SourceDocumentInformation srcDocInfo = selectSingle(aJCas, SourceDocumentInformation.class);
+
         if (srcDocInfo == null) {
-            return null;
+            return "";
         }
+
         return FilenameUtils.getBaseName(srcDocInfo.getUri()) + "_" + srcDocInfo.getOffsetInSource();
+    }
+
+    /**
+     * Mimic JCasUtil.selectSingle, instead this will return null if not found, instead of Exception
+     *
+     * @param aJCas
+     * @param clazz
+     * @param <T>
+     * @return
+     */
+    public static <T extends TOP> T selectSingle(JCas aJCas, Class<T> clazz) {
+        Collection<T> infos = JCasUtil.select(aJCas, clazz);
+        return Iterables.getFirst(infos, null);
     }
 
     public static int getOffsetInSource(JCas aJCas) {
