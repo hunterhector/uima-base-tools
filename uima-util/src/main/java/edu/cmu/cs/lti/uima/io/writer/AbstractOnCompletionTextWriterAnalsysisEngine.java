@@ -1,12 +1,14 @@
 package edu.cmu.cs.lti.uima.io.writer;
 
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
+import org.apache.commons.io.FileUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Provide an funciton to implemented, which allow customizing what text to be printed out
@@ -37,7 +39,13 @@ public abstract class AbstractOnCompletionTextWriterAnalsysisEngine extends Abst
     public abstract String getTextToPrint();
 
     public void collectionProcessComplete() throws AnalysisEngineProcessException {
-        getTextToPrint();
+        String text = getTextToPrint();
+
+        try {
+            FileUtils.write(outputFile, text);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }

@@ -40,18 +40,18 @@ public class DiscourseParserRunner {
         }
 
         String paramInputDir = args[0]; //"data/01_event_tuples";
-        int inputStepNum = Integer.parseInt(args[1]);
 
         // Parameters for the writer
+        int outputStepNum = Integer.parseInt(args[1]);
         String paramParentOutputDir = args[2]; //"data"
         String paramBaseOutputDirName = args[3]; //"discourse_parsed";
+
         String paramOutputFileSuffix = null;
 
         boolean quiet = false;
 
         String paramTypeSystemDescriptor = "TypeSystem";
 
-        int outputStepNum = inputStepNum + 1;
 
         // Instantiate the analysis engine.
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
