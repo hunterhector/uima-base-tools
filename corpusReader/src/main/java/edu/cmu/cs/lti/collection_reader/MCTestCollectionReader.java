@@ -12,7 +12,6 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReaderDescription;
-import org.apache.uima.fit.component.JCasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
@@ -37,7 +36,7 @@ import java.util.List;
  * Date: 2/3/15
  * Time: 2:23 PM
  */
-public class MCTestCollectionReader extends JCasCollectionReader_ImplBase {
+public class MCTestCollectionReader extends AbstractSourceDocumentCollectionReader {
 
     public static final String PARAM_MC_TSV_PATH = "mcTsvPath";
 
@@ -93,11 +92,10 @@ public class MCTestCollectionReader extends JCasCollectionReader_ImplBase {
     @Override
     public void getNext(JCas jCas) throws IOException, CollectionException {
         annotateTask(jCas, taskIter.next());
-
+        setSourceDocumentInformation(jCas, new File(mcTsvPath).toURI().toString(), 0, processed, !taskIter.hasNext());
         if (hasAnswer) {
             annotateAnswer(jCas, answerIter.next());
         }
-
         processed++;
     }
 
@@ -197,7 +195,7 @@ public class MCTestCollectionReader extends JCasCollectionReader_ImplBase {
         System.out.println(className + " started...");
 
         // Parameters for the writer
-        String paramParentOutputDir = "data/mc_test/160.dev";
+        String paramParentOutputDir = "data/mc_test/160.dev+train";
         String paramBaseOutputDirName = "plain";
         String paramOutputFileSuffix = null;
 
@@ -208,8 +206,8 @@ public class MCTestCollectionReader extends JCasCollectionReader_ImplBase {
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 MCTestCollectionReader.class, typeSystemDescription,
-                MCTestCollectionReader.PARAM_MC_ANS_PATH, "data/mc_test/MCTest/mc160.dev.ans",
-                MCTestCollectionReader.PARAM_MC_TSV_PATH, "data/mc_test/MCTest/mc160.dev.tsv"
+                MCTestCollectionReader.PARAM_MC_ANS_PATH, "data/mc_test/MCTest/mc160.train.ans",
+                MCTestCollectionReader.PARAM_MC_TSV_PATH, "data/mc_test/MCTest/mc160.train.tsv"
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(

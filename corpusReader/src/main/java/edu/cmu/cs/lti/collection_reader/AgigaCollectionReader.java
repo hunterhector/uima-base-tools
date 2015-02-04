@@ -22,8 +22,6 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReaderDescription;
-import org.apache.uima.examples.SourceDocumentInformation;
-import org.apache.uima.fit.component.JCasCollectionReader_ImplBase;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
@@ -52,7 +50,7 @@ import java.util.List;
 /**
  * @author zhengzhongliu
  */
-public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
+public class AgigaCollectionReader extends AbstractSourceDocumentCollectionReader {
 
     public static final String PARAM_INPUTDIR = "InputDirectory";
 
@@ -107,13 +105,8 @@ public class AgigaCollectionReader extends JCasCollectionReader_ImplBase {
         fileOffset += 1;
         treeId = 0;
         uimafyAnnotations(jcas, currentDoc);
+        setSourceDocumentInformation(jcas, currentFile.toURI().toURL().toString(), (int) currentFile.length(), fileOffset, !reader.hasNext());
 
-        SourceDocumentInformation enSrcDocInfo = new SourceDocumentInformation(jcas);
-        enSrcDocInfo.setUri(currentFile.toURI().toURL().toString());
-        enSrcDocInfo.setOffsetInSource(fileOffset);
-        enSrcDocInfo.setDocumentSize((int) currentFile.length());
-        enSrcDocInfo.setLastSegment(!reader.hasNext());
-        enSrcDocInfo.addToIndexes();
     }
 
 

@@ -7,8 +7,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
-import org.apache.uima.examples.SourceDocumentInformation;
-import org.apache.uima.fit.component.JCasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -32,7 +30,7 @@ import java.util.regex.Pattern;
  *
  * @author Zhengzhong Liu, Hector
  */
-public class AceDataCollectionReader extends JCasCollectionReader_ImplBase {
+public class AceDataCollectionReader extends AbstractSourceDocumentCollectionReader {
 
     public final static String PARAM_ACE_ENGLISH_DATA_PATH = "ace_english_data_path";
 
@@ -179,15 +177,6 @@ public class AceDataCollectionReader extends JCasCollectionReader_ImplBase {
         return documentText;
     }
 
-    private void setSourceDocumentInformation(JCas aJCas, String uri, int size, boolean isLastSegment) {
-        SourceDocumentInformation srcDocInfo = new SourceDocumentInformation(aJCas);
-        srcDocInfo.setUri(uri);
-        srcDocInfo.setOffsetInSource(0);
-        srcDocInfo.setDocumentSize(size);
-        srcDocInfo.setLastSegment(isLastSegment);
-        srcDocInfo.addToIndexes();
-    }
-
     @Override
     public void getNext(JCas aJCas) throws IOException, CollectionException {
         try {
@@ -213,7 +202,7 @@ public class AceDataCollectionReader extends JCasCollectionReader_ImplBase {
 
             // source document information are useful to reach the golden standard file while annotating
             setSourceDocumentInformation(aJCas, sgmFile.toURI().toString(), (int) sgmFile.length(),
-                    hasNext());
+                    0, !hasNext());
         } catch (CASException ce) {
             throw new CollectionException(ce);
         }

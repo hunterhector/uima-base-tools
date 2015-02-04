@@ -16,8 +16,6 @@ import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReaderDescription;
-import org.apache.uima.examples.SourceDocumentInformation;
-import org.apache.uima.fit.component.JCasCollectionReader_ImplBase;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
@@ -40,7 +38,7 @@ import java.util.*;
  * Date: 1/21/15
  * Time: 11:40 PM
  */
-public class EventMentionDetectionDataReader extends JCasCollectionReader_ImplBase {
+public class EventMentionDetectionDataReader extends AbstractSourceDocumentCollectionReader {
     public static final String PARAM_SOURCE_TEXT_DIRECTORY = "SourceTextDirectory";
 
     public static final String PARAM_TOKEN_DIRECTORY = "TokenizationDirectory";
@@ -151,12 +149,7 @@ public class EventMentionDetectionDataReader extends JCasCollectionReader_ImplBa
         currentFile = fileList.get(currentPointer);
         currentPointer++;
 
-        SourceDocumentInformation enSrcDocInfo = new SourceDocumentInformation(jCas);
-        enSrcDocInfo.setUri(currentFile.getValue1().toURI().toURL().toString());
-        enSrcDocInfo.setOffsetInSource(0);
-        enSrcDocInfo.setDocumentSize((int) currentFile.getValue1().length());
-        enSrcDocInfo.setLastSegment(true);
-        enSrcDocInfo.addToIndexes();
+        setSourceDocumentInformation(jCas, currentFile.getValue1().toURI().toURL().toString(), (int) currentFile.getValue1().length(), 0, true);
 
         String sourceFileStr = FileUtils.readFileToString(getSourceFile());
         String documentText = NoiseTextFormatter.cleanForum(sourceFileStr);
