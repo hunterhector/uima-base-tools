@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Created with IntelliJ IDEA.
@@ -161,10 +162,17 @@ public class MCTestCollectionReader extends AbstractSourceDocumentCollectionRead
         List<MCAnswerChoice> choices = new ArrayList<>();
 
         for (int i = 1; i < qaSet.length; i++) {
-            MCAnswerChoice choice = new MCAnswerChoice(jCas, offset, offset + qaSet[i].length());
+            String choiceStr = qaSet[i];
+
+            if (!Pattern.matches("\\p{Punct}", choiceStr.substring(choiceStr.length() - 1))) {
+                choiceStr = choiceStr + " .";
+            }
+
+            MCAnswerChoice choice = new MCAnswerChoice(jCas, offset, offset + choiceStr.length());
             UimaAnnotationUtils.finishAnnotation(choice, COMPONENT_ID, qid + "_" + i, jCas);
-            offset += qaSet[i].length() + 1;
-            sb.append(qaSet[i]).append("\n");
+
+            offset += choiceStr.length() + 1;
+            sb.append(choiceStr).append("\n");
             choices.add(choice);
         }
         question.setMcAnswerChoices(FSCollectionFactory.createFSArray(jCas, choices));
@@ -206,8 +214,8 @@ public class MCTestCollectionReader extends AbstractSourceDocumentCollectionRead
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 MCTestCollectionReader.class, typeSystemDescription,
-                MCTestCollectionReader.PARAM_MC_ANS_PATH, "data/mc_test/MCTest/mc160.train.ans",
-                MCTestCollectionReader.PARAM_MC_TSV_PATH, "data/mc_test/MCTest/mc160.train.tsv"
+                MCTestCollectionReader.PARAM_MC_ANS_PATH, "data/mc_test/MCTest/mc160.dev.ans",
+                MCTestCollectionReader.PARAM_MC_TSV_PATH, "data/mc_test/MCTest/mc160.dev.tsv"
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
