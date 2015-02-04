@@ -34,8 +34,8 @@ public class DiscourseParserRunner {
     public static void main(String[] args) throws UIMAException, IOException {
         logger.log(Level.INFO, className + " started...");
 
-        if (args.length < 3) {
-            logger.log(Level.INFO, "Please provide input and output directory and step number");
+        if (args.length < 4) {
+            logger.log(Level.INFO, "Please provide input, parent and base output directory and step number");
             System.exit(1);
         }
 
@@ -43,15 +43,11 @@ public class DiscourseParserRunner {
         int inputStepNum = Integer.parseInt(args[1]);
 
         // Parameters for the writer
-        String paramParentOutputDir = "data";
-        String paramBaseOutputDirName = args[2]; //"discourse_parsed";
+        String paramParentOutputDir = args[2]; //"data"
+        String paramBaseOutputDirName = args[3]; //"discourse_parsed";
         String paramOutputFileSuffix = null;
 
         boolean quiet = false;
-        // Quiet or not
-        if (args.length >= 4) {
-            quiet = args[3].equals("quiet");
-        }
 
         String paramTypeSystemDescriptor = "TypeSystem";
 

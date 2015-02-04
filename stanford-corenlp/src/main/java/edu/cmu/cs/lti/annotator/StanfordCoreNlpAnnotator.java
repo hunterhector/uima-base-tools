@@ -78,6 +78,10 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         annotateText(aJCas.getDocumentText(), aJCas, 0);
+
+        for (JCas view : getAdditionalViews(aJCas)) {
+            annotateText(view.getDocumentText(), view, 0);
+        }
     }
 
     private void annotateText(String text, JCas aJCas, int textOffset) {

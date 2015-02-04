@@ -67,8 +67,14 @@ public class DiscourseParserAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-        logger.info(progressInfo(aJCas));
+        annotateDiscourse(aJCas);
+        for (JCas view : getAdditionalViews(aJCas)) {
+            annotateDiscourse(view);
+        }
+    }
 
+    private void annotateDiscourse(JCas aJCas) {
+        logger.info(progressInfo(aJCas));
         SistaDocumentMaker maker = new SistaDocumentMaker();
 
         for (Sentence sent : JCasUtil.select(aJCas, Sentence.class)) {

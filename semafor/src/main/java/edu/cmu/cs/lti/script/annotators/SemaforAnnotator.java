@@ -55,6 +55,14 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
+        annotateSemafor(aJCas);
+        for (JCas view : getAdditionalViews(aJCas)) {
+            annotateSemafor(view);
+        }
+    }
+
+
+    private void annotateSemafor(JCas aJCas) {
         for (Sentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
             List<Token> semaforTokens = new ArrayList<>();
 
@@ -67,14 +75,14 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
 
             try {
                 SemaforParseResult result = semafor.parse(semaforTokens);
-                annotateSemafor(aJCas, sentence, result);
+                annotateSemaforSentence(aJCas, sentence, result);
             } catch (ParsingException | IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private void annotateSemafor(JCas aJCas, Sentence sentence, SemaforParseResult result) {
+    private void annotateSemaforSentence(JCas aJCas, Sentence sentence, SemaforParseResult result) {
         List<StanfordCorenlpToken> words = JCasUtil.selectCovered(StanfordCorenlpToken.class, sentence);
         int frameId = 0;
 

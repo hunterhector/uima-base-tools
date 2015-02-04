@@ -10,6 +10,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
+import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -27,6 +28,7 @@ import org.apache.uima.util.ProgressImpl;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -42,6 +44,8 @@ public class MCTestCollectionReader extends AbstractSourceDocumentCollectionRead
     public static final String PARAM_MC_TSV_PATH = "mcTsvPath";
 
     public static final String PARAM_MC_ANS_PATH = "mcAnsPath";
+
+    public static final String QUESTIONS_VIEW_NAME = "questions";
 
     public static final String COMPONENT_ID = MCTestCollectionReader.class.getSimpleName();
 
@@ -92,58 +96,66 @@ public class MCTestCollectionReader extends AbstractSourceDocumentCollectionRead
 
     @Override
     public void getNext(JCas jCas) throws IOException, CollectionException {
-        annotateTask(jCas, taskIter.next());
-        setSourceDocumentInformation(jCas, new File(mcTsvPath).toURI().toString(), 0, processed, !taskIter.hasNext());
-        if (hasAnswer) {
-            annotateAnswer(jCas, answerIter.next());
+        try {
+            annotateTask(jCas, taskIter.next());
+        } catch (CASException e) {
+            e.printStackTrace();
         }
+        setSourceDocumentInformation(jCas, new File(mcTsvPath).toURI().toString(), 0, processed, !taskIter.hasNext());
         processed++;
     }
 
-    private void annotateTask(JCas jCas, String task) {
+    private void annotateTask(JCas jCas, String task) throws CASException {
         String[] parts = task.split("\t");
-        StringBuilder sb = new StringBuilder();
 
-        int offset = 0;
-
-        String artcleId = parts[0];
+        String articleId = parts[0];
         String prop = parts[1];
         String story = formateStory(parts[2]);
 
-        MCStory mcStory = new MCStory(jCas, offset, story.length());
-        UimaAnnotationUtils.finishAnnotation(mcStory, COMPONENT_ID, 0, jCas);
+        annotateStory(jCas, story, articleId);
+        JCas questionView = jCas.createView(QUESTIONS_VIEW_NAME);
+        annotateQuestions(questionView, Arrays.copyOfRange(parts, 3, parts.length));
+    }
 
-        sb.append(story).append("\n\n");
-        offset += story.length() + 2;
-
-        int choiceCounter = 0;
-        String[] qaSet = new String[numChoices + 1];
-        for (int i = 3; i < parts.length; i++) {
-            if (choiceCounter == 0) {
-                qaSet = new String[numChoices + 1];
-            }
-            qaSet[choiceCounter] = parts[i];
-
-            choiceCounter++;
-
-            if (choiceCounter == numChoices + 1) {
-                choiceCounter = 0;
-                String questionStr = annotateQuestion(jCas, qaSet, offset, i / (numChoices + 1));
-                sb.append(questionStr).append("\n");
-                offset += questionStr.length() + 1;
-            }
-        }
-
-
-        Article article = new Article(jCas, 0, sb.length());
-        UimaAnnotationUtils.finishAnnotation(article, COMPONENT_ID, artcleId, jCas);
-
-        jCas.setDocumentText(sb.toString());
+    private void annotateStory(JCas mainView, String story, String artcleId) {
+        int offset = 0;
+        MCStory mcStory = new MCStory(mainView, offset, story.length());
+        UimaAnnotationUtils.finishAnnotation(mcStory, COMPONENT_ID, 0, mainView);
+        mainView.setDocumentText(story);
+        Article article = new Article(mainView, 0, story.length());
+        UimaAnnotationUtils.finishAnnotation(article, COMPONENT_ID, artcleId, mainView);
     }
 
     private String formateStory(String story) {
         return story.replace("\\newline", "\n");
     }
+
+    private void annotateQuestions(JCas questionView, String[] questionText) {
+        StringBuilder sb = new StringBuilder();
+        int offset = 0;
+        int choiceCounter = 0;
+        String[] qaSet = new String[numChoices + 1];
+        for (int i = 0; i < questionText.length; i++) {
+            if (choiceCounter == 0) {
+                qaSet = new String[numChoices + 1];
+            }
+            qaSet[choiceCounter] = questionText[i];
+
+            choiceCounter++;
+
+            if (choiceCounter == numChoices + 1) {
+                choiceCounter = 0;
+                String questionStr = annotateQuestion(questionView, qaSet, offset, i / (numChoices + 1));
+                sb.append(questionStr).append("\n");
+                offset += questionStr.length() + 1;
+            }
+        }
+        questionView.setDocumentText(sb.toString());
+        if (hasAnswer) {
+            annotateAnswer(questionView, answerIter.next());
+        }
+    }
+
 
     private String annotateQuestion(JCas jCas, String[] qaSet, int offset, int qid) {
         StringBuilder sb = new StringBuilder();
@@ -214,8 +226,8 @@ public class MCTestCollectionReader extends AbstractSourceDocumentCollectionRead
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 MCTestCollectionReader.class, typeSystemDescription,
-                MCTestCollectionReader.PARAM_MC_ANS_PATH, "data/mc_test/MCTest/mc160.dev.ans",
-                MCTestCollectionReader.PARAM_MC_TSV_PATH, "data/mc_test/MCTest/mc160.dev.tsv"
+                MCTestCollectionReader.PARAM_MC_ANS_PATH, "data/mc_test/MCTest/mc160.train.ans",
+                MCTestCollectionReader.PARAM_MC_TSV_PATH, "data/mc_test/MCTest/mc160.train.tsv"
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
