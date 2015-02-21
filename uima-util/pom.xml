@@ -3,7 +3,6 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>uima-util</artifactId>
     <name>Uima Util</name>
-    <version>0.0.1</version>
     <dependencies>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -55,11 +54,6 @@
             <artifactId>stanford-corenlp</artifactId>
             <version>3.4.1</version>
             <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>edu.cmu.cs.lti</groupId>
-            <artifactId>uima-base</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
     <parent>
