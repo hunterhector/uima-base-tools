@@ -10,7 +10,7 @@
     <modules>
         <module>uima-base</module>
         <module>uima-util</module>
-        <module>corpusReader</module>
+        <module>corpus-reader</module>
         <module>fanse-parser</module>
         <module>semafor</module>
         <module>stanford-corenlp</module>
