@@ -4,7 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>corpus-reader</artifactId>
-    <version>0.0.1</version>
+    <parent>
+        <groupId>edu.cmu.cs.lti</groupId>
+        <artifactId>uima-tools</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <name>Uima Based Corpus Reader</name>
 
     <!-- install 3rd party jars here-->
     <repositories>
@@ -42,7 +47,7 @@
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>uima-util</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.1-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>edu.jhu.agiga</groupId>
@@ -72,10 +77,4 @@
         </dependency>
     </dependencies>
 
-    <parent>
-        <groupId>edu.cmu.cs.lti</groupId>
-        <artifactId>uima-tools</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-    </parent>
-    <name>Uima Based Corpus Reader</name>
 </project>

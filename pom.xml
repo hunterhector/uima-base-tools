@@ -8,10 +8,10 @@
     <description>Parent project for uima tools projects</description>
     <packaging>pom</packaging>
     <modules>
-        <module>corpusReader</module>
-        <module>fanse-parser</module>
         <module>uima-base</module>
         <module>uima-util</module>
+        <module>corpusReader</module>
+        <module>fanse-parser</module>
         <module>semafor</module>
         <module>stanford-corenlp</module>
         <module>discourse-parser</module>
