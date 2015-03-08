@@ -460,7 +460,7 @@ public class AgigaCollectionReader extends AbstractSourceDocumentCollectionReade
     public static void main(String[] args) throws UIMAException {
         System.out.println(className + " started...");
 
-        String paramInputDir = "/Users/zhengzhongliu/Documents/data/agiga_sample";
+        String paramInputDir = args[0];// "/Users/zhengzhongliu/Documents/data/agiga_sample";
 
         // Parameters for the writer
         String paramParentOutputDir = "data";
