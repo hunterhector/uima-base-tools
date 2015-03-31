@@ -2,8 +2,8 @@ package edu.cmu.cs.lti.script.annotators;
 
 import edu.cmu.cs.lti.ark.fn.data.prep.formats.Token;
 import edu.cmu.cs.lti.ark.fn.parsing.SemaforParseResult;
-import edu.cmu.cs.lti.ark.fn.pipeline.SemaforFullPipeline;
-import edu.cmu.cs.lti.ark.fn.pipeline.parsing.ParsingException;
+import edu.cmu.cs.lti.ark.pipeline.SemaforFullPipeline;
+import edu.cmu.cs.lti.ark.pipeline.parsing.ParsingException;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
