@@ -2,6 +2,6 @@ target/
 .settings/ 
 .classpath
 .project
-data
+data/
 .metadata
 metadata
