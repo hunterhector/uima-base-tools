@@ -2,6 +2,7 @@ package edu.cmu.cs.lti.ark.pipeline.parsing;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
+import edu.cmu.cs.lti.ark.fn.data.perp.formats.TokenBuilder;
 import edu.cmu.cs.lti.ark.fn.data.prep.formats.Sentence;
 import edu.cmu.cs.lti.ark.fn.data.prep.formats.Token;
 import org.maltparser.MaltParserService;
@@ -70,7 +71,8 @@ public class MaltWrapper implements ParserImpl {
                 Edge arc = node.getHeadEdge();
                 String deprel = arc.hasLabel(deprelTable) ? arc.getLabelSymbol(deprelTable) : rootLabel;
 
-                Token parsedToken = new Token(null, null, null, null, null, null, head, deprel, null, null);
+                Token parsedToken = TokenBuilder.aToken(token).withHead(head).withDeprel(deprel).build();
+//                Token parsedToken = new Token(null, null, null, null, null, null, head, deprel, null, null);
 //                Token parsedToken = token.withHead(head).withDeprel(deprel);
                 parsedTokens.add(parsedToken);
             }

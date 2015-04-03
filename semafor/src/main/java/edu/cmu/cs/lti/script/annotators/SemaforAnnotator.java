@@ -52,7 +52,6 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
         }
     }
 
-
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         annotateSemafor(aJCas);

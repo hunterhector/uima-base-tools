@@ -52,24 +52,20 @@ public class DiscourseParserRunner {
 
         String paramTypeSystemDescriptor = "TypeSystem";
 
-
         // Instantiate the analysis engine.
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
                 .createTypeSystemDescription(paramTypeSystemDescriptor);
 
         // Instantiate a collection reader to get XMI as input.
         // Note that you should change the following parameters for your setting.
-        CollectionReaderDescription reader =
-//                CustomCollectionReaderFactory.createTimeSortedGzipXmiReader(typeSystemDescription, paramInputDir, false);
-                CustomCollectionReaderFactory.createXmiReader(typeSystemDescription, paramInputDir, false);
+        CollectionReaderDescription reader = CustomCollectionReaderFactory.createXmiReader(
+                typeSystemDescription, paramInputDir, false);
 
         AnalysisEngineDescription discourseParser = CustomAnalysisEngineFactory.createAnalysisEngine(
                 DiscourseParserAnnotator.class, typeSystemDescription, DiscourseParserAnnotator.PARAM_KEEP_QUIET, quiet);
 
-        AnalysisEngineDescription writer =
-//                CustomAnalysisEngineFactory.createGzipWriter(
-                CustomAnalysisEngineFactory.createXmiWriter(
-                        paramParentOutputDir, paramBaseOutputDirName, outputStepNum, paramOutputFileSuffix, null);
+        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
+                paramParentOutputDir, paramBaseOutputDirName, outputStepNum, paramOutputFileSuffix, null);
 
         SimplePipeline.runPipeline(reader, discourseParser, writer);
     }
