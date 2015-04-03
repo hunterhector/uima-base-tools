@@ -1,6 +1,7 @@
 package edu.cmu.cs.lti.ark.pipeline;
 
 import edu.cmu.cs.lti.ark.fn.Semafor;
+import edu.cmu.cs.lti.ark.fn.data.perp.formats.TokenBuilder;
 import edu.cmu.cs.lti.ark.fn.data.prep.formats.Sentence;
 import edu.cmu.cs.lti.ark.fn.data.prep.formats.Token;
 import edu.cmu.cs.lti.ark.fn.parsing.SemaforParseResult;
@@ -35,7 +36,11 @@ public class SemaforFullPipeline {
     public SemaforParseResult parse(List<String> wordSurfaces, List<String> lemmas, List<String> pos) throws ParsingException, IOException {
         List<Token> tokens = new ArrayList<Token>();
         for (int i = 0; i < wordSurfaces.size(); i++) {
-            tokens.add(new Token(i + 1, wordSurfaces.get(i), lemmas.get(i), null, pos.get(i), null, null, null, null, null));
+//            Token parsedToken = TokenBuilder.aToken(tokens.get(i)).withId(i+1).withForm(wordSurfaces.get(i)).withLemma(lemmas.get(i))
+//                    .withPostag(pos.get(i)).build();
+            tokens.add(TokenBuilder.aToken(tokens.get(i)).withId(i + 1).withForm(wordSurfaces.get(i)).withLemma(lemmas.get(i))
+                    .withPostag(pos.get(i)).build());
+//            tokens.add(new Token(i + 1, wordSurfaces.get(i), lemmas.get(i), null, pos.get(i), null, null, null, null, null));
         }
         return parse(tokens);
     }
