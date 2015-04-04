@@ -349,8 +349,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             treeAnno.setParent(parent);
             treeAnno.setChildren(UimaConvenience.makeFsArray(childrenList, aJCas));
             treeAnno.setIsLeaf(false);
-            treeAnno.setComponentId(ANNOTATOR_COMPONENT_ID);
-            treeAnno.addToIndexes(aJCas);
+            UimaAnnotationUtils.finishAnnotation(treeAnno, ANNOTATOR_COMPONENT_ID, 0, aJCas);
             return treeAnno;
         } else {
             ArrayList<edu.stanford.nlp.ling.Word> words = currentNode.yieldWords();
@@ -359,9 +358,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             leafTree.setEnd(words.get(words.size() - 1).endPosition() + textOffset);
             leafTree.setPennTreeLabel(currentNode.value());
             leafTree.setIsLeaf(true);
-            leafTree.setComponentId(ANNOTATOR_COMPONENT_ID);
-            leafTree.addToIndexes(aJCas);
-
+            UimaAnnotationUtils.finishAnnotation(leafTree, ANNOTATOR_COMPONENT_ID, 0, aJCas);
             return leafTree;
         }
     }

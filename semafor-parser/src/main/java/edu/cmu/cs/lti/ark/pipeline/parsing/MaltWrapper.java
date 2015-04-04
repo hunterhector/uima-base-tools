@@ -72,8 +72,7 @@ public class MaltWrapper implements ParserImpl {
                 String deprel = arc.hasLabel(deprelTable) ? arc.getLabelSymbol(deprelTable) : rootLabel;
 
                 Token parsedToken = TokenBuilder.aToken(token).withHead(head).withDeprel(deprel).build();
-//                Token parsedToken = new Token(null, null, null, null, null, null, head, deprel, null, null);
-//                Token parsedToken = token.withHead(head).withDeprel(deprel);
+
                 parsedTokens.add(parsedToken);
             }
 
