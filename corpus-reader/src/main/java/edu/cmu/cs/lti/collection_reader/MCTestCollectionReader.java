@@ -79,15 +79,20 @@ public class MCTestCollectionReader extends AbstractSourceDocumentCollectionRead
         if (mcAnsPath != null) {
             List<String> mcAnswers = null;
             try {
-                mcAnswers = FileUtils.readLines(new File(mcAnsPath));
+                if (new File(mcAnsPath).exists()) {
+                    mcAnswers = FileUtils.readLines(new File(mcAnsPath));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (mcTasks.size() != mcAnswers.size()) {
-                throw new IllegalArgumentException("Task size and answer size don't match");
+
+            if (mcAnswers != null) {
+                if (mcTasks.size() != mcAnswers.size()) {
+                    throw new IllegalArgumentException("Task size and answer size don't match");
+                }
+                answerIter = mcAnswers.iterator();
+                hasAnswer = true;
             }
-            answerIter = mcAnswers.iterator();
-            hasAnswer = true;
         }
         totalTasks = mcTasks.size();
         processed = 0;
