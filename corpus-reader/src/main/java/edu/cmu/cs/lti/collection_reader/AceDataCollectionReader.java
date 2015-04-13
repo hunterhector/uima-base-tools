@@ -3,6 +3,8 @@
  */
 package edu.cmu.cs.lti.collection_reader;
 
+import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
+import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.CASException;
@@ -30,16 +32,13 @@ import java.util.regex.Pattern;
  *
  * @author Zhengzhong Liu, Hector
  */
-public class AceDataCollectionReader extends AbstractSourceDocumentCollectionReader {
+public class AceDataCollectionReader extends AbstractCollectionReader {
 
     public final static String PARAM_ACE_ENGLISH_DATA_PATH = "ace_english_data_path";
 
     public final static String PARAM_ACE_TYPES = "ace_types_to_read";
 
     public final static String PARAM_GOLD_STANDARD_VIEW_NAME = "goldStandard";
-
-    @ConfigurationParameter(mandatory = true, description = "The view name for the golden standard view", name = PARAM_GOLD_STANDARD_VIEW_NAME)
-    String goldStandardViewName;
 
     @ConfigurationParameter(mandatory = true, description = "The path of the directory that contains the ACE data with various formats, typically it would be .../ACE2005/ACE2005-TrainingData-V6.0/English ", name = PARAM_ACE_ENGLISH_DATA_PATH)
     private String aceEnglishDatPath;
@@ -69,6 +68,7 @@ public class AceDataCollectionReader extends AbstractSourceDocumentCollectionRea
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
+        super.initialize(context);
         File englishDirectory = new File(aceEnglishDatPath);
         try {
             aceFilesByType = getContentDirectoryByType(englishDirectory);
@@ -201,7 +201,7 @@ public class AceDataCollectionReader extends AbstractSourceDocumentCollectionRea
             builder.setDTDHandler(null);
 
             // source document information are useful to reach the golden standard file while annotating
-            setSourceDocumentInformation(aJCas, sgmFile.toURI().toString(), (int) sgmFile.length(),
+            UimaAnnotationUtils.setSourceDocumentInformation(aJCas, sgmFile.toURI().toString(), (int) sgmFile.length(),
                     0, !hasNext());
         } catch (CASException ce) {
             throw new CollectionException(ce);

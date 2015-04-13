@@ -34,7 +34,7 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
     @ConfigurationParameter(name = PARAM_BASE_OUTPUT_DIR_NAME, mandatory = true)
     private String baseOutputDirName;
 
-    @ConfigurationParameter(name = PARAM_OUTPUT_STEP_NUMBER, mandatory = true)
+    @ConfigurationParameter(name = PARAM_OUTPUT_STEP_NUMBER, mandatory = false)
     private Integer outputStepNumber;
 
     @ConfigurationParameter(name = PARAM_OUTPUT_FILE_SUFFIX, mandatory = false)
@@ -47,7 +47,9 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
         super.initialize(aContext);
 
         List<String> dirNameSegments = new ArrayList<String>();
-        dirNameSegments.add(String.format("%02d", outputStepNumber));
+        if (outputStepNumber != null) {
+            dirNameSegments.add(String.format("%02d", outputStepNumber));
+        }
         dirNameSegments.add(baseOutputDirName);
 
         String dirName = Joiner.on("_").join(dirNameSegments);

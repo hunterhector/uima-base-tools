@@ -39,7 +39,6 @@ public abstract class AbstractEntityMentionCreator extends AbstractLoggingAnnota
 
     public abstract void subprocess(JCas aJCas);
 
-
     protected EventMentionArgumentLink createArgumentLink(JCas aJCas, EventMention evm, String roleName, Word argument, Word prep) {
         EntityMention argumentEntity = getOrCreateSingletonEntityMention(aJCas, argument);
         return createArgumentLink(aJCas, evm, roleName, argumentEntity, prep);

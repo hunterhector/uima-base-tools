@@ -7,6 +7,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import edu.cmu.cs.lti.script.type.*;
+import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
@@ -50,7 +51,7 @@ import java.util.List;
 /**
  * @author zhengzhongliu
  */
-public class AgigaCollectionReader extends AbstractSourceDocumentCollectionReader {
+public class AgigaCollectionReader extends AbstractCollectionReader {
 
     public static final String PARAM_INPUTDIR = "InputDirectory";
 
@@ -76,6 +77,7 @@ public class AgigaCollectionReader extends AbstractSourceDocumentCollectionReade
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
+        super.initialize(context);
         File inputDir = new File(((String) getConfigParameterValue(PARAM_INPUTDIR)).trim());
         gCurrentIndex = 0;
 
@@ -105,7 +107,7 @@ public class AgigaCollectionReader extends AbstractSourceDocumentCollectionReade
         fileOffset += 1;
         treeId = 0;
         uimafyAnnotations(jcas, currentDoc);
-        setSourceDocumentInformation(jcas, currentFile.toURI().toURL().toString(), (int) currentFile.length(), fileOffset, !reader.hasNext());
+        UimaAnnotationUtils.setSourceDocumentInformation(jcas, currentFile.toURI().toURL().toString(), (int) currentFile.length(), fileOffset, !reader.hasNext());
 
     }
 

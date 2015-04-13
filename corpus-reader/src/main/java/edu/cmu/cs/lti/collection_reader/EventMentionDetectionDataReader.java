@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.script.type.EventMention;
 import edu.cmu.cs.lti.script.type.Word;
+import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
@@ -38,7 +39,7 @@ import java.util.*;
  * Date: 1/21/15
  * Time: 11:40 PM
  */
-public class EventMentionDetectionDataReader extends AbstractSourceDocumentCollectionReader {
+public class EventMentionDetectionDataReader extends AbstractCollectionReader {
     public static final String PARAM_SOURCE_TEXT_DIRECTORY = "SourceTextDirectory";
 
     public static final String PARAM_TOKEN_DIRECTORY = "TokenizationDirectory";
@@ -53,9 +54,7 @@ public class EventMentionDetectionDataReader extends AbstractSourceDocumentColle
 
     public static final String endOfDocument = "#EndOfDocument";
 
-    public static final String goldStandardViewName = "goldStandard";
-
-    public static final String componentId = EventMentionDetectionDataReader.class.getSimpleName();
+    public static final String COMPONENT_ID = EventMentionDetectionDataReader.class.getSimpleName();
 
     private String sourceExt;
 
@@ -76,6 +75,7 @@ public class EventMentionDetectionDataReader extends AbstractSourceDocumentColle
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
+        super.initialize(context);
         File sourceTextDir = new File(((String) getConfigParameterValue(PARAM_SOURCE_TEXT_DIRECTORY)).trim());
         File tokenDir = new File((String) getConfigParameterValue(PARAM_TOKEN_DIRECTORY));
 
@@ -149,7 +149,7 @@ public class EventMentionDetectionDataReader extends AbstractSourceDocumentColle
         currentFile = fileList.get(currentPointer);
         currentPointer++;
 
-        setSourceDocumentInformation(jCas, currentFile.getValue1().toURI().toURL().toString(), (int) currentFile.getValue1().length(), 0, true);
+        UimaAnnotationUtils.setSourceDocumentInformation(jCas, currentFile.getValue1().toURI().toURL().toString(), (int) currentFile.getValue1().length(), 0, true);
 
         String sourceFileStr = FileUtils.readFileToString(getSourceFile());
         String documentText = NoiseTextFormatter.cleanForum(sourceFileStr);
@@ -192,7 +192,7 @@ public class EventMentionDetectionDataReader extends AbstractSourceDocumentColle
         }
 
         Article article = new Article(jCas);
-        UimaAnnotationUtils.finishAnnotation(article, 0, sourceFileStr.length(), componentId, 0, jCas);
+        UimaAnnotationUtils.finishAnnotation(article, 0, sourceFileStr.length(), COMPONENT_ID, 0, jCas);
         article.setArticleName(getBaseName());
         article.setLanguage("en");
     }
@@ -224,7 +224,7 @@ public class EventMentionDetectionDataReader extends AbstractSourceDocumentColle
                     int tokenEnd = Integer.parseInt(parts[3]) + 1;
 
                     Word word = new Word(aJCas, tokenBegin, tokenEnd);
-                    UimaAnnotationUtils.finishAnnotation(word, componentId, tId, aJCas);
+                    UimaAnnotationUtils.finishAnnotation(word, COMPONENT_ID, tId, aJCas);
 
                     if (tokenId2EventMention.containsKey(tId)) {
                         for (EventMention tokenMention : tokenId2EventMention.get(tId)) {
@@ -248,7 +248,7 @@ public class EventMentionDetectionDataReader extends AbstractSourceDocumentColle
                 String realisType = annos[6];
 
                 EventMention mention = new EventMention(goldView);
-                UimaAnnotationUtils.finishAnnotation(mention, componentId, eid, goldView);
+                UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, eid, goldView);
                 mention.setEventType(eventType);
                 mention.setRealisType(realisType);
 

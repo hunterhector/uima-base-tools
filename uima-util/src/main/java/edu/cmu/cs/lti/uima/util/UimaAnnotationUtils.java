@@ -5,6 +5,7 @@ import edu.cmu.cs.lti.script.type.ComponentAnnotation;
 import edu.cmu.cs.lti.script.type.ComponentTOP;
 import edu.cmu.cs.lti.script.type.Entity;
 import edu.cmu.cs.lti.script.type.EntityMention;
+import org.apache.uima.examples.SourceDocumentInformation;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
@@ -120,5 +121,15 @@ public class UimaAnnotationUtils {
 
     public static int entityIdToInteger(String eid) {
         return Integer.parseInt(eid);
+    }
+
+
+    public static void setSourceDocumentInformation(JCas aJCas, String uri, int size, int offsetInSource, boolean isLastSegment) {
+        SourceDocumentInformation srcDocInfo = new SourceDocumentInformation(aJCas);
+        srcDocInfo.setUri(uri);
+        srcDocInfo.setOffsetInSource(offsetInSource);
+        srcDocInfo.setDocumentSize(size);
+        srcDocInfo.setLastSegment(isLastSegment);
+        srcDocInfo.addToIndexes();
     }
 }

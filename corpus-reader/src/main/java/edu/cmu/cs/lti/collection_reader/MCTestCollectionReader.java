@@ -4,6 +4,7 @@ import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.script.type.MCAnswerChoice;
 import edu.cmu.cs.lti.script.type.MCQuestion;
 import edu.cmu.cs.lti.script.type.MCStory;
+import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import org.apache.commons.io.FileUtils;
@@ -39,7 +40,7 @@ import java.util.regex.Pattern;
  * Date: 2/3/15
  * Time: 2:23 PM
  */
-public class MCTestCollectionReader extends AbstractSourceDocumentCollectionReader {
+public class MCTestCollectionReader extends AbstractCollectionReader {
 
     public static final String PARAM_MC_TSV_PATH = "mcTsvPath";
 
@@ -69,6 +70,7 @@ public class MCTestCollectionReader extends AbstractSourceDocumentCollectionRead
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
+        super.initialize(context);
         List<String> mcTasks = null;
         try {
             mcTasks = FileUtils.readLines(new File(mcTsvPath));
@@ -106,7 +108,7 @@ public class MCTestCollectionReader extends AbstractSourceDocumentCollectionRead
         } catch (CASException e) {
             e.printStackTrace();
         }
-        setSourceDocumentInformation(jCas, new File(mcTsvPath).toURI().toString(), 0, processed, !taskIter.hasNext());
+        UimaAnnotationUtils.setSourceDocumentInformation(jCas, new File(mcTsvPath).toURI().toString(), 0, processed, !taskIter.hasNext());
         processed++;
     }
 
