@@ -6,6 +6,19 @@
     <vendor/>
     <types>
         <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.DiscontinuousComponentAnnotation</name>
+            <description/>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>regions</name>
+                    <description>The discontinuous spans that consist of this annotation</description>
+                    <rangeTypeName>uima.cas.FSArray</rangeTypeName>
+                    <elementType>uima.tcas.Annotation</elementType>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
             <name>edu.cmu.cs.lti.script.type.ComponentAnnotation</name>
             <description/>
             <supertypeName>uima.tcas.Annotation</supertypeName>
