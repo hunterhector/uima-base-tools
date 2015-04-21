@@ -142,6 +142,22 @@
                <artifactId>jVinci</artifactId>
                <version>2.4.0</version>
            </dependency>
+           <dependency>
+               <groupId>org.javatuples</groupId>
+               <artifactId>javatuples</artifactId>
+               <scope>compile</scope>
+               <version>1.2</version>
+           </dependency>
+           <dependency>
+               <groupId>de.l3s.boilerpipe</groupId>
+               <artifactId>boilerpipe</artifactId>
+               <version>1.1.0</version>
+           </dependency>
+           <dependency>
+               <groupId>org.jdom</groupId>
+               <artifactId>jdom2</artifactId>
+               <version>2.0.5</version>
+           </dependency>
        </dependencies>
     </dependencyManagement>
 </project>

@@ -1,12 +1,12 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
-import org.apache.commons.collections.CollectionUtils;
+import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.uima.cas.CAS;
+import org.apache.uima.UimaContext;
 import org.apache.uima.collection.CollectionException;
-import org.apache.uima.collection.CollectionReader_ImplBase;
 import org.apache.uima.examples.SourceDocumentInformation;
 import org.apache.uima.fit.component.ViewCreatorAnnotator;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.FileUtils;
@@ -18,52 +18,43 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * A collection reader for text in the IC++ domain.
  *
  * @author Jun Araki
  */
-public class PlainTextCollectionReader extends CollectionReader_ImplBase {
+public class PlainTextCollectionReader extends AbstractCollectionReader {
 
     public static final String PARAM_INPUT_VIEW_NAME = "InputViewName";
 
-    public static final String PARAM_SRC_DOC_INFO_VIEW_NAMES = "SrcDocInfoViewNames";
-
     public static final String PARAM_INPUTDIR = "InputDirectory";
-
-    public static final String PARAM_ENCODING = "Encoding";
 
     public static final String PARAM_TEXT_SUFFIX = "TextSuffix";
 
+    @ConfigurationParameter(name = PARAM_INPUT_VIEW_NAME, mandatory = false)
     private String inputViewName;
 
-    private List<String> srcDocInfoViewNames;
+    @ConfigurationParameter(name = PARAM_INPUTDIR)
+    private String inputDirPath;
+
+    @ConfigurationParameter(name = PARAM_TEXT_SUFFIX, mandatory = false)
+    String[] suffix;
 
     private ArrayList<File> textFiles;
-
-    private String encoding;
-
-    // private String language;
 
     private int currentDocIndex;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public void initialize() throws ResourceInitializationException {
-        inputViewName = (String) getConfigParameterValue(PARAM_INPUT_VIEW_NAME);
-
-        if (getConfigParameterValue(PARAM_SRC_DOC_INFO_VIEW_NAMES) != null) {
-            srcDocInfoViewNames = Arrays.asList((String[]) getConfigParameterValue(PARAM_SRC_DOC_INFO_VIEW_NAMES));
+    public void initialize(UimaContext context) throws ResourceInitializationException {
+        File directory = new File(inputDirPath);
+        if (!directory.exists() || directory.isFile()) {
+            logger.error("Cannot find directory at : " + inputDirPath);
         }
-        File directory = new File((String) getConfigParameterValue(PARAM_INPUTDIR));
-        encoding = (String) getConfigParameterValue(PARAM_ENCODING);
 
-        String[] suffix = (String[]) getConfigParameterValue(PARAM_TEXT_SUFFIX);
+
         currentDocIndex = 0;
-
         textFiles = new ArrayList<File>();
         File[] files = directory.listFiles();
         for (int i = 0; i < files.length; i++) {
@@ -75,8 +66,8 @@ public class PlainTextCollectionReader extends CollectionReader_ImplBase {
 
     private boolean isText(File f, String[] suffix) {
         String filename = f.getPath();
-        for (int i = 0; i < suffix.length; i++) {
-            if (filename.endsWith(suffix[i])) {
+        for (String aSuffix : suffix) {
+            if (filename.endsWith(aSuffix)) {
                 return true;
             }
         }
@@ -87,23 +78,12 @@ public class PlainTextCollectionReader extends CollectionReader_ImplBase {
         return new Progress[]{new ProgressImpl(currentDocIndex, textFiles.size(), Progress.ENTITIES)};
     }
 
-    public void getNext(CAS aCAS) throws IOException, CollectionException {
-        JCas aJCas = null;
+    @Override
+    public void getNext(JCas aJCas) throws IOException, CollectionException {
         JCas inputView = null;
-        List<JCas> srcDocInfoViews = new ArrayList<JCas>();
         try {
-            aJCas = aCAS.getJCas();
             if (!StringUtils.isEmpty(inputViewName)) {
                 inputView = ViewCreatorAnnotator.createViewSafely(aJCas, inputViewName);
-            }
-            if (!CollectionUtils.isEmpty(srcDocInfoViewNames)) {
-                for (String srcDocInfoViewName : srcDocInfoViewNames) {
-                    srcDocInfoViews.add(ViewCreatorAnnotator.createViewSafely(aJCas, srcDocInfoViewName));
-                }
-                if (!srcDocInfoViewNames.contains(inputViewName)) {
-                    // The input view should also have source document information.
-                    srcDocInfoViews.add(inputView);
-                }
             }
         } catch (Exception e) {
             throw new CollectionException(e);
@@ -133,16 +113,8 @@ public class PlainTextCollectionReader extends CollectionReader_ImplBase {
         srcDocInfo.setDocumentSize((int) file.length());
         srcDocInfo.setLastSegment(currentDocIndex == textFiles.size());
         srcDocInfo.addToIndexes();
-
-        for (JCas view : srcDocInfoViews) {
-            srcDocInfo = new SourceDocumentInformation(view);
-            srcDocInfo.setUri(file.toURI().toURL().toString());
-            srcDocInfo.setOffsetInSource(0);
-            srcDocInfo.setDocumentSize((int) file.length());
-            srcDocInfo.setLastSegment(currentDocIndex == textFiles.size());
-            srcDocInfo.addToIndexes();
-        }
     }
+
 
     public boolean hasNext() {
         return currentDocIndex < textFiles.size();

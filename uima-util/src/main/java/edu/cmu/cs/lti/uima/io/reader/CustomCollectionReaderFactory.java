@@ -1,6 +1,5 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
-import org.apache.uima.cas.CAS;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -176,31 +175,31 @@ public class CustomCollectionReaderFactory {
     /**
      * Creates a simple plain text reader for the text under the specified directory.
      *
-     * @param parentInputDirName
+     * @param inputDir
      * @param encoding
      * @param textSuffix
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createPlainTextReader(String inputViewName,
-                                                                    String parentInputDirName, String encoding, String[] textSuffix)
+    public static CollectionReaderDescription createPlainTextReader(String inputViewName, String inputDir, String encoding, String[] textSuffix)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get plain text as input.
         return CollectionReaderFactory.createReaderDescription(
-                PlainTextCollectionReader.class, PlainTextCollectionReader.PARAM_INPUT_VIEW_NAME,
-                inputViewName, PlainTextCollectionReader.PARAM_INPUTDIR, parentInputDirName,
+                PlainTextCollectionReader.class,
+                PlainTextCollectionReader.PARAM_INPUT_VIEW_NAME, inputViewName,
+                PlainTextCollectionReader.PARAM_INPUTDIR, inputDir,
                 PlainTextCollectionReader.PARAM_ENCODING, encoding,
                 PlainTextCollectionReader.PARAM_TEXT_SUFFIX, textSuffix);
     }
 
-    public static CollectionReaderDescription createPlainTextReader(String inputViewName,
-                                                                    String[] srcDocInfoViewNames, String parentInputDirName, String encoding,
+    @Deprecated
+    public static CollectionReaderDescription createPlainTextReader(String inputViewName, String[] srcDocInfoViewNames, String inputDir, String encoding,
                                                                     String[] textSuffix) throws ResourceInitializationException {
         // Instantiate a collection reader to get plain text as input.
         return CollectionReaderFactory.createReaderDescription(
-                PlainTextCollectionReader.class, PlainTextCollectionReader.PARAM_INPUT_VIEW_NAME,
-                inputViewName, PlainTextCollectionReader.PARAM_SRC_DOC_INFO_VIEW_NAMES,
-                srcDocInfoViewNames, PlainTextCollectionReader.PARAM_INPUTDIR, parentInputDirName,
+                PlainTextCollectionReader.class,
+                PlainTextCollectionReader.PARAM_INPUT_VIEW_NAME, inputViewName,
+                PlainTextCollectionReader.PARAM_INPUTDIR, inputDir,
                 PlainTextCollectionReader.PARAM_ENCODING, encoding,
                 PlainTextCollectionReader.PARAM_TEXT_SUFFIX, textSuffix);
     }
@@ -208,18 +207,34 @@ public class CustomCollectionReaderFactory {
     /**
      * Creates a simple plain text reader for the text under the specified directory.
      *
-     * @param parentInputDirName
+     * @param inputDir
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createPlainTextReader(String parentInputDirName)
+    public static CollectionReaderDescription createPlainTextReader(String inputDir)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get plain text as input.
         String[] textSuffix = {""};
         return CollectionReaderFactory.createReaderDescription(
-                PlainTextCollectionReader.class, PlainTextCollectionReader.PARAM_INPUT_VIEW_NAME,
-                CAS.NAME_DEFAULT_SOFA, PlainTextCollectionReader.PARAM_INPUTDIR, parentInputDirName,
-                PlainTextCollectionReader.PARAM_ENCODING, "utf-8",
+                PlainTextCollectionReader.class,
+                PlainTextCollectionReader.PARAM_INPUTDIR, inputDir,
+                PlainTextCollectionReader.PARAM_TEXT_SUFFIX, textSuffix);
+    }
+
+    /**
+     * Creates a simple plain text reader for the text under the specified directory.
+     *
+     * @param inputDir
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createPlainTextReader(String inputDir, TypeSystemDescription typeSystemDescription)
+            throws ResourceInitializationException {
+        // Instantiate a collection reader to get plain text as input.
+        String[] textSuffix = {""};
+        return CollectionReaderFactory.createReaderDescription(
+                PlainTextCollectionReader.class, typeSystemDescription,
+                PlainTextCollectionReader.PARAM_INPUTDIR, inputDir,
                 PlainTextCollectionReader.PARAM_TEXT_SUFFIX, textSuffix);
     }
 

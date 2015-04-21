@@ -57,13 +57,11 @@
         <dependency>
             <groupId>org.javatuples</groupId>
             <artifactId>javatuples</artifactId>
-            <version>1.2</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>de.l3s.boilerpipe</groupId>
             <artifactId>boilerpipe</artifactId>
-            <version>1.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.cyberneko.html</groupId>
@@ -71,9 +69,18 @@
             <version>1.9.21</version>
         </dependency>
         <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>1.7</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-parsers</artifactId>
+            <version>1.7</version>
+        </dependency>
+        <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom2</artifactId>
-            <version>2.0.5</version>
         </dependency>
     </dependencies>
 

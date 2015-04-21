@@ -22,7 +22,7 @@ public class UimaNlpUtils {
     public static EntityMention createEntityMention(JCas jcas, int begin, int end, String componentId) {
         EntityMention mention = new EntityMention(jcas, begin, end);
         UimaAnnotationUtils.finishAnnotation(mention, componentId, null, jcas);
-        mention.setHead(findHeadFromTreeAnnotation(jcas, mention));
+        mention.setHead(findHeadFromTreeAnnotation(mention));
         return mention;
     }
 
@@ -33,11 +33,10 @@ public class UimaNlpUtils {
         return null;
     }
 
-    public static StanfordCorenlpToken findHeadFromTreeAnnotation(JCas aJCas, Annotation anno) {
+    public static StanfordCorenlpToken findHeadFromTreeAnnotation(Annotation anno) {
         StanfordTreeAnnotation largestContainingTree = null;
 
-        for (StanfordTreeAnnotation tree : JCasUtil.selectCovered(aJCas, StanfordTreeAnnotation.class,
-                anno)) {
+        for (StanfordTreeAnnotation tree : JCasUtil.selectCovered(StanfordTreeAnnotation.class, anno)) {
             if (largestContainingTree == null) {
                 largestContainingTree = tree;
             } else if (largestContainingTree.getEnd() - largestContainingTree.getBegin() < tree.getEnd()

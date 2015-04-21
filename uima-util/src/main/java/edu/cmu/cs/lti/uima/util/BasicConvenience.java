@@ -5,6 +5,8 @@
  */
 package edu.cmu.cs.lti.uima.util;
 
+import org.slf4j.Logger;
+
 import java.io.*;
 import java.lang.reflect.Array;
 import java.nio.MappedByteBuffer;
@@ -364,11 +366,11 @@ public class BasicConvenience {
         System.out.println("Difference: " + (nowUsed - usedAtStart) / MB + " MB");
     }
 
-    public static void printMemInfo(java.util.logging.Logger logger) {
+    public static void printMemInfo(Logger logger) {
         printMemInfo(logger, "");
     }
 
-    public static void printMemInfo(java.util.logging.Logger logger, String msg) {
+    public static void printMemInfo(Logger logger, String msg) {
         // Get current size of heap in bytes
         double heapSize = Runtime.getRuntime().totalMemory() / (double) (1024 * 1024);
 

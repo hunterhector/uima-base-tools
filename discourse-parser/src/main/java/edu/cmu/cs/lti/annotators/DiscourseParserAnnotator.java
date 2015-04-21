@@ -26,7 +26,6 @@ import scala.Tuple2;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Level;
 
 /**
  * Created with IntelliJ IDEA.
@@ -56,9 +55,9 @@ public class DiscourseParserAnnotator extends AbstractLoggingAnnotator {
         parserPath = RSTParser.DEFAULT_CONSTITUENTSYNTAX_MODEL_PATH();
 //        parserPath = RSTParser.DEFAULT_DEPENDENCYSYNTAX_MODEL_PATH();
 
-        logger.log(Level.INFO, "Loading RST parser from " + parserPath);
+        logger.info("Loading RST parser from " + parserPath);
         rstParser = CoreNLPProcessor.fetchParser(parserPath);
-        logger.log(Level.INFO, "Done.");
+        logger.info("Done.");
     }
 
     public void collectionProcessComplete() throws AnalysisEngineProcessException {
@@ -170,7 +169,7 @@ public class DiscourseParserAnnotator extends AbstractLoggingAnnotator {
         }
 
         if (root == null) {
-            logger.warning("Using maximum tree as the root tree");
+            logger.warn("Using maximum tree as the root tree");
             root = maxTree;
         }
 

@@ -17,10 +17,9 @@ import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.*;
 import org.apache.uima.jcas.tcas.Annotation;
+import org.slf4j.Logger;
 
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * @author Chris Welty
@@ -737,7 +736,7 @@ public class UimaConvenience extends BasicConvenience {
 
     public static void printProcessLog(JCas aJCas, Logger logger) {
         String fileName = getShortDocumentNameWithOffset(aJCas);
-        logger.log(Level.INFO, String.format("Processing article: %s", fileName));
+        logger.info(String.format("Processing article: %s", fileName));
     }
 
     public static String getShortDocumentName(JCas aJCas) {
@@ -757,6 +756,10 @@ public class UimaConvenience extends BasicConvenience {
         }
 
         return FilenameUtils.getBaseName(srcDocInfo.getUri()) + "_" + srcDocInfo.getOffsetInSource();
+    }
+
+    public static SourceDocumentInformation getSourceDocumentInformation(JCas aJCas) {
+        return JCasUtil.selectSingle(aJCas, SourceDocumentInformation.class);
     }
 
     /**

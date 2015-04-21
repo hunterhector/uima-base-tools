@@ -1,16 +1,17 @@
 package edu.cmu.cs.lti.uima.annotator;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.FileAppender;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import org.apache.uima.UimaContext;
-import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
-
-import java.io.IOException;
-import java.util.logging.FileHandler;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,7 +19,7 @@ import java.util.logging.Logger;
  * Date: 10/7/14
  * Time: 1:45 PM
  */
-public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase {
+public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
     public static final String PARAM_KEEP_QUIET = "keepQuiet";
 
     public static final String PARAM_LOGGING_OUT_FILE = "loggingOutFile";
@@ -27,7 +28,7 @@ public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase {
 
     private String className = this.getClass().getName();
 
-    protected Logger logger = Logger.getLogger(className);
+    protected static final Logger logger = (Logger) LoggerFactory.getLogger(AbstractLoggingAnnotator.class.getName());
 
     @ConfigurationParameter(name = PARAM_KEEP_QUIET, mandatory = false)
     private Boolean keepQuiet;
@@ -42,26 +43,37 @@ public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase {
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
 
-//        keepQuiet = (Boolean) aContext.getConfigParameterValue(PARAM_KEEP_QUIET);
-//
-//        loggingFileName = (String) aContext.getConfigParameterValue(PARAM_LOGGING_OUT_FILE);
-
         //default should not be quiet
         keepQuiet = keepQuiet == null ? false : keepQuiet;
 
         if (keepQuiet) {
-            logger.setLevel(Level.SEVERE);
+            logger.setLevel(Level.WARN);
         } else {
             logger.setLevel(Level.INFO);
         }
 
         if (loggingFileName != null) {
-            try {
-                logger.addHandler(new FileHandler(loggingFileName));
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            logger.addAppender(getFileAppender(loggingFileName));
         }
+    }
+
+    private FileAppender<ILoggingEvent> getFileAppender(String loggingFileName) {
+        LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+
+        PatternLayoutEncoder encoder = new PatternLayoutEncoder();
+        encoder.setContext(loggerContext);
+        encoder.setPattern("%d{HH:mm:ss.SSS} [%-5level] %msg %n");
+        encoder.start();
+
+        FileAppender<ILoggingEvent> fileAppender = new FileAppender<ILoggingEvent>();
+        fileAppender.setContext(loggerContext);
+        fileAppender.setName("file_logger");
+        fileAppender.setAppend(false);
+        fileAppender.setEncoder(encoder);
+
+        fileAppender.setFile(loggingFileName);
+        fileAppender.start();
+        return fileAppender;
     }
 
     protected JCas[] getAdditionalViews(JCas mainView) {
@@ -76,6 +88,10 @@ public abstract class AbstractLoggingAnnotator extends JCasAnnotator_ImplBase {
             i++;
         }
         return additionalViews;
+    }
+
+    protected void printProcessInfo(JCas aJCas, Logger logger) {
+        logger.info(progressInfo(aJCas));
     }
 
     protected String progressInfo(JCas aJCas) {

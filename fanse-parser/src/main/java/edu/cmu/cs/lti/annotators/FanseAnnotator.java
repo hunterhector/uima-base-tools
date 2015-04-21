@@ -107,7 +107,7 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                 String fTokenStr = token.getText();
                 String sTokenStr = goldStandardToken.getCoveredText();
                 if (!fTokenStr.equals(sTokenStr)) {
-                    logger.warning("A Fanse token is different from a gold standard token. Fanse token: "
+                    logger.warn("A Fanse token is different from a gold standard token. Fanse token: "
                             + fTokenStr + ", a gold standard token: " + sTokenStr);
                 }
 
