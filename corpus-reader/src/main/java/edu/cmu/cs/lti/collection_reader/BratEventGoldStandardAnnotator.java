@@ -1,6 +1,7 @@
 package edu.cmu.cs.lti.collection_reader;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Iterables;
 import edu.cmu.cs.lti.model.BratConstants;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.Event;
@@ -47,25 +48,41 @@ import java.util.*;
  * @author Zhengzhong Liu
  */
 public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
-    public static final String PARAM_SOURCE_TEXT_DIR = "sourceTextDir";
-    public static final String PARAM_ANNOTATION_DIR = "annDir";
+    public static final String PARAM_ANNOTATION_DIR = "annotationDir";
+    public static final String PARAM_TOKENIZATION_MAP_DIR = "tokenDir";
 
-    public static final String PARAM_TEXT_FILE_NAME_SUFFIX = "textFileNameSuffix";
     public static final String PARAM_ANNOTATION_FILE_NAME_SUFFIX = "annotationFileNameSuffix";
+    public static final String PARAM_TOKEN_OFFSET_SUFFIX = "tokenOffsetSuffix";
+    public static final String PARAM_TEXT_FILE_SUFFIX = "textFileSuffix";
+    public static final String PARAM_TOKEN_OFFSET_BEGIN_FIELD_NUM = "tokenOffsetBeginFieldNum";
+    public static final String PARAM_TOKEN_OFFSET_END_FIELD_NUM = "tokenOffsetEndFieldNum";
 
     @ConfigurationParameter(name = PARAM_ANNOTATION_DIR)
     private File annotationDir;
 
-    @ConfigurationParameter(name = PARAM_TEXT_FILE_NAME_SUFFIX, mandatory = false)
-    private String textFileNameSuffix;
-
-    public static final String defaultTextFileNameSuffix = ".tkn.txt";
-
+    @ConfigurationParameter(name = PARAM_TOKENIZATION_MAP_DIR)
+    private File tokenizationDir;
 
     @ConfigurationParameter(name = PARAM_ANNOTATION_FILE_NAME_SUFFIX, mandatory = false)
     private String annotationFileNameSuffix;
 
+    @ConfigurationParameter(name = PARAM_TOKEN_OFFSET_SUFFIX, mandatory = false)
+    private String tokenOffsetSuffix;
+
+    @ConfigurationParameter(name = PARAM_TEXT_FILE_SUFFIX, mandatory = false)
+    private String textFileNameSuffix;
+
+    @ConfigurationParameter(name = PARAM_TOKEN_OFFSET_BEGIN_FIELD_NUM, mandatory = false)
+    private Integer tokenOffsetBeginFieldNumber;
+
+    @ConfigurationParameter(name = PARAM_TOKEN_OFFSET_END_FIELD_NUM, mandatory = false)
+    private Integer tokenOffsetEndFieldNumber;
+
     public static final String defaultAnnotationFileNameSuffix = ".tkn.ann";
+    public static final String defaultTokenizationFileNameSuffix = ".txt.tab";
+    public static final String defaultTextFileNameSuffix = ".tkn.txt";
+    public static final int defaultTokenBeginFieldNumber = 2;
+    public static final int defaultTokenEndFieldNumber = 3;
 
     private static final String realisTypeName = "Realis";
     private static final String coreferenceLinkName = "Coreference";
@@ -77,15 +94,29 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     public static final String COMPONENT_ID = BratEventGoldStandardAnnotator.class.getSimpleName();
 
     private Map<String, File> annotationsByName;
+    private Map<String, File> offsetsByName;
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
+        if (tokenOffsetSuffix == null) {
+            tokenOffsetSuffix = defaultTokenizationFileNameSuffix;
+        }
+
+        if (annotationFileNameSuffix == null) {
+            annotationFileNameSuffix = defaultAnnotationFileNameSuffix;
+        }
+
         if (textFileNameSuffix == null) {
             textFileNameSuffix = defaultTextFileNameSuffix;
         }
-        if (annotationFileNameSuffix == null) {
-            annotationFileNameSuffix = defaultAnnotationFileNameSuffix;
+
+        if (tokenOffsetBeginFieldNumber == null) {
+            tokenOffsetBeginFieldNumber = defaultTokenBeginFieldNumber;
+        }
+
+        if (tokenOffsetEndFieldNumber == null) {
+            tokenOffsetEndFieldNumber = defaultTokenEndFieldNumber;
         }
 
         if (!annotationDir.isDirectory()) {
@@ -93,20 +124,22 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         }
 
         File[] annotationDocuments = edu.cmu.cs.lti.utils.FileUtils.getFilesWithSuffix(annotationDir, annotationFileNameSuffix);
+        File[] offsetDocuments = edu.cmu.cs.lti.utils.FileUtils.getFilesWithSuffix(tokenizationDir, tokenOffsetSuffix);
 
-        annotationsByName = findAnnotationFiles(annotationDocuments);
+        annotationsByName = trimAsDocId(annotationDocuments, annotationFileNameSuffix);
+        offsetsByName = trimAsDocId(offsetDocuments, tokenOffsetSuffix);
     }
 
-    private Map<String, File> findAnnotationFiles(File[] annotationDocuments) {
+    private Map<String, File> trimAsDocId(File[] annotationDocuments, String suffix) {
         Map<String, File> annotationDocByName = new HashMap<>();
         for (File annotationDocument : annotationDocuments) {
-            String annotationDocName = StringUtils.removeEnd(annotationDocument.getName(), annotationFileNameSuffix);
+            String annotationDocName = StringUtils.removeEnd(annotationDocument.getName(), suffix);
             annotationDocByName.put(annotationDocName, annotationDocument);
         }
         return annotationDocByName;
     }
 
-    public void annotateGoldStandard(JCas aJCas, List<String> bratAnnotations) {
+    public void annotateGoldStandard(JCas aJCas, List<String> bratAnnotations, List<String> tokenOffsetAnnotations) {
         Map<String, Pair<List<Span>, String>> allTextBounds = new HashMap<>();
 
         List<String> eventIds = new ArrayList<>();
@@ -115,11 +148,17 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         ArrayListMultimap<String, Attribute> id2Attribute = ArrayListMultimap.create();
         List<Relation> relations = new ArrayList<>();
 
+        List<Span> tokenOffsets = new ArrayList<>();
+        for (String line : Iterables.skip(tokenOffsetAnnotations, 1)) {
+            String[] parts = line.trim().split("\t");
+            int tokenBegin = Integer.parseInt(parts[tokenOffsetBeginFieldNumber]);
+            int tokenEnd = Integer.parseInt(parts[tokenOffsetEndFieldNumber]);
+            tokenOffsets.add(Span.of(tokenBegin, tokenEnd+1));
+        }
+
         for (String line : bratAnnotations) {
             String[] parts = line.trim().split("\t");
-
             String annoId = parts[0];
-
             if (annoId.startsWith(BratConstants.textBoundPrefix)) {
                 allTextBounds.put(annoId, str2Span(parts[1]));
             } else if (annoId.startsWith(BratConstants.eventPrefix)) {
@@ -134,6 +173,19 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             }
         }
 
+        ArrayListMultimap<String, Span> textBoundId2TokenSpan = ArrayListMultimap.create();
+        for (Span tokenSpan : tokenOffsets) {
+            for (Map.Entry<String, Pair<List<Span>, String>> textBoundById : allTextBounds.entrySet()) {
+                String annoId = textBoundById.getKey();
+                for (Span textBoundSpan : textBoundById.getValue().getValue0()) {
+                    if (textBoundSpan.covers(tokenSpan) || tokenSpan.covers(textBoundSpan)) {
+                        // it should be implicitly ensured here that the number of tokenSpan is the same as textBoundSpan
+                        textBoundId2TokenSpan.put(annoId, tokenSpan);
+                    }
+                }
+            }
+        }
+
         Map<String, EventMention> id2Mentions = new HashMap<>();
         for (int i = 0; i < eventIds.size(); i++) {
             String eventId = eventIds.get(i);
@@ -141,15 +193,24 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             Pair<List<Span>, String> eventInfo = allTextBounds.get(eventTextBoundId);
             EventMention eventMention = new EventMention(aJCas);
             eventMention.setEventType(eventInfo.getValue1());
+            List<Span> actualEventMentionSpans = eventInfo.getValue0();
+            List<Span> tokenizedEventMentionSpans = textBoundId2TokenSpan.get(eventTextBoundId);
 
-            List<Span> eventMentionSpans = eventInfo.getValue0();
-
-            eventMention.setRegions(new FSArray(aJCas, eventMentionSpans.size()));
+            eventMention.setYangRegions(new FSArray(aJCas, tokenizedEventMentionSpans.size()));
+            eventMention.setYinRegions(new FSArray(aJCas, actualEventMentionSpans.size()));
 
             int earliestBegin = Integer.MAX_VALUE;
             int latestEnd = 0;
-            for (int spanIndex = 0; spanIndex < eventMentionSpans.size(); spanIndex++) {
-                Span span = eventMentionSpans.get(spanIndex);
+
+            for (int spanIndex = 0; spanIndex < actualEventMentionSpans.size(); spanIndex++) {
+                Span span = actualEventMentionSpans.get(spanIndex);
+                Annotation region = new Annotation(aJCas, span.getBegin(), span.getEnd());
+                eventMention.setYinRegions(spanIndex, region);
+                eventMention.setBegin(earliestBegin);
+            }
+
+            for (int spanIndex = 0; spanIndex < tokenizedEventMentionSpans.size(); spanIndex++) {
+                Span span = tokenizedEventMentionSpans.get(spanIndex);
                 if (span.getBegin() < earliestBegin) {
                     earliestBegin = span.getBegin();
                 }
@@ -157,7 +218,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
                     latestEnd = span.getEnd();
                 }
                 Annotation region = new Annotation(aJCas, span.getBegin(), span.getEnd());
-                eventMention.setRegions(spanIndex, region);
+                eventMention.setYangRegions(spanIndex, region);
                 eventMention.setBegin(earliestBegin);
                 eventMention.setEnd(latestEnd);
             }
@@ -241,11 +302,14 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             throw new RuntimeException(e);
         }
         goldView.setDocumentText(aJCas.getDocumentText());
-        
-        File annotationDocument = annotationsByName.get(StringUtils.removeEnd(UimaConvenience.getDocId(aJCas), textFileNameSuffix));
+
+        String plainDocId = StringUtils.removeEnd(UimaConvenience.getDocId(aJCas), textFileNameSuffix);
+
+        File annotationDocument = annotationsByName.get(plainDocId);
+        File tokenDocument = offsetsByName.get(plainDocId);
 
         try {
-            annotateGoldStandard(goldView, FileUtils.readLines(annotationDocument, encoding));
+            annotateGoldStandard(goldView, FileUtils.readLines(annotationDocument, encoding), FileUtils.readLines(tokenDocument, encoding));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -318,7 +382,9 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     public static void main(String[] args) throws UIMAException, IOException {
         logger.info(COMPONENT_ID + " started");
         String parentDir = "data/brat_event";
-        String inputDir = parentDir + "/" + "LDC2014E121";
+        String sourceTextDir = parentDir + "/LDC2014E121/source";
+        String tokenOffsetDir = parentDir + "/LDC2014E121/token_offset";
+        String annotationDir = parentDir + "/LDC2014E121/annotation";
         String baseDir = "gold_annotated";
 
         String paramTypeSystemDescriptor = "TypeSystem";
@@ -327,13 +393,13 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 PlainTextCollectionReader.class,
-                PlainTextCollectionReader.PARAM_INPUTDIR, inputDir,
-                PlainTextCollectionReader.PARAM_TEXT_SUFFIX, ".txt");
+                PlainTextCollectionReader.PARAM_INPUTDIR, sourceTextDir,
+                PlainTextCollectionReader.PARAM_TEXT_SUFFIX, BratEventGoldStandardAnnotator.defaultTextFileNameSuffix);
 
         AnalysisEngineDescription engine = AnalysisEngineFactory.createEngineDescription(
                 BratEventGoldStandardAnnotator.class, typeSystemDescription,
-                BratEventGoldStandardAnnotator.PARAM_ANNOTATION_DIR, inputDir,
-                BratEventGoldStandardAnnotator.PARAM_SOURCE_TEXT_DIR, inputDir
+                BratEventGoldStandardAnnotator.PARAM_ANNOTATION_DIR, annotationDir,
+                BratEventGoldStandardAnnotator.PARAM_TOKENIZATION_MAP_DIR, tokenOffsetDir
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
