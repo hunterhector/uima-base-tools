@@ -4,6 +4,7 @@ import edu.cmu.cs.lti.ark.fn.data.prep.formats.Token;
 import edu.cmu.cs.lti.ark.fn.parsing.SemaforParseResult;
 import edu.cmu.cs.lti.ark.pipeline.SemaforFullPipeline;
 import edu.cmu.cs.lti.ark.pipeline.parsing.ParsingException;
+import edu.cmu.cs.lti.script.model.SemaforConstants;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
@@ -94,9 +95,9 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
             annotationSet.setFrameName(target.name);
             List<SemaforLayer> layers = new ArrayList<>();
 
-            SemaforLabel targetLabel = namedSpan2Label(aJCas, words, target, "Target");
+            SemaforLabel targetLabel = namedSpan2Label(aJCas, words, target, SemaforConstants.TARGET_LAYER_NAME);
             SemaforLayer targetLayer = new SemaforLayer(aJCas, targetLabel.getBegin(), targetLabel.getEnd());
-            targetLayer.setName("Target");
+            targetLayer.setName(SemaforConstants.TARGET_LAYER_NAME);
             FSArray targetLabelArray = new FSArray(aJCas, 1);
             targetLabelArray.set(0, targetLabel);
             targetLayer.setLabels(targetLabelArray);
@@ -112,7 +113,7 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
                 int rank = roleAssignment.rank;
                 double score = roleAssignment.score;
 
-                layer.setName("FE");
+                layer.setName(SemaforConstants.FRAME_ELEMENT_LAYER_NAME);
                 layer.setRank(rank);
                 layer.setScore(score);
                 layers.add(layer);

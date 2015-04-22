@@ -1,9 +1,6 @@
 package edu.cmu.cs.lti.uima.util;
 
-import edu.cmu.cs.lti.script.type.ComponentAnnotation;
-import edu.cmu.cs.lti.script.type.FanseToken;
-import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
-import edu.cmu.cs.lti.script.type.Word;
+import edu.cmu.cs.lti.script.type.*;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 
@@ -28,14 +25,12 @@ public class TokenAlignmentHelper {
         this(false);
     }
 
-
     public TokenAlignmentHelper(boolean verbose) {
         this.verbose = verbose;
     }
 
     public void loadFanse2Stanford(JCas aJCas) {
         f2s = getType2TypeMapping(aJCas, FanseToken.class, StanfordCorenlpToken.class);
-
     }
 
     public void loadStanford2Fanse(JCas aJCas) {
@@ -49,7 +44,6 @@ public class TokenAlignmentHelper {
             s2w.put(ws.getValue(), ws.getKey());
         }
     }
-
 
     public void loadWord2Stanford(JCas aJCas) {
         w2s = getType2TypeMapping(aJCas, Word.class, StanfordCorenlpToken.class);
@@ -135,10 +129,9 @@ public class TokenAlignmentHelper {
             } else {// in case the token range is larger than the word, use its covering token
                 Collection<FromType> coveringToken = tokenCoveringWord.get(token);
                 if (coveringToken.size() == 0) {
-                    System.err
-                            .println(String.format("The word : %s [%d, %d] cannot be associated with a %s",
-                                    token.getCoveredText(), token.getBegin(), token.getEnd(),
-                                    clazzTo.getSimpleName()));
+                    System.err.println(String.format("The word : %s [%d, %d] cannot be associated with a %s",
+                            token.getCoveredText(), token.getBegin(), token.getEnd(),
+                            clazzTo.getSimpleName()));
                 } else {
                     System.err.println("Use covering");
                     for (FromType word : coveringToken) {

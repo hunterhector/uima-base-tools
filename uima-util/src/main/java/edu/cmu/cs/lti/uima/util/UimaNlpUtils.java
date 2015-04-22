@@ -39,8 +39,7 @@ public class UimaNlpUtils {
         for (StanfordTreeAnnotation tree : JCasUtil.selectCovered(StanfordTreeAnnotation.class, anno)) {
             if (largestContainingTree == null) {
                 largestContainingTree = tree;
-            } else if (largestContainingTree.getEnd() - largestContainingTree.getBegin() < tree.getEnd()
-                    - tree.getBegin()) {
+            } else if (largestContainingTree.getEnd() - largestContainingTree.getBegin() < tree.getEnd() - tree.getBegin()) {
                 largestContainingTree = tree;
             }
         }

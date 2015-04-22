@@ -6,6 +6,7 @@ import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
+import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 import org.uimafit.pipeline.SimplePipeline;
@@ -49,7 +50,7 @@ public class SemaforAnnotatorPipeline {
         // Instantiate the analysis engine.
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
                 .createTypeSystemDescription(paramTypeSystemDescriptor);
-        AnalysisEngineDescription analyzer = CustomAnalysisEngineFactory.createAnalysisEngine(
+        AnalysisEngineDescription analyzer = AnalysisEngineFactory.createEngineDescription(
                 SemaforAnnotator.class, typeSystemDescription,
                 SemaforAnnotator.SEMAFOR_MODEL_PATH, paramModelBaseDirectory);
 

@@ -751,7 +751,7 @@
                 </featureDescription>
                 <featureDescription>
                     <name>argument</name>
-                    <description>The argument attached to this link, represented as an Entity Based Component
+                    <description>The argument attached to this link, represented as an Entity
                     </description>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.EntityMention</rangeTypeName>
                 </featureDescription>
