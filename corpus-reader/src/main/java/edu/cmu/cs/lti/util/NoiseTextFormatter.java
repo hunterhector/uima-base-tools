@@ -30,7 +30,7 @@ import java.util.regex.Pattern;
 public class NoiseTextFormatter {
     private static ExtractorBase extractor = ArticleExtractor.getInstance();
 
-    private static String[] forumPatterns = {"<post([^<].*?)>", "<quote[^<].*?>", "< / quote>", "< / post>", "<img[^<].*>", "<a href=.*?>"};
+    private static String[] forumPatterns = {"<post[^<]*>", "<quote[^<]*>", "< / quote>", "< / post>", "<img[^<]*>", "<a href=*>"};
 
     public static String extractArticle(String text) throws BoilerpipeProcessingException, SAXException {
         return extractor.getText(text);
