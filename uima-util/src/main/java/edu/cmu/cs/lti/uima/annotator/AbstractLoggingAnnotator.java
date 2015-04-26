@@ -1,7 +1,5 @@
 package edu.cmu.cs.lti.uima.annotator;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
@@ -11,6 +9,7 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
@@ -28,7 +27,7 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
 
     private String className = this.getClass().getName();
 
-    protected static final Logger logger = (Logger) LoggerFactory.getLogger(AbstractLoggingAnnotator.class.getName());
+    protected static final Logger logger = LoggerFactory.getLogger(AbstractLoggingAnnotator.class.getName());
 
     @ConfigurationParameter(name = PARAM_KEEP_QUIET, mandatory = false)
     private Boolean keepQuiet;
@@ -43,18 +42,18 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
 
-        //default should not be quiet
-        keepQuiet = keepQuiet == null ? false : keepQuiet;
-
-        if (keepQuiet) {
-            logger.setLevel(Level.WARN);
-        } else {
-            logger.setLevel(Level.INFO);
-        }
-
-        if (loggingFileName != null) {
-            logger.addAppender(getFileAppender(loggingFileName));
-        }
+//        //default should not be quiet
+//        keepQuiet = keepQuiet == null ? false : keepQuiet;
+//
+//        if (keepQuiet) {
+//            logger.setLevel(Level.WARN);
+//        } else {
+//            logger.setLevel(Level.INFO);
+//        }
+//
+//        if (loggingFileName != null) {
+//            logger.addAppender(getFileAppender(loggingFileName));
+//        }
     }
 
     private FileAppender<ILoggingEvent> getFileAppender(String loggingFileName) {
