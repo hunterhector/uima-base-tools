@@ -27,6 +27,10 @@
                     <name>trueEntailmentScore</name>
                     <rangeTypeName>uima.cas.Double</rangeTypeName>
                 </featureDescription>
+                <featureDescription>
+                    <name>predictedEntailmentScore</name>
+                    <rangeTypeName>uima.cas.Double</rangeTypeName>
+                </featureDescription>
             </features>
         </typeDescription>
         <typeDescription>
