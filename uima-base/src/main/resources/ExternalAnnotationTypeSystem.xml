@@ -25,13 +25,11 @@
             <features>
                 <featureDescription>
                     <name>trueEntailmentScore</name>
-                    <rangeTypeName>uima.cas.FSArray</rangeTypeName>
-                    <elementType>uima.cas.Double</elementType>
+                    <rangeTypeName>uima.cas.DoubleArray</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
                     <name>predictedEntailmentScore</name>
-                    <rangeTypeName>uima.cas.FSArray</rangeTypeName>
-                    <elementType>uima.cas.Double</elementType>
+                    <rangeTypeName>uima.cas.DoubleArray</rangeTypeName>
                 </featureDescription>
             </features>
         </typeDescription>
