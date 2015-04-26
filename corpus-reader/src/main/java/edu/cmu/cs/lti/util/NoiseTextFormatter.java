@@ -1,23 +1,15 @@
 package edu.cmu.cs.lti.util;
 
-import com.google.common.base.Joiner;
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
 import de.l3s.boilerpipe.extractors.ExtractorBase;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.exception.TikaException;
-import org.apache.tika.metadata.Metadata;
-import org.apache.tika.parser.AutoDetectParser;
-import org.apache.tika.sax.BodyContentHandler;
 import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -30,70 +22,76 @@ import java.util.regex.Pattern;
 public class NoiseTextFormatter {
     private static ExtractorBase extractor = ArticleExtractor.getInstance();
 
-    private static String[] forumPatterns = {"<post[^<]*>", "<quote[^<]*>", "< / quote>", "< / post>", "<img[^<]*>", "<a href=*>"};
+    private static String[] forumPatterns = {"<post[^<]*>", "<quote[^<]*>", "< / quote>", "< / post>", "<img[^<]*>", "<a\\shref=[^>]*>[^<]*<\\s*/\\s*a>"};
 
-    public static String extractArticle(String text) throws BoilerpipeProcessingException, SAXException {
-        return extractor.getText(text);
+    private static String[] newsDiscardPattern = {
+            "<DOCID>[^<]*<\\s/\\sDOCID>", "<DOCTYPE[^>]*>[^<]*<\\s/\\sDOCTYPE>", "<KEYWORD>", "<\\s/\\sKEYWORD>",
+            "<BODY>", "<TEXT>", "< / TEXT>", "< / BODY>", "<DOC>", "< / DOC>", "< / DOC", "<P>", "< / P>",
+            "<DATETIME>[^<]*<\\s/\\sDATETIME>", "<DATELINE>[^<]*<\\s/\\sDATELINE>", "<DOC[^>]*>", "<HEADLINE>", "< / HEADLINE>"
+    };
+
+    private static String sentenceEndFixer = "[^\\p{Punct}](\\n)[\\s|\\n]*\\n";
+
+    private String text;
+
+    public NoiseTextFormatter(String input) {
+        this.text = input;
     }
 
-    public static String cleanForum(String docText) {
-        //apply the newline even as many times as possible to make it identical to input
-        String[] lines = docText.split("\n", -1);
-
-        List<String> cleanedLines = new ArrayList<>();
-        for (String line : lines) {
-            cleanedLines.add(replaceMatchedWithChar(line, forumPatterns, ' '));
-        }
-
-        return Joiner.on("\n").join(cleanedLines);
+    public NoiseTextFormatter cleanForum() {
+        cleanTextWithPatterns(forumPatterns);
+        return this;
     }
 
-    public static String cleanTag(String docText, String encoding) throws IOException, TikaException, SAXException {
-        InputStream stream = IOUtils.toInputStream(docText);
-        AutoDetectParser parser = new AutoDetectParser();
-        BodyContentHandler handler = new BodyContentHandler();
-        Metadata metadata = new Metadata();
-        try {
-            parser.parse(stream, handler, metadata);
-            return handler.toString();
-        } finally {
-            stream.close();
-        }
+    public NoiseTextFormatter cleanNews() {
+        cleanTextWithPatterns(newsDiscardPattern);
+        return this;
     }
 
-    public static String replaceMatchedWithChar(String line, String[] patterns, char c) {
-        if (line.isEmpty()) {
-            return line;
+    public String getText() {
+        return text;
+    }
+
+    public void cleanTextWithPatterns(String[] patterns) {
+        replaceMatchedWithChar(patterns, ' ');
+    }
+
+    public void replaceMatchedWithChar(String[] patterns, char c) {
+        if (text.isEmpty()) {
+            return;
         }
 
         for (String pattern : patterns) {
-            Pattern p = Pattern.compile("("+pattern+")");
-            Matcher m = p.matcher(line);
+            Pattern p = Pattern.compile("(" + pattern + ")", Pattern.DOTALL);
+            Matcher m = p.matcher(text);
             StringBuffer sb = new StringBuffer();
 
             while (m.find()) {
                 String found = m.group(1);
+//                System.out.println(found);
                 String replacementStr = StringUtils.repeat(c, found.length());
                 m.appendReplacement(sb, replacementStr);
             }
             m.appendTail(sb);
             if (sb.length() != 0) {
-                line = sb.toString();
+                text = sb.toString();
             }
         }
-        return line;
     }
 
     public static void main(String[] args) throws BoilerpipeProcessingException, IOException, SAXException, TikaException {
         String noisyText = FileUtils.readFileToString(
                 new File("/Users/zhengzhongliu/Documents/projects/uima-base-tools/data/event_mention_detection/" +
                         "LDC2014E121_DEFT_Event_Nugget_Evaluation_Training_Data/data/source/" +
-                        "2f5ee4e363c30678dc3b55caf43bc63d.cmp.tkn.txt"));
+//                        "XIN_ENG_20030609.0118.tkn.txt"));
+//                        "XIN_ENG_20100304.0019.tkn.txt"));
+                        "052fe72e4bb7b33ca69dd0dfd01fc442.cmp.tkn.txt"));
+
+        NoiseTextFormatter formatter = new NoiseTextFormatter(noisyText);
+        String ruleCleaned = formatter.cleanForum().cleanNews().getText();
 
         System.out.println("=== Rule results ===");
-        String ruleCleaned = cleanForum(noisyText);
-//        System.out.println(ruleCleaned);
-
+        System.out.println(ruleCleaned);
 
         System.out.println("Original length " + noisyText.length());
         System.out.println("Rule length " + ruleCleaned.length());

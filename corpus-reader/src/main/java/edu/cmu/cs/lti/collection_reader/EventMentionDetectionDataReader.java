@@ -152,7 +152,7 @@ public class EventMentionDetectionDataReader extends AbstractCollectionReader {
         UimaAnnotationUtils.setSourceDocumentInformation(jCas, currentFile.getValue1().toURI().toURL().toString(), (int) currentFile.getValue1().length(), 0, true);
 
         String sourceFileStr = FileUtils.readFileToString(getSourceFile());
-        String documentText = NoiseTextFormatter.cleanForum(sourceFileStr);
+        String documentText = new NoiseTextFormatter(sourceFileStr).cleanForum().getText();
 
         JCas goldView = null;
         try {
