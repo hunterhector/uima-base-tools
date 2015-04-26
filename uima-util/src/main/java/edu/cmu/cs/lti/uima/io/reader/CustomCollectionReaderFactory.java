@@ -55,9 +55,9 @@ public class CustomCollectionReaderFactory {
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
-                OffsetSortedXmiCollectionReader.class, typeSystemDescription,
-                OffsetSortedXmiCollectionReader.PARAM_INPUTDIR, inputDirName,
-                OffsetSortedXmiCollectionReader.PARAM_FAILUNKNOWN, failOnUnkown);
+                TimeSortedXmiCollectionReader.class, typeSystemDescription,
+                TimeSortedXmiCollectionReader.PARAM_INPUTDIR, inputDirName,
+                TimeSortedXmiCollectionReader.PARAM_FAILUNKNOWN, failOnUnkown);
     }
 
     /**
@@ -166,9 +166,9 @@ public class CustomCollectionReaderFactory {
         // Instantiate a collection reader to get XMI as input.
 
         return CollectionReaderFactory.createReaderDescription(
-                OffsetSortedGzippedXmiCollectionReader.class, typeSystemDescription,
-                OffsetSortedGzippedXmiCollectionReader.PARAM_INPUTDIR, inputDirName,
-                OffsetSortedGzippedXmiCollectionReader.PARAM_FAILUNKNOWN, failOnUnkown);
+                TimeSortedGzippedXmiCollectionReader.class, typeSystemDescription,
+                TimeSortedGzippedXmiCollectionReader.PARAM_INPUTDIR, inputDirName,
+                TimeSortedGzippedXmiCollectionReader.PARAM_FAILUNKNOWN, failOnUnkown);
     }
 
 

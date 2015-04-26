@@ -25,7 +25,7 @@ import java.util.zip.GZIPInputStream;
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
  */
-public class OffsetSortedGzippedXmiCollectionReader extends CollectionReader_ImplBase {
+public class TimeSortedGzippedXmiCollectionReader extends CollectionReader_ImplBase {
     public static final String PARAM_INPUTDIR = "InputDirectory";
 
     public static final String PARAM_FAILUNKNOWN = "failOnUnkown";

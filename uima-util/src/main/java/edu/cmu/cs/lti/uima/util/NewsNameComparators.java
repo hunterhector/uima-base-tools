@@ -13,7 +13,7 @@ import java.util.Date;
  * Time: 1:04 PM
  */
 public class NewsNameComparators {
-    public static Comparator<File> getGigawordDateComparator(final String inputFileSuffix, final String dateFormatStr){
+    public static Comparator<File> getGigawordDateComparator(final String inputFileSuffix, final String dateFormatStr) {
         return new Comparator<File>() {
             @Override
             public int compare(File o1, File o2) {
@@ -42,6 +42,31 @@ public class NewsNameComparators {
                     e.printStackTrace();
                 }
                 return d;
+            }
+
+            private int extractOffset(String name) {
+                int i = 0;
+                try {
+                    int s = name.lastIndexOf('_') + 1;
+                    int e = name.lastIndexOf(inputFileSuffix);
+                    String number = name.substring(s, e);
+                    i = Integer.parseInt(number);
+                } catch (Exception e) {
+                    i = 0; // if filename does not match the format
+                    // then default to 0
+                }
+                return i;
+            }
+        };
+    }
+
+    public static Comparator<File> getFileOffsetComparator(final String inputFileSuffix) {
+        return new Comparator<File>() {
+            @Override
+            public int compare(File o1, File o2) {
+                int n1 = extractOffset(o1.getName());
+                int n2 = extractOffset(o2.getName());
+                return n1 - n2;
             }
 
             private int extractOffset(String name) {

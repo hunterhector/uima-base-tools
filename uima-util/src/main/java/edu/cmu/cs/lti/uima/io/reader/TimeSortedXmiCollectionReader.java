@@ -41,7 +41,7 @@ import java.util.Collections;
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem,
  * sort them by the offset
  */
-public class OffsetSortedXmiCollectionReader extends CollectionReader_ImplBase {
+public class TimeSortedXmiCollectionReader extends CollectionReader_ImplBase {
     /**
      * Name of configuration parameter that must be set to the path of a directory containing the XMI
      * files.
@@ -97,7 +97,7 @@ public class OffsetSortedXmiCollectionReader extends CollectionReader_ImplBase {
             }
         }
 
-        Collections.sort(mFiles, NewsNameComparators.getGigawordDateComparator(inputFileSuffix,"yyyymm"));
+        Collections.sort(mFiles, NewsNameComparators.getFileOffsetComparator(inputFileSuffix));
     }
 
     /**
@@ -134,5 +134,7 @@ public class OffsetSortedXmiCollectionReader extends CollectionReader_ImplBase {
     public Progress[] getProgress() {
         return new Progress[]{new ProgressImpl(mCurrentIndex, mFiles.size(), Progress.ENTITIES)};
     }
+
+
 
 }
