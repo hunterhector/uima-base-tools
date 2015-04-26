@@ -41,19 +41,6 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
-
-//        //default should not be quiet
-//        keepQuiet = keepQuiet == null ? false : keepQuiet;
-//
-//        if (keepQuiet) {
-//            logger.setLevel(Level.WARN);
-//        } else {
-//            logger.setLevel(Level.INFO);
-//        }
-//
-//        if (loggingFileName != null) {
-//            logger.addAppender(getFileAppender(loggingFileName));
-//        }
     }
 
     private FileAppender<ILoggingEvent> getFileAppender(String loggingFileName) {
