@@ -93,6 +93,16 @@
                <version>1.0-SNAPSHOT</version>
            </dependency>
            <dependency>
+               <groupId>edu.cmu.cs.lti</groupId>
+               <artifactId>uima-util</artifactId>
+               <version>0.0.1-SNAPSHOT</version>
+           </dependency>
+           <dependency>
+               <groupId>edu.cmu.cs.lti</groupId>
+               <artifactId>uima-base</artifactId>
+               <version>0.0.1-SNAPSHOT</version>
+           </dependency>
+           <dependency>
                <groupId>org.apache.uima</groupId>
                <artifactId>uimaj-examples</artifactId>
                <version>2.5.0</version>

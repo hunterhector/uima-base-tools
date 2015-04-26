@@ -6,6 +6,7 @@ import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
+import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
@@ -61,7 +62,7 @@ public class DiscourseParserRunner {
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createXmiReader(
                 typeSystemDescription, paramInputDir, false);
 
-        AnalysisEngineDescription discourseParser = CustomAnalysisEngineFactory.createAnalysisEngine(
+        AnalysisEngineDescription discourseParser = AnalysisEngineFactory.createEngineDescription(
                 DiscourseParserAnnotator.class, typeSystemDescription, DiscourseParserAnnotator.PARAM_KEEP_QUIET, quiet);
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(

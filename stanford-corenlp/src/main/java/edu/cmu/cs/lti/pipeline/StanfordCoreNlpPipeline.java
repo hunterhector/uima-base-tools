@@ -6,6 +6,7 @@ import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
+import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 import org.uimafit.pipeline.SimplePipeline;
@@ -32,7 +33,7 @@ public class StanfordCoreNlpPipeline {
 
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createPlainTextReader("data/test/input");
 
-        AnalysisEngineDescription stanfordAnalyzer = CustomAnalysisEngineFactory.createAnalysisEngine(
+        AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 StanfordCoreNlpAnnotator.class, typeSystemDescription,
                 StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, true);
 

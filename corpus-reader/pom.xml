@@ -47,7 +47,10 @@
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>uima-util</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.cmu.cs.lti</groupId>
+            <artifactId>uima-base</artifactId>
         </dependency>
         <dependency>
             <groupId>edu.jhu.agiga</groupId>

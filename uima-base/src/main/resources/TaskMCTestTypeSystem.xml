@@ -39,6 +39,10 @@
                     <description/>
                     <rangeTypeName>uima.cas.Boolean</rangeTypeName>
                 </featureDescription>
+                <featureDescription>
+                    <name>statementForm</name>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
             </features>
         </typeDescription>
         <typeDescription>
