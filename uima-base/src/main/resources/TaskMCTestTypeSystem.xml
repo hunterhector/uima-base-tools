@@ -39,6 +39,16 @@
                     <description/>
                     <rangeTypeName>uima.cas.Boolean</rangeTypeName>
                 </featureDescription>
+                <featureDescription>
+                    <name>trueCandidateQuestions</name>
+                    <description>The true ranked candidate questions</description>
+                    <rangeTypeName>uima.cas.IntegerArray</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>predictedCandidateQuestions</name>
+                    <description>The predicted ranked candidate questions</description>
+                    <rangeTypeName>uima.cas.IntegerArray</rangeTypeName>
+                </featureDescription>
             </features>
         </typeDescription>
         <typeDescription>
