@@ -2,7 +2,8 @@ package edu.cmu.cs.lti.uima.io.reader;
 
 import com.google.common.base.Joiner;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.uima.collection.CollectionReader_ImplBase;
+import org.apache.uima.UimaContext;
+import org.apache.uima.fit.component.JCasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.slf4j.Logger;
@@ -17,8 +18,9 @@ import java.util.List;
  * step number for convenience
  *
  * @author Jun Araki
+ * @author Zhengzhong Liu
  */
-public abstract class AbstractStepBasedDirReader extends CollectionReader_ImplBase {
+public abstract class AbstractStepBasedDirReader extends JCasCollectionReader_ImplBase {
 
     public static final String PARAM_PARENT_INPUT_DIR_PATH = "ParentInputDirPath";
 
@@ -55,8 +57,8 @@ public abstract class AbstractStepBasedDirReader extends CollectionReader_ImplBa
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
-    public void initialize() throws ResourceInitializationException {
-        super.initialize();
+    public void initialize(UimaContext aContext) throws ResourceInitializationException {
+        super.initialize(aContext);
 
         List<String> dirNameSegments = new ArrayList<String>();
 

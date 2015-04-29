@@ -21,9 +21,10 @@ package edu.cmu.cs.lti.uima.io.reader;
 
 import edu.cmu.cs.lti.uima.util.NewsNameComparators;
 import edu.cmu.cs.lti.utils.StringUtils;
-import org.apache.uima.cas.CAS;
+import org.apache.uima.UimaContext;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.collection.CollectionException;
+import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
@@ -47,8 +48,9 @@ public class TimeSortedXmiCollectionReader extends AbstractStepBasedDirReader {
     private int mCurrentIndex;
 
     @Override
-    public void initialize() throws ResourceInitializationException {
-        super.initialize();
+    public void initialize(UimaContext aContext) throws ResourceInitializationException {
+        super.initialize(aContext);
+
         if (StringUtils.isEmpty(inputFileSuffix)) {
             inputFileSuffix = DEFAULT_FILE_SUFFIX;
         }
@@ -75,11 +77,11 @@ public class TimeSortedXmiCollectionReader extends AbstractStepBasedDirReader {
     /**
      * @see org.apache.uima.collection.CollectionReader#getNext(org.apache.uima.cas.CAS)
      */
-    public void getNext(CAS aCAS) throws IOException, CollectionException {
+    public void getNext(JCas jCas) throws IOException, CollectionException {
         File currentFile = (File) mFiles.get(mCurrentIndex++);
         FileInputStream inputStream = new FileInputStream(currentFile);
         try {
-            XmiCasDeserializer.deserialize(inputStream, aCAS, !failOnUnknownType);
+            XmiCasDeserializer.deserialize(inputStream, jCas.getCas(), !failOnUnknownType);
         } catch (SAXException e) {
             throw new CollectionException(e);
         } finally {

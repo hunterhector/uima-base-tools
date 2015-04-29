@@ -89,6 +89,27 @@ public class CustomAnalysisEngineFactory {
      * @param parentOutputDirPath
      * @param baseOutputDirName
      * @param stepNumber
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static AnalysisEngineDescription createXmiWriter(String parentOutputDirPath,
+                                                            String baseOutputDirName, Integer stepNumber)
+            throws ResourceInitializationException {
+        AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
+                StepBasedDirXmiWriter.class,
+                StepBasedDirXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, parentOutputDirPath,
+                StepBasedDirXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME, baseOutputDirName,
+                StepBasedDirXmiWriter.PARAM_OUTPUT_STEP_NUMBER, stepNumber);
+        return writer;
+    }
+
+
+    /**
+     * Creates an XMI writer assuming the directory naming convention
+     *
+     * @param parentOutputDirPath
+     * @param baseOutputDirName
+     * @param stepNumber
      * @param outputFileSuffix
      * @param srcDocInfoViewName  the view that contains the source document info
      * @return

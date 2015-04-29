@@ -2,9 +2,10 @@ package edu.cmu.cs.lti.uima.io.reader;
 
 import edu.cmu.cs.lti.uima.util.NewsNameComparators;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.uima.cas.CAS;
+import org.apache.uima.UimaContext;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.collection.CollectionException;
+import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
@@ -36,8 +37,8 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirRe
     /**
      * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
      */
-    public void initialize() throws ResourceInitializationException {
-        super.initialize();
+    public void initialize(UimaContext aContext) throws ResourceInitializationException {
+        super.initialize(aContext);
 
         if (StringUtils.isEmpty(inputFileSuffix)) {
             inputFileSuffix = DEFAULT_FILE_SUFFIX;
@@ -72,10 +73,10 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirRe
     /**
      * @see org.apache.uima.collection.CollectionReader#getNext(org.apache.uima.cas.CAS)
      */
-    public void getNext(CAS aCAS) throws IOException, CollectionException {
+    public void getNext(JCas jCas) throws IOException, CollectionException {
         try {
             if (!StringUtils.isEmpty(inputViewName)) {
-                aCAS = aCAS.getView(inputViewName);
+                jCas = jCas.getView(inputViewName);
             }
         } catch (Exception e) {
             throw new CollectionException(e);
@@ -86,7 +87,7 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirRe
 
         GZIPInputStream gzipIn = new GZIPInputStream(new FileInputStream(currentFile));
         try {
-            XmiCasDeserializer.deserialize(gzipIn, aCAS, !failOnUnknownType);
+            XmiCasDeserializer.deserialize(gzipIn, jCas.getCas(), !failOnUnknownType);
             gzipIn.close();
         } catch (SAXException e) {
             throw new CollectionException(e);
