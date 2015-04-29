@@ -51,10 +51,6 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
     currentDocIndex = 0;
   }
 
-  @Override
-  public void subInitialize() {
-  }
-
   /**
    * @see org.apache.uima.collection.CollectionReader#hasNext()
    */

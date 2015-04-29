@@ -30,6 +30,8 @@ public abstract class AbstractStepBasedDirReader extends CollectionReader_ImplBa
 
     public static final String PARAM_FAIL_UNKNOWN = "FailOnUnknownType";
 
+    public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
+
     @ConfigurationParameter(name = PARAM_PARENT_INPUT_DIR_PATH)
     private String parentInputDirPath;
 
@@ -42,8 +44,11 @@ public abstract class AbstractStepBasedDirReader extends CollectionReader_ImplBa
     @ConfigurationParameter(name = PARAM_INPUT_FILE_SUFFIX, mandatory = false)
     protected String inputFileSuffix;
 
-    @ConfigurationParameter(name = PARAM_FAIL_UNKNOWN)
-    protected boolean failOnUnknownType;
+    @ConfigurationParameter(name = PARAM_INPUT_VIEW_NAME, mandatory = false)
+    protected String inputViewName;
+
+    @ConfigurationParameter(name = PARAM_FAIL_UNKNOWN, mandatory = false)
+    protected Boolean failOnUnknownType;
 
     protected File inputDir;
 
@@ -53,19 +58,13 @@ public abstract class AbstractStepBasedDirReader extends CollectionReader_ImplBa
     public void initialize() throws ResourceInitializationException {
         super.initialize();
 
-        parentInputDirPath = (String) getConfigParameterValue(PARAM_PARENT_INPUT_DIR_PATH);
-        baseInputDirName = (String) getConfigParameterValue(PARAM_BASE_INPUT_DIR_NAME);
-        inputStepNumber = (Integer) getConfigParameterValue(PARAM_INPUT_STEP_NUMBER);
-        inputFileSuffix = (String) getConfigParameterValue(PARAM_INPUT_FILE_SUFFIX);
-        failOnUnknownType = (Boolean) getConfigParameterValue(PARAM_FAIL_UNKNOWN);
-
         List<String> dirNameSegments = new ArrayList<String>();
 
         if (inputStepNumber != null) {
             dirNameSegments.add(String.format("%02d", inputStepNumber));
         }
         if (!StringUtils.isEmpty(inputFileSuffix)) {
-            dirNameSegments.add(String.format(inputFileSuffix));
+            dirNameSegments.add(inputFileSuffix);
         }
         dirNameSegments.add(baseInputDirName);
 
@@ -78,14 +77,9 @@ public abstract class AbstractStepBasedDirReader extends CollectionReader_ImplBa
                     inputDir.getAbsolutePath()));
         }
 
-        subInitialize();
+        if (failOnUnknownType == null) {
+            failOnUnknownType = false;
+        }
     }
-
-    /**
-     * A subclass can do its own initialization in this method
-     *
-     * @throws Exception
-     */
-    public abstract void subInitialize();
 
 }

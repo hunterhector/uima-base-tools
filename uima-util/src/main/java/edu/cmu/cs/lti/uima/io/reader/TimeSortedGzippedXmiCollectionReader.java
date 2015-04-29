@@ -5,8 +5,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.collection.CollectionException;
-import org.apache.uima.collection.CollectionReader_ImplBase;
-import org.apache.uima.resource.ResourceConfigurationException;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
@@ -25,24 +23,13 @@ import java.util.zip.GZIPInputStream;
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
  */
-public class TimeSortedGzippedXmiCollectionReader extends CollectionReader_ImplBase {
-    public static final String PARAM_INPUTDIR = "InputDirectory";
-
-    public static final String PARAM_FAILUNKNOWN = "failOnUnkown";
-
-    public static final String PARAM_FILE_SUFFIX = "fileSuffix";
-
-//    public static final String PARAM_INPUT_VIEW_NAME = "viewName";
+public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirReader {
 
     private static final String DEFAULT_FILE_SUFFIX = ".xmi.gz";
-
-    private String inputViewName;
 
     private List<File> xmiFiles;
 
     private int currentDocIndex;
-
-    private Boolean failOnUnknownType;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -52,22 +39,8 @@ public class TimeSortedGzippedXmiCollectionReader extends CollectionReader_ImplB
     public void initialize() throws ResourceInitializationException {
         super.initialize();
 
-        failOnUnknownType = (Boolean) getConfigParameterValue(PARAM_FAILUNKNOWN);
-        if (null == failOnUnknownType) {
-            failOnUnknownType = true; // default to true if not specified
-        }
-
-        String inputFileSuffix = (String) getConfigParameterValue(PARAM_FILE_SUFFIX);
         if (StringUtils.isEmpty(inputFileSuffix)) {
             inputFileSuffix = DEFAULT_FILE_SUFFIX;
-        }
-
-        File inputDir = new File(((String) getConfigParameterValue(PARAM_INPUTDIR)).trim());
-
-        // if input directory does not exist or is not a directory, throw exception
-        if (!inputDir.exists() || !inputDir.isDirectory()) {
-            throw new ResourceInitializationException(ResourceConfigurationException.DIRECTORY_NOT_FOUND,
-                    new Object[]{PARAM_INPUTDIR, this.getMetaData().getName(), inputDir.getPath()});
         }
 
         // Get a list of XMI files in the specified directory
