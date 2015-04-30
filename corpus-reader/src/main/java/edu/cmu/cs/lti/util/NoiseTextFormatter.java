@@ -22,7 +22,8 @@ import java.util.regex.Pattern;
 public class NoiseTextFormatter {
     private static ExtractorBase extractor = ArticleExtractor.getInstance();
 
-    private static String[] forumPatterns = {"<post[^<]*>", "<quote[^<]*>", "< / quote>", "< / post>", "<img[^<]*>", "<a\\shref=[^>]*>[^<]*<\\s*/\\s*a>"};
+    private static String[] forumPatterns = {"<post[^<]*>", "<quote[^<]*>", "< / quote>", "< / post>", "<img[^<]*>",
+            "<a\\s?href=[^>]*>", "<\\s?/\\s?a>"};
 
     private static String[] newsDiscardPattern = {
             "<DOCID>[^<]*<\\s/\\sDOCID>", "<DOCTYPE[^>]*>[^<]*<\\s/\\sDOCTYPE>", "<KEYWORD>", "<\\s/\\sKEYWORD>",

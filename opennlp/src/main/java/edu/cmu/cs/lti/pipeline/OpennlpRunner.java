@@ -1,17 +1,17 @@
 package edu.cmu.cs.lti.pipeline;
 
-import edu.cmu.cs.lti.annotators.DiscourseParserAnnotator;
+import edu.cmu.cs.lti.annotators.OpenNlpChunker;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
+import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.uimafit.factory.TypeSystemDescriptionFactory;
 
 import java.io.IOException;
 
@@ -21,18 +21,15 @@ import java.io.IOException;
  * Date: 9/30/14
  * Time: 9:37 PM
  */
-public class DiscourseParserRunner {
-    //TODO make sure this can be run outside, figure out the scala version problem
-    private static String className = DiscourseParserRunner.class.getSimpleName();
+public class OpennlpRunner {
+    private static String className = OpennlpRunner.class.getSimpleName();
 
-//    static Logger logger = Logger.getLogger(className);
-
-    static Logger logger = LoggerFactory.getLogger(DiscourseParserRunner.className);
+    static Logger logger = LoggerFactory.getLogger(className);
 
     /**
      * @param args
-     * @throws java.io.IOException
-     * @throws org.apache.uima.UIMAException
+     * @throws IOException
+     * @throws UIMAException
      */
     public static void main(String[] args) throws UIMAException, IOException {
         logger.info(className + " started...");
@@ -47,7 +44,7 @@ public class DiscourseParserRunner {
         // Parameters for the writer
         String baseInput = args[1]; //"01_event_tuples"
 
-        String paramBaseOutputDirName = "discourse_parsed";
+        String paramBaseOutputDirName = "opennlp_chunked";
 
         Integer outputStepNum = null;
         if (args.length >= 4) {
@@ -65,12 +62,13 @@ public class DiscourseParserRunner {
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createXmiReader(
                 typeSystemDescription, parentInput, baseInput);
 
-        AnalysisEngineDescription discourseParser = AnalysisEngineFactory.createEngineDescription(
-                DiscourseParserAnnotator.class, typeSystemDescription);
+        AnalysisEngineDescription opennlp = AnalysisEngineFactory.createEngineDescription(
+                OpenNlpChunker.class, typeSystemDescription,
+                OpenNlpChunker.PARAM_MODEL_PATH, "../models/opennlp/en-chunker.bin");
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
                 parentInput, paramBaseOutputDirName, outputStepNum);
 
-        SimplePipeline.runPipeline(reader, discourseParser, writer);
+        SimplePipeline.runPipeline(reader, opennlp, writer);
     }
 }

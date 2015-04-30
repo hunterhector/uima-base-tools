@@ -15,6 +15,7 @@
         <module>semafor-parser</module>
         <module>stanford-corenlp</module>
         <module>discourse-parser</module>
+        <module>opennlp</module>
     </modules>
     <build>
         <plugins>
@@ -167,6 +168,11 @@
                <groupId>org.jdom</groupId>
                <artifactId>jdom2</artifactId>
                <version>2.0.5</version>
+           </dependency>
+           <dependency>
+               <groupId>org.apache.opennlp</groupId>
+               <artifactId>opennlp-tools</artifactId>
+               <version>1.5.3</version>
            </dependency>
        </dependencies>
     </dependencyManagement>
