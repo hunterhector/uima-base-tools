@@ -6,7 +6,7 @@ import edu.cmu.cs.lti.model.BratConstants;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.Event;
 import edu.cmu.cs.lti.script.type.EventMention;
-import edu.cmu.cs.lti.script.type.EventRelation;
+import edu.cmu.cs.lti.script.type.EventMentionRelation;
 import edu.cmu.cs.lti.uima.annotator.AbstractAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.PlainTextCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
@@ -153,7 +153,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             String[] parts = line.trim().split("\t");
             int tokenBegin = Integer.parseInt(parts[tokenOffsetBeginFieldNumber]);
             int tokenEnd = Integer.parseInt(parts[tokenOffsetEndFieldNumber]);
-            tokenOffsets.add(Span.of(tokenBegin, tokenEnd+1));
+            tokenOffsets.add(Span.of(tokenBegin, tokenEnd + 1));
         }
 
         for (String line : bratAnnotations) {
@@ -265,13 +265,13 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
                     clusters.add(newCluster);
                 }
             } else if (relationName.equals(subeventLinkName) || relationName.equals(afterLinkName)) {
-                EventRelation eventRelation = new EventRelation(aJCas);
-                eventRelation.setRelationType(subeventLinkName);
-                eventRelation.setHead(mention1);
-                eventRelation.setChild(mention2);
-                mention1.setChildEventRelations(UimaConvenience.appendFSList(aJCas, mention1.getChildEventRelations(), eventRelation, EventRelation.class));
-                mention2.setHeadEventRelations(UimaConvenience.appendFSList(aJCas, mention2.getChildEventRelations(), eventRelation, EventRelation.class));
-                UimaAnnotationUtils.finishTop(eventRelation, COMPONENT_ID, 0, aJCas);
+                EventMentionRelation eventMentionRelation = new EventMentionRelation(aJCas);
+                eventMentionRelation.setRelationType(relationName);
+                eventMentionRelation.setHead(mention1);
+                eventMentionRelation.setChild(mention2);
+                mention1.setChildEventRelations(UimaConvenience.appendFSList(aJCas, mention1.getChildEventRelations(), eventMentionRelation, EventMentionRelation.class));
+                mention2.setHeadEventRelations(UimaConvenience.appendFSList(aJCas, mention2.getChildEventRelations(), eventMentionRelation, EventMentionRelation.class));
+                UimaAnnotationUtils.finishTop(eventMentionRelation, COMPONENT_ID, 0, aJCas);
             }
 
             for (Set<EventMention> cluster : clusters) {

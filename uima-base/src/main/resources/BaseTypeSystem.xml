@@ -64,8 +64,10 @@
             </features>
         </typeDescription>
         <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.EventRelation</name>
-            <description>Consider change this name</description>
+            <name>edu.cmu.cs.lti.script.type.EventMentionRelation</name>
+            <description>Relation between event mentions, such as subevent, after. As a convention,
+                coreference is normally annotated as a group, instead of relation links.
+            </description>
             <supertypeName>edu.cmu.cs.lti.script.type.ComponentTOP</supertypeName>
             <features>
                 <featureDescription>
@@ -261,13 +263,13 @@
                     <name>childEventRelations</name>
                     <description/>
                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
-                    <elementType>edu.cmu.cs.lti.event_coref.ec.EventRelation</elementType>
+                    <elementType>edu.cmu.cs.lti.script.type.EventMentionRelation</elementType>
                 </featureDescription>
                 <featureDescription>
                     <name>headEventRelations</name>
                     <description/>
                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
-                    <elementType>edu.cmu.cs.lti.event_coref.ec.ElementaryEventMention</elementType>
+                    <elementType>edu.cmu.cs.lti.script.type.EventMentionRelation</elementType>
                 </featureDescription>
                 <featureDescription>
                     <name>headWord</name>
