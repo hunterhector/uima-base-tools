@@ -13,10 +13,14 @@ import java.util.Comparator;
  */
 public class Comparators {
 
-    public static class AnnotationBeginComparator<T extends Annotation> implements Comparator<T> {
+    public static class AnnotationSpanComparator<T extends Annotation> implements Comparator<T> {
         @Override
         public int compare(T o1, T o2) {
-            return o1.getBegin() - o2.getBegin();
+            if (o1.getBegin() != o2.getBegin()) {
+                return o1.getBegin() - o2.getBegin();
+            } else {
+                return o1.getEnd() - o2.getEnd();
+            }
         }
     }
 }
