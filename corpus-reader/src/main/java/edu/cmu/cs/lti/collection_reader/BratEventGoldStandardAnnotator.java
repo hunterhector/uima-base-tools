@@ -268,16 +268,22 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         );
 
         List<Event> allEvents = new ArrayList<>();
+        Set<EventMention> mappedMentions = new HashSet<>();
 
         clusters.forEach(cluster -> {
             Event event = new Event(aJCas);
             List<EventMention> sortedCluster = cluster.stream().sorted(new Comparators.AnnotationSpanComparator<>()).collect(Collectors.toList());
             event.setEventMentions(FSCollectionFactory.createFSArray(aJCas, sortedCluster));
-            cluster.forEach(mention -> mention.setReferringEvent(event));
+            cluster.forEach(mention -> {
+                mention.setReferringEvent(event);
+                mappedMentions.add(mention);
+            });
             allEvents.add(event);
         });
 
-        discoursedSortedEventMentions.forEach(
+        discoursedSortedEventMentions.stream().filter(
+                mention -> !mappedMentions.contains(mention)
+        ).forEach(
                 sortedEventMention -> {
                     Event event = new Event(aJCas);
                     event.setEventMentions(FSCollectionFactory.createFSArray(aJCas, Arrays.asList(sortedEventMention)));
@@ -295,12 +301,6 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
                     return event.getEventMentions().size() > 1 ? 1 : 0;
                 }
         ).sum();
-
-        //The world lost a good man and the U.S. lost a good president . R . I . P . Sir .??
-        // lost <-> lost, but entity not coreference
-
-//        <type:Event xmi:id="506" componentId="BratEventGoldStandardAnnotator" id="0" eventIndex="0" eventMentions="33 205 463" isEmpty="false"/>
-//        <type:Event xmi:id="524" componentId="BratEventGoldStandardAnnotator" id="4" eventIndex="0" eventMentions="162 420" isEmpty="false"/>
 
         logger.info(String.format("Contains %d non-singleton clusters", numNonSingleton));
     }
