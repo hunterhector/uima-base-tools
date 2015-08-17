@@ -27,7 +27,7 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
 
     private String className = this.getClass().getName();
 
-    protected static final Logger logger = LoggerFactory.getLogger(AbstractLoggingAnnotator.class.getName());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @ConfigurationParameter(name = PARAM_KEEP_QUIET, mandatory = false)
     private Boolean keepQuiet;

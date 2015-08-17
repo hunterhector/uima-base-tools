@@ -29,17 +29,16 @@ import org.apache.uima.util.ProgressImpl;
 import org.javatuples.Triplet;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
 
 /**
- * Created with IntelliJ IDEA.
+ * Collection Reader for TBF format data.
  * User: zhengzhongliu
  * Date: 1/21/15
  * Time: 11:40 PM
  */
-public class EventMentionDetectionDataReader extends AbstractCollectionReader {
+public class TbfEventDataReader extends AbstractCollectionReader {
     public static final String PARAM_SOURCE_TEXT_DIRECTORY = "SourceTextDirectory";
 
     public static final String PARAM_TOKEN_DIRECTORY = "TokenizationDirectory";
@@ -54,7 +53,7 @@ public class EventMentionDetectionDataReader extends AbstractCollectionReader {
 
     public static final String endOfDocument = "#EndOfDocument";
 
-    public static final String COMPONENT_ID = EventMentionDetectionDataReader.class.getSimpleName();
+    public static final String COMPONENT_ID = TbfEventDataReader.class.getSimpleName();
 
     private String sourceExt;
 
@@ -70,7 +69,7 @@ public class EventMentionDetectionDataReader extends AbstractCollectionReader {
 
     private ArrayListMultimap<String, String> goldStandards;
 
-    private static String className = EventMentionDetectionDataReader.class.getSimpleName();
+    private static String className = TbfEventDataReader.class.getSimpleName();
 
 
     @Override
@@ -128,11 +127,8 @@ public class EventMentionDetectionDataReader extends AbstractCollectionReader {
     }
 
     private Map<String, File> getBaseNames(File dir, final String ext) {
-        File[] fileList = dir.listFiles(new FilenameFilter() {
-            @Override
-            public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(ext);
-            }
+        File[] fileList = dir.listFiles((dir1, name) -> {
+            return name.toLowerCase().endsWith(ext);
         });
 
         Map<String, File> baseName2File = new HashMap<>();
@@ -295,12 +291,12 @@ public class EventMentionDetectionDataReader extends AbstractCollectionReader {
                 .createTypeSystemDescription(paramTypeSystemDescriptor);
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
-                EventMentionDetectionDataReader.class, typeSystemDescription,
-                EventMentionDetectionDataReader.PARAM_GOLD_STANDARD_FILE, goldStandardFilePath,
-                EventMentionDetectionDataReader.PARAM_SOURCE_EXT, ".tkn.txt",
-                EventMentionDetectionDataReader.PARAM_SOURCE_TEXT_DIRECTORY, sourceDataPath,
-                EventMentionDetectionDataReader.PARAM_TOKEN_DIRECTORY, tokenDataPath,
-                EventMentionDetectionDataReader.PARAM_TOKEN_EXT, ".txt.tab"
+                TbfEventDataReader.class, typeSystemDescription,
+                TbfEventDataReader.PARAM_GOLD_STANDARD_FILE, goldStandardFilePath,
+                TbfEventDataReader.PARAM_SOURCE_EXT, ".tkn.txt",
+                TbfEventDataReader.PARAM_SOURCE_TEXT_DIRECTORY, sourceDataPath,
+                TbfEventDataReader.PARAM_TOKEN_DIRECTORY, tokenDataPath,
+                TbfEventDataReader.PARAM_TOKEN_EXT, ".txt.tab"
         );
 
 
