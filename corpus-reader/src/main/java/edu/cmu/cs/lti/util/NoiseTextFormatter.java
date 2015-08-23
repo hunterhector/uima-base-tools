@@ -22,13 +22,15 @@ import java.util.regex.Pattern;
 public class NoiseTextFormatter {
     private static ExtractorBase extractor = ArticleExtractor.getInstance();
 
-    private static String[] forumPatterns = {"<post[^<]*>", "<quote[^<]*>", "< / quote>", "< / post>", "<img[^<]*>",
+    private static String[] forumPatterns = {"<post[^<]*>", "<quote[^<]*>", "<\\s?/\\s?quote>", "<\\s?/\\s?post>",
+            "<img[^<]*>",
             "<a\\s?href=[^>]*>", "<\\s?/\\s?a>"};
 
     private static String[] newsDiscardPattern = {
-            "<DOCID>[^<]*<\\s/\\sDOCID>", "<DOCTYPE[^>]*>[^<]*<\\s/\\sDOCTYPE>", "<KEYWORD>", "<\\s/\\sKEYWORD>",
-            "<BODY>", "<TEXT>", "< / TEXT>", "< / BODY>", "<DOC>", "< / DOC>", "< / DOC", "<P>", "< / P>",
-            "<DATETIME>[^<]*<\\s/\\sDATETIME>", "<DATELINE>[^<]*<\\s/\\sDATELINE>", "<DOC[^>]*>", "<HEADLINE>", "< / HEADLINE>"
+            "<DOCID>[^<]*<\\s/\\sDOCID>", "<DOCTYPE[^>]*>[^<]*<\\s?/\\sDOCTYPE>", "<KEYWORD>", "<\\s?/\\s?KEYWORD>",
+            "<BODY>", "<TEXT>", "<\\s?/\\s?TEXT>", "<\\s?/\\s?BODY>", "<DOC>", "<\\s?/\\s?DOC>?", "<P>", "<\\s?/\\s?P>",
+            "<DATETIME>[^<]*<\\s/\\sDATETIME>", "<DATELINE>[^<]*<\\s?/\\s*DATELINE>", "<DOC[^>]*>", "<HEADLINE>",
+            "<\\s?/\\s?HEADLINE>"
     };
 
     private static String sentenceEndFixer = "[^\\p{Punct}](\\n)[\\s|\\n]*\\n";
@@ -63,7 +65,7 @@ public class NoiseTextFormatter {
         }
 
         for (String pattern : patterns) {
-            Pattern p = Pattern.compile("(" + pattern + ")", Pattern.DOTALL);
+            Pattern p = Pattern.compile("(" + pattern + ")", Pattern.DOTALL | Pattern.CASE_INSENSITIVE);
             Matcher m = p.matcher(text);
             StringBuffer sb = new StringBuffer();
 
@@ -80,16 +82,23 @@ public class NoiseTextFormatter {
         }
     }
 
-    public static void main(String[] args) throws BoilerpipeProcessingException, IOException, SAXException, TikaException {
+    /**
+     * For multiple consecutive new lines, replace first one with a period. Only one new line will be replaced by a
+     * period, which ensure the offset of the rest won't change.
+     */
+    public NoiseTextFormatter multiNewLineBreaker() {
+        text = text.replaceAll("([^\\p{Punct}\\s]\\h*)(\\n)(\\s*\\n+)", "$1.$3");
+        return this;
+    }
+
+    public static void main(String[] args) throws BoilerpipeProcessingException, IOException, SAXException,
+            TikaException {
         String noisyText = FileUtils.readFileToString(
-                new File("/Users/zhengzhongliu/Documents/projects/uima-base-tools/data/event_mention_detection/" +
-                        "LDC2014E121_DEFT_Event_Nugget_Evaluation_Training_Data/data/source/" +
-//                        "XIN_ENG_20030609.0118.tkn.txt"));
-//                        "XIN_ENG_20100304.0019.tkn.txt"));
-                        "052fe72e4bb7b33ca69dd0dfd01fc442.cmp.tkn.txt"));
+                new File("/Users/zhengzhongliu/Documents/projects/cmu-script/data/mention/LDC/LDC2015E73/data/source" +
+                        "/1b386c986f9d06fd0a0dda70c3b8ade9.txt"));
 
         NoiseTextFormatter formatter = new NoiseTextFormatter(noisyText);
-        String ruleCleaned = formatter.cleanForum().cleanNews().getText();
+        String ruleCleaned = formatter.cleanForum().cleanNews().multiNewLineBreaker().getText();
 
         System.out.println("=== Rule results ===");
         System.out.println(ruleCleaned);

@@ -2,6 +2,7 @@ package edu.cmu.cs.lti.collection_reader;
 
 import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.script.type.Article;
+import edu.cmu.cs.lti.script.type.Event;
 import edu.cmu.cs.lti.script.type.EventMention;
 import edu.cmu.cs.lti.script.type.Word;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
@@ -14,9 +15,12 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
+import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReaderDescription;
+import org.apache.uima.fit.component.ViewCreatorAnnotator;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
@@ -49,15 +53,14 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
     public static final String PARAM_SOURCE_EXT = "SourceExtension";
 
+    public static final String PARAM_INPUT_VIEW_NAME = "InputViewName";
+
     public static final String startOfDocument = "#BeginOfDocument";
 
     public static final String endOfDocument = "#EndOfDocument";
 
+
     public static final String COMPONENT_ID = TbfEventDataReader.class.getSimpleName();
-
-    private String sourceExt;
-
-    private String tokenExt;
 
     private int currentPointer;
 
@@ -71,6 +74,8 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
     private static String className = TbfEventDataReader.class.getSimpleName();
 
+    @ConfigurationParameter(name = PARAM_INPUT_VIEW_NAME, mandatory = false)
+    private String inputViewName;
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -89,8 +94,8 @@ public class TbfEventDataReader extends AbstractCollectionReader {
             }
         }
 
-        tokenExt = (String) getConfigParameterValue(PARAM_TOKEN_EXT);
-        sourceExt = (String) getConfigParameterValue(PARAM_SOURCE_EXT);
+        String tokenExt = (String) getConfigParameterValue(PARAM_TOKEN_EXT);
+        String sourceExt = (String) getConfigParameterValue(PARAM_SOURCE_EXT);
 
         Map<String, File> sourceBaseNames = getBaseNames(sourceTextDir, sourceExt);
         Map<String, File> tokenBaseNames = getBaseNames(tokenDir, tokenExt);
@@ -116,6 +121,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         ArrayListMultimap<String, String> goldStandards = ArrayListMultimap.create();
 
         for (String line : FileUtils.readLines(goldStandardFile)) {
+            line = line.trim();
             if (line.startsWith(startOfDocument)) {
                 currentDocId = line.split(" ")[1];
             } else if (!line.startsWith(endOfDocument)) {
@@ -145,16 +151,34 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         currentFile = fileList.get(currentPointer);
         currentPointer++;
 
-        UimaAnnotationUtils.setSourceDocumentInformation(jCas, currentFile.getValue1().toURI().toURL().toString(), (int) currentFile.getValue1().length(), 0, true);
+        UimaAnnotationUtils.setSourceDocumentInformation(jCas, currentFile.getValue1().toURI().toURL().toString(),
+                (int) currentFile.getValue1().length(), 0, true);
 
         String sourceFileStr = FileUtils.readFileToString(getSourceFile());
-        String documentText = new NoiseTextFormatter(sourceFileStr).cleanForum().getText();
+        String documentText = new NoiseTextFormatter(sourceFileStr).cleanForum().cleanNews().multiNewLineBreaker()
+                .getText();
+
+        if (sourceFileStr.length() != documentText.length()) {
+
+            throw new CollectionException(new Exception(String.format(
+                    "Length difference after cleaned, before : %d, " + "after : %d",
+                    sourceFileStr.length(), documentText.length())));
+        }
+
+        if (inputViewName != null) {
+            try {
+                JCas inputView = ViewCreatorAnnotator.createViewSafely(jCas, inputViewName);
+                inputView.setDocumentText(sourceFileStr);
+            } catch (AnalysisEngineProcessException e) {
+                throw new CollectionException(e);
+            }
+        }
 
         JCas goldView = null;
         try {
             goldView = jCas.createView(goldStandardViewName);
         } catch (CASException e) {
-            e.printStackTrace();
+            throw new CollectionException(e);
         }
 
         jCas.setDocumentText(documentText);
@@ -181,9 +205,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
                         end = word.getEnd();
                     }
                 }
-
-                mention.setBegin(start);
-                mention.setEnd(end);
+                UimaAnnotationUtils.finishAnnotation(mention, start, end, COMPONENT_ID, mention.getId(), goldView);
             }
         }
 
@@ -205,7 +227,8 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         return currentFile.getValue0();
     }
 
-    private void annotateTokens(JCas aJCas, JCas goldView, ArrayListMultimap<String, EventMention> tokenId2EventMention) throws IOException {
+    private void annotateTokens(JCas aJCas, JCas goldView, ArrayListMultimap<String, EventMention>
+            tokenId2EventMention) throws IOException {
         File tokenFile = getTokenFile();
 
         int lineNum = 0;
@@ -217,14 +240,15 @@ public class TbfEventDataReader extends AbstractCollectionReader {
                     String tId = parts[0];
 //                    String tokenStr = parts[1];
                     int tokenBegin = Integer.parseInt(parts[2]);
-                    int tokenEnd = Integer.parseInt(parts[3]) + 1;
+                    int tokenEnd = Integer.parseInt(parts[3]);
 
                     Word word = new Word(aJCas, tokenBegin, tokenEnd);
                     UimaAnnotationUtils.finishAnnotation(word, COMPONENT_ID, tId, aJCas);
 
                     if (tokenId2EventMention.containsKey(tId)) {
                         for (EventMention tokenMention : tokenId2EventMention.get(tId)) {
-                            tokenMention.setMentionTokens(UimaConvenience.appendFSList(goldView, tokenMention.getMentionTokens(), word, Word.class));
+                            tokenMention.setMentionTokens(UimaConvenience.appendFSList(goldView, tokenMention
+                                    .getMentionTokens(), word, Word.class));
                         }
                     }
                 }
@@ -233,25 +257,61 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         }
     }
 
-    private ArrayListMultimap<String, EventMention> annotateGoldStandard(JCas goldView, String baseName) throws IOException {
+    private ArrayListMultimap<String, EventMention> annotateGoldStandard(JCas goldView, String baseName) throws
+            IOException {
         ArrayListMultimap<String, EventMention> tokenId2EventMention = ArrayListMultimap.create();
+
+        List<String[]> corefAnnos = new ArrayList<>();
+        Map<String, EventMention> id2Mentions = new HashMap<>();
         for (String goldAnno : goldStandards.asMap().get(baseName)) {
+            if (goldAnno.startsWith("#")) {
+                // The line is a comment.
+                continue;
+            }
             String[] annos = goldAnno.split("\t");
-            if (annos.length == 8) {
+            if (annos.length == 0) {
+                continue;
+            }
+
+            if (annos[0].startsWith("@")) {
+                // This is an relation line.
+                if (annos[0].equals("@Coreference")) {
+                    corefAnnos.add(annos);
+                }
+            } else if (annos.length >= 7) {
                 String eid = annos[2];
                 String tokenIds = annos[3];
                 String eventType = annos[5];
                 String realisType = annos[6];
 
                 EventMention mention = new EventMention(goldView);
-                UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, eid, goldView);
                 mention.setEventType(eventType);
                 mention.setRealisType(realisType);
+                mention.setId(eid);
+
+                id2Mentions.put(eid, mention);
 
                 for (String tid : tokenIds.split(",")) {
                     tokenId2EventMention.put(tid, mention);
                 }
             }
+        }
+
+
+        for (String[] corefAnno : corefAnnos) {
+            // The assumption here is that each annotation contains a full cluster, with transitive resolved.
+            String[] mentionIds = corefAnno[2].split(",");
+
+            Event event = new Event(goldView);
+
+            List<EventMention> corefMentions = new ArrayList<>();
+            for (String mentionId : mentionIds) {
+                EventMention mention = id2Mentions.get(mentionId);
+                corefMentions.add(mention);
+                mention.setReferringEvent(event);
+            }
+            event.setEventMentions(FSCollectionFactory.createFSArray(goldView, corefMentions));
+            UimaAnnotationUtils.finishTop(event, COMPONENT_ID, 0, goldView);
         }
         return tokenId2EventMention;
     }
