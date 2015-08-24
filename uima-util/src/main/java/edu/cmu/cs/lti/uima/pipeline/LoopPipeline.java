@@ -7,6 +7,7 @@ import org.apache.uima.cas.CAS;
 import org.apache.uima.collection.CollectionReader;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
+import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.CasCreationUtils;
 
 import java.io.IOException;
@@ -24,32 +25,31 @@ import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngineDesc
  */
 public abstract class LoopPipeline {
 
+    final CollectionReaderDescription readerDescription;
+
+    final AnalysisEngineDescription aaeDesc;
+
     protected abstract boolean checkStopCriteria();
 
     protected abstract void stopActions();
 
-    public void runLoopPipeline(final CollectionReaderDescription readerDescription,
-                                final AnalysisEngineDescription... descs) throws UIMAException, IOException {
-        // Create AAE
-        final AnalysisEngineDescription aaeDesc = createEngineDescription(descs);
+    protected abstract void loopActions();
 
-        // Instantiate AAE
+    protected LoopPipeline(final CollectionReaderDescription readerDescription,
+                           final AnalysisEngineDescription... descs) throws ResourceInitializationException {
+        aaeDesc = createEngineDescription(descs);
+        this.readerDescription = readerDescription;
+    }
+
+    public void runLoopPipeline() throws UIMAException, IOException {
+        final CollectionReader reader = CollectionReaderFactory.createReader(readerDescription);
         final AnalysisEngine aae = createEngine(aaeDesc);
-
-        CollectionReader reader = CollectionReaderFactory.createReader(readerDescription);
-        // Create CAS from merged metadata
-        final CAS cas = CasCreationUtils.createCas(asList(reader.getMetaData(), aae.getMetaData()));
-        reader.typeSystemInit(cas.getTypeSystem());
-
-        boolean firstLoop = true;
+        final CAS cas = CasCreationUtils.createCas(asList(readerDescription.getMetaData(), aaeDesc.getMetaData()));
 
         try {
+            reader.typeSystemInit(cas.getTypeSystem());
+
             while (!checkStopCriteria()) {
-                if (!firstLoop) {
-                    reader = CollectionReaderFactory.createReader(readerDescription);
-                } else {
-                    firstLoop = false;
-                }
                 // Process
                 while (reader.hasNext()) {
                     reader.getNext(cas);
@@ -58,11 +58,16 @@ public abstract class LoopPipeline {
                 }
                 // Signal end of processing
                 aae.collectionProcessComplete();
+                reader.reconfigure();
+
+                // Call loop actions.
+                loopActions();
             }
-            // End of all loops
             stopActions();
         } finally {
             aae.destroy();
+            reader.close();
+            reader.destroy();
         }
     }
 }

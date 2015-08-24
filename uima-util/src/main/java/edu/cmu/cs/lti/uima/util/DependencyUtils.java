@@ -16,7 +16,7 @@ public class DependencyUtils {
     public static String getTokenParentDependency(Word token) {
         FSList headDependencies = token.getHeadDependencyRelations();
         if (headDependencies == null) {
-            return null;
+            return "<ROOT>";
         }
 
         for (Dependency relation : FSCollectionFactory.create(headDependencies, Dependency.class)) {
@@ -24,6 +24,6 @@ public class DependencyUtils {
             return relation.getDependencyType();
         }
 
-        return null;
+        return "<ROOT>";
     }
 }
