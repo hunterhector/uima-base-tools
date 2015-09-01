@@ -2,7 +2,9 @@ package edu.cmu.cs.lti.uima.util;
 
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
+import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.cas.impl.XmiCasSerializer;
+import org.apache.uima.collection.CollectionException;
 import org.apache.uima.examples.SourceDocumentInformation;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
@@ -13,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -83,6 +86,36 @@ public class CasSerialization {
     }
 
     /**
+     * Deserialize XMI into JCas
+     *
+     * @param jCas    The jCas to take the input.
+     * @param xmiFile The input xmi file.
+     * @throws IOException
+     * @throws CollectionException
+     */
+    public static void readXmi(JCas jCas, File xmiFile) throws IOException, CollectionException {
+        readXmi(jCas, xmiFile, false);
+    }
+
+    /**
+     * Deserialize XMI into JCas
+     *
+     * @param jCas              The jCas to take the input.
+     * @param xmiFile           The input xmi file.
+     * @param failOnUnknownType Whether to fail on unknown types.
+     * @throws IOException
+     * @throws CollectionException
+     */
+    public static void readXmi(JCas jCas, File xmiFile, boolean failOnUnknownType) throws IOException,
+            CollectionException {
+        try (FileInputStream inputStream = new FileInputStream(xmiFile)) {
+            XmiCasDeserializer.deserialize(inputStream, jCas.getCas(), !failOnUnknownType);
+        } catch (SAXException e) {
+            throw new CollectionException(e);
+        }
+    }
+
+    /**
      * Retrieve the input file name from the source document information.
      *
      * @param srcDocInfoView   The view that contains the SourceDocumentInformation annotation.
@@ -109,5 +142,4 @@ public class CasSerialization {
         }
         return null;
     }
-
 }
