@@ -263,6 +263,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
         List<String[]> corefAnnos = new ArrayList<>();
         Map<String, EventMention> id2Mentions = new HashMap<>();
+
         for (String goldAnno : goldStandards.asMap().get(baseName)) {
             if (goldAnno.startsWith("#")) {
                 // The line is a comment.
