@@ -17,7 +17,8 @@ public abstract class AbstractAnnotator extends JCasAnnotator_ImplBase {
 
     public final static String PARAM_ENCODING = "encoding";
 
-    @ConfigurationParameter(mandatory = false, description = "The view name for the golden standard view", name = PARAM_GOLD_STANDARD_VIEW_NAME)
+    @ConfigurationParameter(mandatory = false, description = "The view name for the golden standard view", name =
+            PARAM_GOLD_STANDARD_VIEW_NAME)
     protected String goldStandardViewName;
 
     @ConfigurationParameter(mandatory = false, description = "Specify the encoding of the input", name = PARAM_ENCODING)
@@ -25,9 +26,9 @@ public abstract class AbstractAnnotator extends JCasAnnotator_ImplBase {
 
     public static final String DEFAULT_ENCODING = "UTF-8";
 
-
     public static final String DEFAULT_GOLD_STANDARD_NAME = "GoldStandard";
 
+    public final String COMPONENT_ID = this.getClass().getSimpleName();
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {

@@ -12,7 +12,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Provide an funciton to implemented, which allow customizing what text to be printed out
+ * Provide an function to implemented, which allow customizing what text to be printed out
  *
  * @author Zhengzhong Liu, Hector
  */

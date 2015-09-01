@@ -42,14 +42,15 @@ public abstract class LoopPipeline {
     }
 
     public void runLoopPipeline() throws UIMAException, IOException {
-        final CollectionReader reader = CollectionReaderFactory.createReader(readerDescription);
+        CollectionReader reader = CollectionReaderFactory.createReader(readerDescription);
         final AnalysisEngine aae = createEngine(aaeDesc);
         final CAS cas = CasCreationUtils.createCas(asList(readerDescription.getMetaData(), aaeDesc.getMetaData()));
 
         try {
-            reader.typeSystemInit(cas.getTypeSystem());
+            while (true) {
+                // TODO: A way to restart reader without new instance?
+                reader.typeSystemInit(cas.getTypeSystem());
 
-            while (!checkStopCriteria()) {
                 // Process
                 while (reader.hasNext()) {
                     reader.getNext(cas);
@@ -58,10 +59,16 @@ public abstract class LoopPipeline {
                 }
                 // Signal end of processing
                 aae.collectionProcessComplete();
-                reader.reconfigure();
+//                reader.reconfigure();
 
                 // Call loop actions.
                 loopActions();
+
+                if (checkStopCriteria()) {
+                    break;
+                } else {
+                    reader = CollectionReaderFactory.createReader(readerDescription);
+                }
             }
             stopActions();
         } finally {
