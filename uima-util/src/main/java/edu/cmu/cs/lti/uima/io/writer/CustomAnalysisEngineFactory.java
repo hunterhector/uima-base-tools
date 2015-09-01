@@ -9,34 +9,6 @@ import org.apache.uima.resource.metadata.TypeSystemDescription;
 import java.util.Set;
 
 public class CustomAnalysisEngineFactory {
-
-//  /**
-//   * Creates a simple analysis engine with a specified type system Current it cannot provide wrapper
-//   * to parameters
-//   *
-//   * @param engineClass
-//   * @param typeSystemDescription
-//   * @return
-//   * @throws ResourceInitializationException
-//   */
-//  public static <T extends JCasAnnotator_ImplBase> AnalysisEngineDescription createAnalysisEngine(
-//          Class<T> engineClass, TypeSystemDescription typeSystemDescription)
-//          throws ResourceInitializationException {
-//    // Instantiate the analysis engine.
-//    AnalysisEngineDescription engine = AnalysisEngineFactory.createEngineDescription(
-//            engineClass, typeSystemDescription);
-//    return engine;
-//  }
-//
-//  public static <T extends JCasAnnotator_ImplBase> AnalysisEngineDescription createAnalysisEngine(
-//          Class<T> engineClass, TypeSystemDescription typeSystemDescription,
-//          Object... configurationData) throws ResourceInitializationException {
-//    // Instantiate the analysis engine.
-//    AnalysisEngineDescription engine = AnalysisEngineFactory.createEngineDescription(
-//            engineClass, typeSystemDescription, configurationData);
-//    return engine;
-//  }
-
     public static void setTypeSystem(AnalysisEngineDescription coreferenceEngine,
                                      TypeSystemDescription typeSystem) {
         AnalysisEngineMetaData metatData = coreferenceEngine.getAnalysisEngineMetaData();
@@ -73,7 +45,8 @@ public class CustomAnalysisEngineFactory {
      * @throws ResourceInitializationException
      */
     public static AnalysisEngineDescription createXmiWriter(String parentOutputDirPath,
-                                                            String baseOutputDirName, Integer stepNumber, String outputFileSuffix)
+                                                            String baseOutputDirName, Integer stepNumber, String
+                                                                    outputFileSuffix)
             throws ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 StepBasedDirXmiWriter.class, StepBasedDirXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH,
@@ -116,8 +89,10 @@ public class CustomAnalysisEngineFactory {
      * @throws ResourceInitializationException
      */
     public static AnalysisEngineDescription createXmiWriter(String parentOutputDirPath,
-                                                            String baseOutputDirName, Integer stepNumber, String outputFileSuffix,
-                                                            String srcDocInfoViewName) throws ResourceInitializationException {
+                                                            String baseOutputDirName, Integer stepNumber, String
+                                                                    outputFileSuffix,
+                                                            String srcDocInfoViewName) throws
+            ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 StepBasedDirXmiWriter.class, StepBasedDirXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH,
                 parentOutputDirPath, StepBasedDirXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME,
@@ -139,8 +114,10 @@ public class CustomAnalysisEngineFactory {
      * @throws ResourceInitializationException
      */
     public static AnalysisEngineDescription createGzipWriter(String parentOutputDirPath,
-                                                             String baseOutputDirName, Integer stepNumber, String outputFileSuffix,
-                                                             String srcDocInfoViewName) throws ResourceInitializationException {
+                                                             String baseOutputDirName, Integer stepNumber, String
+                                                                     outputFileSuffix,
+                                                             String srcDocInfoViewName) throws
+            ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 StepBasedDirGzippedXmiWriter.class,
                 StepBasedDirGzippedXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, parentOutputDirPath,
@@ -163,8 +140,10 @@ public class CustomAnalysisEngineFactory {
      * @throws ResourceInitializationException
      */
     public static AnalysisEngineDescription createSelectiveGzipWriter(String parentOutputDirPath,
-                                                                      String baseOutputDirName, Integer stepNumber, String outputFileSuffix,
-                                                                      String srcDocInfoViewName, Set<Integer> outputDocumentNumbers)
+                                                                      String baseOutputDirName, Integer stepNumber,
+                                                                      String outputFileSuffix,
+                                                                      String srcDocInfoViewName, Set<Integer>
+                                                                              outputDocumentNumbers)
             throws ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 StepBasedDirGzippedXmiWriter.class,
@@ -189,8 +168,10 @@ public class CustomAnalysisEngineFactory {
      * @throws ResourceInitializationException
      */
     public static AnalysisEngineDescription createSelectiveXmiWriter(String parentOutputDirPath,
-                                                                     String baseOutputDirName, Integer stepNumber, String outputFileSuffix,
-                                                                     Set<Integer> outputDocumentNumbers) throws ResourceInitializationException {
+                                                                     String baseOutputDirName, Integer stepNumber,
+                                                                     String outputFileSuffix,
+                                                                     Set<Integer> outputDocumentNumbers) throws
+            ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 StepBasedDirXmiWriter.class, StepBasedDirXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH,
                 parentOutputDirPath, StepBasedDirXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME,
@@ -211,7 +192,8 @@ public class CustomAnalysisEngineFactory {
      * @throws ResourceInitializationException
      */
     public static AnalysisEngineDescription createGzippedXmiWriter(String parentOutputDirPath,
-                                                                   String baseOutputDirName, Integer stepNumber, String outputFileSuffix)
+                                                                   String baseOutputDirName, Integer stepNumber,
+                                                                   String outputFileSuffix)
             throws ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 StepBasedDirGzippedXmiWriter.class,
@@ -234,8 +216,10 @@ public class CustomAnalysisEngineFactory {
      * @throws ResourceInitializationException
      */
     public static AnalysisEngineDescription createGzippedXmiWriter(String parentOutputDirPath,
-                                                                   String baseOutputDirName, Integer stepNumber, String outputFileSuffix,
-                                                                   String srcDocInfoViewName) throws ResourceInitializationException {
+                                                                   String baseOutputDirName, Integer stepNumber,
+                                                                   String outputFileSuffix,
+                                                                   String srcDocInfoViewName) throws
+            ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 StepBasedDirGzippedXmiWriter.class,
                 StepBasedDirGzippedXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, parentOutputDirPath,
@@ -272,14 +256,15 @@ public class CustomAnalysisEngineFactory {
      * @throws ResourceInitializationException
      */
     public static AnalysisEngineDescription createDocumentTextWriter(String parentOutputDirPath,
-                                                                     String baseOutputDirName, Integer stepNumber, String outputFileSuffix, String viewName)
+                                                                     String baseOutputDirName, Integer stepNumber,
+                                                                     String outputFileSuffix, String viewName)
             throws ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
-                DocumentTextWriter.class, DocumentTextWriter.PARAM_PARENT_OUTPUT_DIR,
+                DocumentTextWriter.class, DocumentTextWriter.PARAM_PARENT_OUTPUT_DIR_PATH,
                 parentOutputDirPath, DocumentTextWriter.PARAM_BASE_OUTPUT_DIR_NAME, baseOutputDirName,
                 DocumentTextWriter.PARAM_OUTPUT_FILE_SUFFIX, outputFileSuffix,
-                DocumentTextWriter.PARAM_STEP_NUMBER, stepNumber,
-                DocumentTextWriter.PARAM_SOURCE_DOCUMENT_INFO_VIEW_NAME, viewName);
+                DocumentTextWriter.PARAM_OUTPUT_STEP_NUMBER, stepNumber,
+                DocumentTextWriter.PARAM_SRC_DOC_INFO_VIEW_NAME, viewName);
         return writer;
     }
 
@@ -288,7 +273,7 @@ public class CustomAnalysisEngineFactory {
      * you need to use additional parameters, this method cannot help you.
      *
      * @param writerClass         The writer engine class, which need to extend
-     *                            {@link AbstractCustomizedTextWriterAnalsysisEngine}
+     *                            {@link AbstractCustomizedTextWriterAnalysisEngine}
      * @param parentOutputDirPath
      * @param baseOutputDirName
      * @param stepNumber
@@ -296,20 +281,21 @@ public class CustomAnalysisEngineFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static <T extends AbstractCustomizedTextWriterAnalsysisEngine> AnalysisEngineDescription createCustomizedTextWriter(
+    public static <T extends AbstractCustomizedTextWriterAnalysisEngine> AnalysisEngineDescription
+    createCustomizedTextWriter(
             Class<T> writerClass, TypeSystemDescription typeSystemDescription,
             String parentOutputDirPath, String baseOutputDirName, Integer stepNumber,
             String outputFileSuffix, String sourceDocumentViewName)
             throws ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 writerClass, typeSystemDescription,
-                AbstractCustomizedTextWriterAnalsysisEngine.PARAM_PARENT_OUTPUT_DIR,
+                AbstractCustomizedTextWriterAnalysisEngine.PARAM_PARENT_OUTPUT_DIR_PATH,
                 parentOutputDirPath,
-                AbstractCustomizedTextWriterAnalsysisEngine.PARAM_BASE_OUTPUT_DIR_NAME,
+                AbstractCustomizedTextWriterAnalysisEngine.PARAM_BASE_OUTPUT_DIR_NAME,
                 baseOutputDirName,
-                AbstractCustomizedTextWriterAnalsysisEngine.PARAM_OUTPUT_FILE_SUFFIX, outputFileSuffix,
-                AbstractCustomizedTextWriterAnalsysisEngine.PARAM_STEP_NUMBER, stepNumber,
-                AbstractCustomizedTextWriterAnalsysisEngine.PARAM_SOURCE_DOCUMENT_INFO_VIEW_NAME,
+                AbstractCustomizedTextWriterAnalysisEngine.PARAM_OUTPUT_FILE_SUFFIX, outputFileSuffix,
+                AbstractCustomizedTextWriterAnalysisEngine.PARAM_OUTPUT_STEP_NUMBER, stepNumber,
+                AbstractCustomizedTextWriterAnalysisEngine.PARAM_SRC_DOC_INFO_VIEW_NAME,
                 sourceDocumentViewName);
         return writer;
     }
@@ -335,11 +321,11 @@ public class CustomAnalysisEngineFactory {
             throws ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 writerClass, typeSystemDescription,
-                AbstractCsvWriterAnalysisEngine.PARAM_PARENT_OUTPUT_DIR, parentOutputDirPath,
+                AbstractCsvWriterAnalysisEngine.PARAM_PARENT_OUTPUT_DIR_PATH, parentOutputDirPath,
                 AbstractCsvWriterAnalysisEngine.PARAM_BASE_OUTPUT_DIR_NAME, baseOutputDirName,
                 AbstractCsvWriterAnalysisEngine.PARAM_OUTPUT_FILE_SUFFIX, outputFileSuffix,
-                AbstractCsvWriterAnalysisEngine.PARAM_STEP_NUMBER, stepNumber,
-                AbstractCsvWriterAnalysisEngine.PARAM_SOURCE_DOCUMENT_INFO_VIEW_NAME,
+                AbstractCsvWriterAnalysisEngine.PARAM_OUTPUT_STEP_NUMBER, stepNumber,
+                AbstractCsvWriterAnalysisEngine.PARAM_SRC_DOC_INFO_VIEW_NAME,
                 sourceDocumentInfoViewName);
 
         return writer;
@@ -372,10 +358,11 @@ public class CustomAnalysisEngineFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static <T extends AbstractStepBasedDirPlainTextAggregator> AnalysisEngineDescription createCustomPlainTextAggregator(Class<T> writerClass,
-                                                                                                                                TypeSystemDescription typeSystemDescription, String parentOutputDirPath,
-                                                                                                                                String baseOutputDirName, Integer stepNumber, String outputFileSuffix,
-                                                                                                                                String outputFileName) throws ResourceInitializationException {
+    public static <T extends AbstractStepBasedDirPlainTextAggregator> AnalysisEngineDescription
+    createCustomPlainTextAggregator(Class<T> writerClass,
+                                    TypeSystemDescription typeSystemDescription, String parentOutputDirPath,
+                                    String baseOutputDirName, Integer stepNumber, String outputFileSuffix,
+                                    String outputFileName) throws ResourceInitializationException {
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 writerClass, typeSystemDescription,
                 AbstractStepBasedDirPlainTextAggregator.PARAM_PARENT_OUTPUT_DIR_PATH, parentOutputDirPath,

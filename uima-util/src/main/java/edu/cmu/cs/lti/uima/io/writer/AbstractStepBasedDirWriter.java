@@ -28,6 +28,8 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
 
     public static final String PARAM_OUTPUT_FILE_SUFFIX = "OutputFileSuffix";
 
+    public static final String PARAM_SRC_DOC_INFO_VIEW_NAME = "SourceDocumentInfoViewName";
+
     @ConfigurationParameter(name = PARAM_PARENT_OUTPUT_DIR_PATH, mandatory = true)
     private String parentOutputDirPath;
 
@@ -39,6 +41,10 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
 
     @ConfigurationParameter(name = PARAM_OUTPUT_FILE_SUFFIX, mandatory = false)
     protected String outputFileSuffix;
+
+    @ConfigurationParameter(name = PARAM_SRC_DOC_INFO_VIEW_NAME, mandatory = false)
+    /** The view where you extract source document information */
+    protected String srcDocInfoViewName;
 
     protected File outputDir;
 
@@ -63,15 +69,6 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        subInitialize(aContext);
     }
-
-    /**
-     * A sub-class can do its own initialization in this method.
-     *
-     * @param aContext
-     */
-    public abstract void subInitialize(UimaContext aContext);
 
 }

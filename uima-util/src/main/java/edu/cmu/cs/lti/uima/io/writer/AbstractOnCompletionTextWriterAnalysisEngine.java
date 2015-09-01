@@ -15,7 +15,7 @@ import java.io.IOException;
  *
  * @author Zhengzhong Liu, Hector
  */
-public abstract class AbstractOnCompletionTextWriterAnalsysisEngine extends AbstractLoggingAnnotator {
+public abstract class AbstractOnCompletionTextWriterAnalysisEngine extends AbstractLoggingAnnotator {
 
     public static final String PARAM_OUTPUT_PATH = "outputPath";
 

@@ -13,7 +13,7 @@ import org.apache.uima.resource.ResourceInitializationException;
  * 
  * @author Jun Araki
  */
-public class DocumentTextWriter extends AbstractCustomizedTextWriterAnalsysisEngine {
+public class DocumentTextWriter extends AbstractCustomizedTextWriterAnalysisEngine {
 
   @Override
   public void initialize(UimaContext context) throws ResourceInitializationException {
