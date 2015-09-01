@@ -1,7 +1,6 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
 import com.google.common.base.Joiner;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.component.JCasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -49,7 +48,7 @@ public abstract class AbstractStepBasedDirReader extends JCasCollectionReader_Im
     @ConfigurationParameter(name = PARAM_INPUT_VIEW_NAME, mandatory = false)
     protected String inputViewName;
 
-    @ConfigurationParameter(name = PARAM_FAIL_UNKNOWN, mandatory = false)
+    @ConfigurationParameter(name = PARAM_FAIL_UNKNOWN, defaultValue = "false")
     protected Boolean failOnUnknownType;
 
     protected File inputDir;
@@ -65,9 +64,9 @@ public abstract class AbstractStepBasedDirReader extends JCasCollectionReader_Im
         if (inputStepNumber != null) {
             dirNameSegments.add(String.format("%02d", inputStepNumber));
         }
-        if (!StringUtils.isEmpty(inputFileSuffix)) {
-            dirNameSegments.add(inputFileSuffix);
-        }
+//        if (!StringUtils.isEmpty(inputFileSuffix)) {
+//            dirNameSegments.add(inputFileSuffix);
+//        }
         dirNameSegments.add(baseInputDirName);
 
         String dirName = Joiner.on("_").join(dirNameSegments);
@@ -79,9 +78,7 @@ public abstract class AbstractStepBasedDirReader extends JCasCollectionReader_Im
                     inputDir.getAbsolutePath()));
         }
 
-        if (failOnUnknownType == null) {
-            failOnUnknownType = false;
-        }
+        logger.info(String.format("Reading from [%s]", inputDir.getAbsolutePath()));
     }
 
 }

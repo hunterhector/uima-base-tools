@@ -1,17 +1,15 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
+import edu.cmu.cs.lti.uima.util.CasSerialization;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
-import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
-import org.xml.sax.SAXException;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -72,17 +70,8 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
             throw new CollectionException(e);
         }
 
-        File currentFile = xmiFiles.get(currentDocIndex);
         currentDocIndex++;
-
-        FileInputStream inputStream = new FileInputStream(currentFile);
-        try {
-            XmiCasDeserializer.deserialize(inputStream, jCas.getCas(), !failOnUnknownType);
-        } catch (SAXException e) {
-            throw new CollectionException(e);
-        } finally {
-            inputStream.close();
-        }
+        CasSerialization.readXmi(jCas, xmiFiles.get(currentDocIndex));
     }
 
     /**

@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
+import edu.cmu.cs.lti.uima.annotator.CrossValidationReader;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -18,7 +19,9 @@ public class CustomCollectionReaderFactory {
      * @throws ResourceInitializationException
      */
     public static CollectionReaderDescription createXmiReader(String parentInputDirName,
-                                                              String baseInputDirName, Integer stepNumber, Boolean failOnUnkown)
+                                                              String baseInputDirName,
+                                                              Integer stepNumber,
+                                                              Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
 
@@ -60,7 +63,8 @@ public class CustomCollectionReaderFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createXmiReader(TypeSystemDescription typeSystemDescription, String parentInputDirName,
+    public static CollectionReaderDescription createXmiReader(TypeSystemDescription typeSystemDescription, String
+            parentInputDirName,
                                                               String baseInputDirName, Integer stepNumber)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
@@ -81,9 +85,8 @@ public class CustomCollectionReaderFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createXmiReader(TypeSystemDescription typeSystemDescription, String parentInputDirName,
-                                                              String baseInputDirName)
-            throws ResourceInitializationException {
+    public static CollectionReaderDescription createXmiReader(TypeSystemDescription typeSystemDescription, String
+            parentInputDirName, String baseInputDirName) throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
 
         return CollectionReaderFactory.createReaderDescription(
@@ -93,7 +96,77 @@ public class CustomCollectionReaderFactory {
         );
     }
 
+    /**
+     * Create a cross validation reader
+     *
+     * @param typeSystemDescription The type system of the cas.
+     * @param parentInputDirName    The main working directory.
+     * @param baseInputDirName      The directory under parentInput that really contains the data.
+     * @param takeEvalSplit         Whether to take the evaluation split (small slice).
+     * @param randomSeed            The random seed.
+     * @param slice                 Choose which slice as eval (others as training)
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createCrossValidationReader(TypeSystemDescription typeSystemDescription,
+                                                                          String parentInputDirName,
+                                                                          String baseInputDirName,
+                                                                          boolean takeEvalSplit,
+                                                                          int randomSeed,
+                                                                          int slice)
+            throws ResourceInitializationException {
+        return CollectionReaderFactory.createReaderDescription(
+                CrossValidationReader.class, typeSystemDescription,
+                CrossValidationReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
+                CrossValidationReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
+                CrossValidationReader.PARAM_MODE_EVAL, takeEvalSplit,
+                CrossValidationReader.PARAM_SEED, randomSeed,
+                CrossValidationReader.PARAM_SLICE, slice
+        );
+    }
 
+    /**
+     * Create a cross validation reader
+     *
+     * @param typeSystemDescription The type system of the cas.
+     * @param parentInputDirName    The main working directory.
+     * @param baseInputDirName      The directory under parentInput that really contains the data.
+     * @param extension             The file extension to read (no ".")
+     * @param takeEvalSplit         Whether to take the evaluation split (small slice).
+     * @param randomSeed            The random seed.
+     * @param slice                 Choose which slice as eval (others as training)
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createCrossValidationReader(TypeSystemDescription typeSystemDescription,
+                                                                          String parentInputDirName,
+                                                                          String baseInputDirName,
+                                                                          String extension,
+                                                                          boolean takeEvalSplit,
+                                                                          int randomSeed,
+                                                                          int slice)
+            throws ResourceInitializationException {
+        return CollectionReaderFactory.createReaderDescription(
+                CrossValidationReader.class, typeSystemDescription,
+                CrossValidationReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
+                CrossValidationReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
+                CrossValidationReader.PARAM_MODE_EVAL, takeEvalSplit,
+                CrossValidationReader.PARAM_SEED, randomSeed,
+                CrossValidationReader.PARAM_SLICE, slice,
+                AbstractStepBasedDirReader.PARAM_INPUT_FILE_SUFFIX, extension
+        );
+    }
+
+
+    /**
+     * Create a xmi reader that read the documents according to the timestamp (Gigaword docs)
+     *
+     * @param typeSystemDescription
+     * @param parentInputDir
+     * @param baseInputDir
+     * @return
+     * @throws ResourceInitializationException
+     */
     public static CollectionReaderDescription createTimeSortedXmiReader(
             TypeSystemDescription typeSystemDescription, String parentInputDir, String baseInputDir)
             throws ResourceInitializationException {
@@ -128,7 +201,8 @@ public class CustomCollectionReaderFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createGzippedXmiReader(TypeSystemDescription typeSystemDescription, String inputDirName, Boolean failOnUnkown)
+    public static CollectionReaderDescription createGzippedXmiReader(TypeSystemDescription typeSystemDescription,
+                                                                     String inputDirName, Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
@@ -144,7 +218,10 @@ public class CustomCollectionReaderFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createRecursiveGzippedXmiReader(TypeSystemDescription typeSystemDescription, String inputDirName, Boolean failOnUnkown)
+    public static CollectionReaderDescription createRecursiveGzippedXmiReader(TypeSystemDescription
+                                                                                      typeSystemDescription, String
+                                                                                      inputDirName, Boolean
+                                                                                      failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
@@ -192,7 +269,8 @@ public class CustomCollectionReaderFactory {
      * @throws ResourceInitializationException
      */
     public static CollectionReaderDescription createStepBasedGzippedXmiReader(String parentInputDirName,
-                                                                              String baseInputDirName, Integer stepNumber)
+                                                                              String baseInputDirName, Integer
+                                                                                      stepNumber)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
 
@@ -226,7 +304,8 @@ public class CustomCollectionReaderFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createPlainTextReader(String inputViewName, String inputDir, String encoding, String[] textSuffix)
+    public static CollectionReaderDescription createPlainTextReader(String inputViewName, String inputDir, String
+            encoding, String[] textSuffix)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get plain text as input.
         return CollectionReaderFactory.createReaderDescription(
@@ -238,8 +317,10 @@ public class CustomCollectionReaderFactory {
     }
 
     @Deprecated
-    public static CollectionReaderDescription createPlainTextReader(String inputViewName, String[] srcDocInfoViewNames, String inputDir, String encoding,
-                                                                    String[] textSuffix) throws ResourceInitializationException {
+    public static CollectionReaderDescription createPlainTextReader(String inputViewName, String[]
+            srcDocInfoViewNames, String inputDir, String encoding,
+                                                                    String[] textSuffix) throws
+            ResourceInitializationException {
         // Instantiate a collection reader to get plain text as input.
         return CollectionReaderFactory.createReaderDescription(
                 PlainTextCollectionReader.class,
@@ -273,7 +354,8 @@ public class CustomCollectionReaderFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createPlainTextReader(String inputDir, TypeSystemDescription typeSystemDescription)
+    public static CollectionReaderDescription createPlainTextReader(String inputDir, TypeSystemDescription
+            typeSystemDescription)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get plain text as input.
         String[] textSuffix = {""};
