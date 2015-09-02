@@ -11,14 +11,8 @@
             <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
             <features>
                 <featureDescription>
-                    <name>yangRegions</name>
-                    <description>The yang (observed) discontinuous spans that are convenient to use</description>
-                    <rangeTypeName>uima.cas.FSArray</rangeTypeName>
-                    <elementType>uima.tcas.Annotation</elementType>
-                </featureDescription>
-                <featureDescription>
-                    <name>yinRegions</name>
-                    <description>The yin (hidden) discontinuous spans that are actually annotated</description>
+                    <name>regions</name>
+                    <description>The discontinuous spans that are convenient to use</description>
                     <rangeTypeName>uima.cas.FSArray</rangeTypeName>
                     <elementType>uima.tcas.Annotation</elementType>
                 </featureDescription>
