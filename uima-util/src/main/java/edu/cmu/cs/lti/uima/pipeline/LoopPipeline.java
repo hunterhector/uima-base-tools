@@ -9,6 +9,8 @@ import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.CasCreationUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 
@@ -24,6 +26,7 @@ import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngineDesc
  * @author Zhengzhong Liu
  */
 public abstract class LoopPipeline {
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     final CollectionReaderDescription readerDescription;
 
@@ -47,6 +50,7 @@ public abstract class LoopPipeline {
         final CAS cas = CasCreationUtils.createCas(asList(readerDescription.getMetaData(), aaeDesc.getMetaData()));
 
         try {
+            logger.info("Loop begins!");
             while (true) {
                 // TODO: A way to restart reader without new instance?
                 reader.typeSystemInit(cas.getTypeSystem());
@@ -59,7 +63,6 @@ public abstract class LoopPipeline {
                 }
                 // Signal end of processing
                 aae.collectionProcessComplete();
-//                reader.reconfigure();
 
                 // Call loop actions.
                 loopActions();
@@ -70,6 +73,7 @@ public abstract class LoopPipeline {
                     reader = CollectionReaderFactory.createReader(readerDescription);
                 }
             }
+            logger.info("Loop finished!");
             stopActions();
         } finally {
             aae.destroy();
