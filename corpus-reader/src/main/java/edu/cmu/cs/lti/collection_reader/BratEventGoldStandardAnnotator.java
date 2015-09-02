@@ -124,7 +124,8 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             throw new IllegalArgumentException("Cannot find annotation directory " + annotationDir.getAbsolutePath());
         }
 
-        File[] annotationDocuments = edu.cmu.cs.lti.utils.FileUtils.getFilesWithSuffix(annotationDir, annotationFileNameSuffix);
+        File[] annotationDocuments = edu.cmu.cs.lti.utils.FileUtils.getFilesWithSuffix(annotationDir,
+                annotationFileNameSuffix);
         File[] offsetDocuments = edu.cmu.cs.lti.utils.FileUtils.getFilesWithSuffix(tokenizationDir, tokenOffsetSuffix);
 
         annotationsByName = trimAsDocId(annotationDocuments, annotationFileNameSuffix);
@@ -147,7 +148,8 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         File tokenDocument = offsetsByName.get(plainDocId);
 
         try {
-            annotateGoldStandard(goldView, FileUtils.readLines(annotationDocument, encoding), FileUtils.readLines(tokenDocument, encoding));
+            annotateGoldStandard(goldView, FileUtils.readLines(annotationDocument, encoding), FileUtils.readLines
+                    (tokenDocument, encoding));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -162,10 +164,9 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         return annotationDocByName;
     }
 
-    private Map<String, EventMention> annotateMentionAttribute(JCas aJCas, List<String> eventIds, List<String> eventTextBounds,
-                                                               Map<String, Pair<List<Span>, String>> textBoundId2SpanAndType,
-                                                               ArrayListMultimap<String, Attribute> id2Attribute,
-                                                               ArrayListMultimap<String, Span> textBoundId2TokenSpan) {
+    private Map<String, EventMention> annotateMentionAttribute(JCas aJCas, List<String> eventIds, List<String>
+            eventTextBounds, Map<String, Pair<List<Span>, String>> textBoundId2SpanAndType, ArrayListMultimap<String,
+            Attribute> id2Attribute, ArrayListMultimap<String, Span> textBoundId2TokenSpan) {
         Map<String, EventMention> id2Mentions = new HashMap<>();
         for (int i = 0; i < eventIds.size(); i++) {
             String eventId = eventIds.get(i);
@@ -173,21 +174,12 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             Pair<List<Span>, String> eventInfo = textBoundId2SpanAndType.get(eventTextBoundId);
             EventMention eventMention = new EventMention(aJCas);
             eventMention.setEventType(eventInfo.getValue1());
-            List<Span> actualEventMentionSpans = eventInfo.getValue0();
             List<Span> tokenizedEventMentionSpans = textBoundId2TokenSpan.get(eventTextBoundId);
 
-            eventMention.setYangRegions(new FSArray(aJCas, tokenizedEventMentionSpans.size()));
-            eventMention.setYinRegions(new FSArray(aJCas, actualEventMentionSpans.size()));
+            eventMention.setRegions(new FSArray(aJCas, tokenizedEventMentionSpans.size()));
 
             int earliestBegin = Integer.MAX_VALUE;
             int latestEnd = 0;
-
-            for (int spanIndex = 0; spanIndex < actualEventMentionSpans.size(); spanIndex++) {
-                Span span = actualEventMentionSpans.get(spanIndex);
-                Annotation region = new Annotation(aJCas, span.getBegin(), span.getEnd());
-                eventMention.setYinRegions(spanIndex, region);
-                eventMention.setBegin(earliestBegin);
-            }
 
             for (int spanIndex = 0; spanIndex < tokenizedEventMentionSpans.size(); spanIndex++) {
                 Span span = tokenizedEventMentionSpans.get(spanIndex);
@@ -198,10 +190,11 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
                     latestEnd = span.getEnd();
                 }
                 Annotation region = new Annotation(aJCas, span.getBegin(), span.getEnd());
-                eventMention.setYangRegions(spanIndex, region);
-                eventMention.setBegin(earliestBegin);
-                eventMention.setEnd(latestEnd);
+                eventMention.setRegions(spanIndex, region);
             }
+            eventMention.setBegin(earliestBegin);
+            eventMention.setEnd(latestEnd);
+
 
             id2Mentions.put(eventId, eventMention);
             for (Attribute attribute : id2Attribute.get(eventId)) {
@@ -253,8 +246,10 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
                 eventMentionRelation.setRelationType(relationName);
                 eventMentionRelation.setHead(mention1);
                 eventMentionRelation.setChild(mention2);
-                mention1.setChildEventRelations(UimaConvenience.appendFSList(aJCas, mention1.getChildEventRelations(), eventMentionRelation, EventMentionRelation.class));
-                mention2.setHeadEventRelations(UimaConvenience.appendFSList(aJCas, mention2.getChildEventRelations(), eventMentionRelation, EventMentionRelation.class));
+                mention1.setChildEventRelations(UimaConvenience.appendFSList(aJCas, mention1.getChildEventRelations()
+                        , eventMentionRelation, EventMentionRelation.class));
+                mention2.setHeadEventRelations(UimaConvenience.appendFSList(aJCas, mention2.getChildEventRelations(),
+                        eventMentionRelation, EventMentionRelation.class));
                 UimaAnnotationUtils.finishTop(eventMentionRelation, COMPONENT_ID, 0, aJCas);
             }
         }
@@ -264,7 +259,8 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
 
         final int[] evmId = new int[1];
         discoursedSortedEventMentions.forEach(
-                sortedEventMention -> UimaAnnotationUtils.finishAnnotation(sortedEventMention, COMPONENT_ID, evmId[0]++, aJCas)
+                sortedEventMention -> UimaAnnotationUtils.finishAnnotation(sortedEventMention, COMPONENT_ID,
+                        evmId[0]++, aJCas)
         );
 
         List<Event> allEvents = new ArrayList<>();
@@ -272,7 +268,8 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
 
         clusters.forEach(cluster -> {
             Event event = new Event(aJCas);
-            List<EventMention> sortedCluster = cluster.stream().sorted(new Comparators.AnnotationSpanComparator<>()).collect(Collectors.toList());
+            List<EventMention> sortedCluster = cluster.stream().sorted(new Comparators.AnnotationSpanComparator<>())
+                    .collect(Collectors.toList());
             event.setEventMentions(FSCollectionFactory.createFSArray(aJCas, sortedCluster));
             cluster.forEach(mention -> {
                 mention.setReferringEvent(event);
@@ -293,7 +290,8 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         );
 
         int[] eventId = new int[1];
-        int numNonSingleton = allEvents.stream().sorted((e1, e2) -> new Comparators.AnnotationSpanComparator<>().compare(e1.getEventMentions(0), e2.getEventMentions(0))).mapToInt(
+        int numNonSingleton = allEvents.stream().sorted((e1, e2) -> new Comparators.AnnotationSpanComparator<>()
+                .compare(e1.getEventMentions(0), e2.getEventMentions(0))).mapToInt(
                 event -> {
                     UimaAnnotationUtils.finishTop(event, COMPONENT_ID, eventId[0], aJCas);
                     event.setEventIndex(eventId[0]);
@@ -344,14 +342,16 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             for (Map.Entry<String, Pair<List<Span>, String>> textBoundById : textBoundId2SpanAndType.entrySet()) {
                 String annoId = textBoundById.getKey();
                 // it should be implicitly ensured here that the number of tokenSpan is the same as textBoundSpan
-                textBoundById.getValue().getValue0().stream().filter(textBoundSpan -> textBoundSpan.covers(tokenSpan) || tokenSpan.covers(textBoundSpan)).forEach(textBoundSpan -> {
+                textBoundById.getValue().getValue0().stream().filter(textBoundSpan -> textBoundSpan.covers(tokenSpan)
+                        || tokenSpan.covers(textBoundSpan)).forEach(textBoundSpan -> {
                     // it should be implicitly ensured here that the number of tokenSpan is the same as textBoundSpan
                     textBoundId2TokenSpan.put(annoId, tokenSpan);
                 });
             }
         }
 
-        Map<String, EventMention> id2Mentions = annotateMentionAttribute(aJCas, eventIds, eventTextBounds, textBoundId2SpanAndType, id2Attribute, textBoundId2TokenSpan);
+        Map<String, EventMention> id2Mentions = annotateMentionAttribute(aJCas, eventIds, eventTextBounds,
+                textBoundId2SpanAndType, id2Attribute, textBoundId2TokenSpan);
         annotateRelations(aJCas, relations, id2Mentions);
     }
 
@@ -429,7 +429,8 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
 
         String paramTypeSystemDescriptor = "TypeSystem";
 
-        TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory.createTypeSystemDescription(paramTypeSystemDescriptor);
+        TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory.createTypeSystemDescription
+                (paramTypeSystemDescriptor);
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 PlainTextCollectionReader.class,
