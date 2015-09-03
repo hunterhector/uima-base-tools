@@ -70,8 +70,8 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
             throw new CollectionException(e);
         }
 
-        currentDocIndex++;
         CasSerialization.readXmi(jCas, xmiFiles.get(currentDocIndex));
+        currentDocIndex++;
     }
 
     /**
