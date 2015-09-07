@@ -23,11 +23,11 @@ import java.util.*;
 
 /**
  * @author Chris Welty
- *         <p/>
+ *         <p>
  *         Required JAR files:
  *         <ul>
  *         </ul>
- *         <p/>
+ *         <p>
  *         Version History:
  *         <ul>
  *         <li>0.1 [Apr 20, 2004]: Created.
@@ -398,7 +398,8 @@ public class UimaConvenience extends BasicConvenience {
      * @param <T>   extends TOP
      * @return
      */
-    public static <T extends TOP> List<T> getAnnotationListWithFilter(JCas aJCas, final Class<T> clazz, AnnotationCondition cond) {
+    public static <T extends TOP> List<T> getAnnotationListWithFilter(JCas aJCas, final Class<T> clazz,
+                                                                      AnnotationCondition cond) {
         int type;
         try {
             type = clazz.getField("type").getInt(clazz);
@@ -561,7 +562,8 @@ public class UimaConvenience extends BasicConvenience {
     }
 
     public static <T extends TOP, U extends Annotation> T getAnnotationWithMinRange(JCas aJCas,
-                                                                                    Class<T> clazz, U targetAnnotation) {
+                                                                                    Class<T> clazz, U
+                                                                                            targetAnnotation) {
         List<T> annotationList = getAnnotationList(aJCas, clazz);
         return getAnnotationWithMinRange(aJCas, annotationList, targetAnnotation);
     }
@@ -669,6 +671,20 @@ public class UimaConvenience extends BasicConvenience {
             return null;
 
         return JCasUtil.selectCovered(aJCas, clazz, anno).get(0);
+    }
+
+    /**
+     * Select the first annotation covered
+     *
+     * @param anno
+     * @param clazz
+     * @return
+     */
+    public static <T extends Annotation> T selectCoveredFirst(Annotation anno, Class<T> clazz) {
+        List<T> covers = JCasUtil.selectCovered(clazz, anno);
+        if (covers.isEmpty())
+            return null;
+        return JCasUtil.selectCovered(clazz, anno).get(0);
     }
 
     /**
