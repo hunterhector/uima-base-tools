@@ -53,7 +53,6 @@ public class CustomCollectionReaderFactory {
                 XmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
     }
 
-
     /**
      * Creates a simple XMI reader assuming the directory naming convention
      *
@@ -64,8 +63,7 @@ public class CustomCollectionReaderFactory {
      * @throws ResourceInitializationException
      */
     public static CollectionReaderDescription createXmiReader(TypeSystemDescription typeSystemDescription, String
-            parentInputDirName,
-                                                              String baseInputDirName, Integer stepNumber)
+            parentInputDirName,String baseInputDirName, Integer stepNumber)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
 

@@ -168,8 +168,7 @@ public class TokenAlignmentHelper {
                 Collection<FromType> coveringToken = filterByComponentId(tokenCoveringWord.get(token), targetComponentId);
                 if (coveringToken.size() == 0) {
                     if (verbose) {
-                        System.err
-                                .println(String.format("The word : %s [%d, %d] cannot be associated with a %s",
+                        System.err.println(String.format("The word : %s [%d, %d] cannot be associated with a %s",
                                         token.getCoveredText(), token.getBegin(), token.getEnd(),
                                         clazzTo.getSimpleName()));
                     }

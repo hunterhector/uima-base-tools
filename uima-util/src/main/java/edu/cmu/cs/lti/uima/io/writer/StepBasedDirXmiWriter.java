@@ -51,11 +51,11 @@ public class StepBasedDirXmiWriter extends AbstractStepBasedDirWriter {
             }
         }
 
-        JCas srcDocInfoView = JCasUtil.getView(aJCas, srcDocInfoViewName, aJCas);
-
         if (StringUtils.isEmpty(outputFileSuffix)) {
             outputFileSuffix = DEFAULT_FILE_SUFFIX;
         }
+
+        JCas srcDocInfoView = srcDocInfoViewName != null ? JCasUtil.getView(aJCas, srcDocInfoViewName, aJCas) : aJCas;
         String outputFileName = CasSerialization.getOutputFileName(srcDocInfoView, outputFileSuffix);
 
         File outputFile;

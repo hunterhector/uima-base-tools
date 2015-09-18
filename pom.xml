@@ -16,6 +16,7 @@
         <module>stanford-corenlp</module>
         <module>discourse-parser</module>
         <module>opennlp</module>
+        <module>misc-annotators</module>
     </modules>
     <build>
         <plugins>
@@ -174,6 +175,11 @@
                 <groupId>org.apache.opennlp</groupId>
                 <artifactId>opennlp-tools</artifactId>
                 <version>1.5.3</version>
+            </dependency>
+            <dependency>
+                <groupId>edu.cmu.cs.lti</groupId>
+                <artifactId>uima-tools</artifactId>
+                <version>0.0.1-SNAPSHOT</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

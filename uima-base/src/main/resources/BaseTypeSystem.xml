@@ -1021,7 +1021,41 @@
                 </featureDescription>
             </features>
         </typeDescription>
-
-
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.QuotedContent</name>
+            <description>Denote the content is quoted.</description>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>phraseQuote</name>
+                    <description>Whether this is a quoted phrase (otherwise whole sentence).</description>
+                    <rangeTypeName>uima.cas.Boolean</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.JobTitle</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.BodyPart</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.Monetary</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.Possession</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.Government</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
+        </typeDescription>
     </types>
 </typeSystemDescription>
