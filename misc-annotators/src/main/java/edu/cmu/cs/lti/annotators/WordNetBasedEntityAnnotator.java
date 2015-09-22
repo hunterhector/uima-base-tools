@@ -10,6 +10,7 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.javatuples.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,38 +50,78 @@ public class WordNetBasedEntityAnnotator extends AbstractLoggingAnnotator {
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         JCasUtil.select(aJCas, StanfordCorenlpToken.class).stream().forEach(token -> {
+            // Nouns.
             if (token.getPos().startsWith("N")) {
-                if (isOfType(token.getLemma(), "worker", "leader")) {
+                if (isOfNounType(token, "worker", "leader")) {
                     JobTitle jobTitle = new JobTitle(aJCas);
                     UimaAnnotationUtils.finishAnnotation(jobTitle, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
-                } else if (isOfType(token.getLemma(), "body_part")) {
+                } else if (isOfNounType(token, "body_part")) {
                     BodyPart bodyPart = new BodyPart(aJCas);
                     UimaAnnotationUtils.finishAnnotation(bodyPart, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
-                } else if (isOfType(token.getLemma(), "monetary_system")) {
+                } else if (isOfNounType(token, "monetary_system")) {
                     Monetary monetary = new Monetary(aJCas);
                     UimaAnnotationUtils.finishAnnotation(monetary, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
-                } else if (isOfType(token.getLemma(), "possession")) {
+                } else if (isOfNounType(token, "possession")) {
                     Possession possession = new Possession(aJCas);
                     UimaAnnotationUtils.finishAnnotation(possession, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
-                } else if (isOfType(token.getLemma(), "government")) {
+                } else if (isOfNounType(token, "government")) {
                     Government government = new Government(aJCas);
                     UimaAnnotationUtils.finishAnnotation(government, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
+                } else if (isOfNounType(token, "crime")) {
+                    Crime crime = new Crime(aJCas);
+                    UimaAnnotationUtils.finishAnnotation(crime, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
+                            aJCas);
+                } else if (isOfNounType(token, "pathological_state")) {
+                    Pathology pathology = new Pathology(aJCas);
+                    UimaAnnotationUtils.finishAnnotation(pathology, token.getBegin(), token.getEnd(), COMPONENT_ID,
+                            0, aJCas);
+                }
+            }
+
+            // In cases where the original token is not a noun.
+            for (Pair<String, String> der : wns.getDerivations(token.getLemma().toLowerCase(), token.getPos())) {
+                if (der.getValue1().equals("noun") && isOfNounType(der.getValue0(), "pathological_state")) {
+                    Pathology pathology = new Pathology(aJCas);
+                    UimaAnnotationUtils.finishAnnotation(pathology, token.getBegin(), token.getEnd(), COMPONENT_ID,
+                            0, aJCas);
                 }
             }
         });
     }
 
-    private boolean isOfType(String lemma, String... targetTypes) {
-        for (Set<String> hypernyms : wns.getAllNounHypernymsForAllSense(lemma.toLowerCase())) {
-            for (String type : targetTypes) {
-                if (hypernyms.contains(type)) {
-                    return true;
-                }
+    private boolean isOfType(StanfordCorenlpToken token, String... targetTypes) {
+        String lemma = token.getLemma().toLowerCase();
+        String posTag = token.getPos();
+        return isOfType(lemma, posTag, targetTypes);
+    }
+
+    private boolean isOfType(String lemma, String posTag, String... targetTypes) {
+        Set<String> hypernyms = wns.getAllHypernymsForAllSense(lemma.toLowerCase(), posTag);
+
+        for (String type : targetTypes) {
+            if (hypernyms.contains(type)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private boolean isOfNounType(StanfordCorenlpToken token, String... targetTypes) {
+        return isOfNounType(token.getLemma().toLowerCase(), targetTypes);
+    }
+
+    private boolean isOfNounType(String lemma, String... targetTypes) {
+        Set<String> hypernyms = wns.getAllNounHypernymsForAllSense(lemma);
+
+        for (String type : targetTypes) {
+            if (hypernyms.contains(type)) {
+                return true;
             }
         }
         return false;

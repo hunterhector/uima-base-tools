@@ -1057,5 +1057,13 @@
             <name>edu.cmu.cs.lti.script.type.Government</name>
             <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
         </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.Pathology</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.Crime</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
+        </typeDescription>
     </types>
 </typeSystemDescription>

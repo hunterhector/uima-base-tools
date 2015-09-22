@@ -4,6 +4,8 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.fit.component.JCasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Created with IntelliJ IDEA.
@@ -18,7 +20,8 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
 
     public final static String PARAM_ENCODING = "encoding";
 
-    @ConfigurationParameter(mandatory = false, description = "The view name for the golden standard view", name = PARAM_GOLD_STANDARD_VIEW_NAME)
+    @ConfigurationParameter(mandatory = false, description = "The view name for the golden standard view", name =
+            PARAM_GOLD_STANDARD_VIEW_NAME)
     protected String goldStandardViewName;
 
     @ConfigurationParameter(mandatory = false, description = "Specify the encoding of the input", name = PARAM_ENCODING)
@@ -27,6 +30,8 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
     public static final String DEFAULT_ENCODING = "UTF-8";
 
     public static final String DEFAULT_GOLD_STANDARD_NAME = "GoldStandard";
+
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
