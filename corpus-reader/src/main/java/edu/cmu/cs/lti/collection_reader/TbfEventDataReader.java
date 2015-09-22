@@ -97,6 +97,9 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         String tokenExt = (String) getConfigParameterValue(PARAM_TOKEN_EXT);
         String sourceExt = (String) getConfigParameterValue(PARAM_SOURCE_EXT);
 
+        logger.info("Looking for data in source text directory : " + sourceTextDir.getPath());
+        logger.info("Looking for data in token text directory : " + tokenDir.getPath());
+
         Map<String, File> sourceBaseNames = getBaseNames(sourceTextDir, sourceExt);
         Map<String, File> tokenBaseNames = getBaseNames(tokenDir, tokenExt);
 
@@ -159,7 +162,6 @@ public class TbfEventDataReader extends AbstractCollectionReader {
                 .getText();
 
         if (sourceFileStr.length() != documentText.length()) {
-
             throw new CollectionException(new Exception(String.format(
                     "Length difference after cleaned, before : %d, " + "after : %d",
                     sourceFileStr.length(), documentText.length())));
@@ -360,11 +362,9 @@ public class TbfEventDataReader extends AbstractCollectionReader {
                 TbfEventDataReader.PARAM_TOKEN_EXT, ".txt.tab"
         );
 
-
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
                 paramParentOutputDir, paramBaseOutputDirName, 0,
                 paramOutputFileSuffix);
-
 
         // Run the pipeline.
         try {
