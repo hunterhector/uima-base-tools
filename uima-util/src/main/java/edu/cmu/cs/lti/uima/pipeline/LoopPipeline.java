@@ -26,7 +26,7 @@ import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngineDesc
  * @author Zhengzhong Liu
  */
 public abstract class LoopPipeline {
-    private final Logger logger = LoggerFactory.getLogger(getClass());
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     final CollectionReaderDescription readerDescription;
 
@@ -52,7 +52,6 @@ public abstract class LoopPipeline {
         try {
             logger.info("Loop begins!");
             while (true) {
-                // TODO: A way to restart reader without new instance?
                 reader.typeSystemInit(cas.getTypeSystem());
 
                 // Process

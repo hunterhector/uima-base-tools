@@ -35,6 +35,11 @@
                     <description>ID assigned to this annotation</description>
                     <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
+                <featureDescription>
+                    <name>index</name>
+                    <description>Index of this annotation</description>
+                    <rangeTypeName>uima.cas.Integer</rangeTypeName>
+                </featureDescription>
             </features>
         </typeDescription>
         <typeDescription>
