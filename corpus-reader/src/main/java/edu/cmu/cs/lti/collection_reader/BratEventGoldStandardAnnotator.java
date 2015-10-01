@@ -294,7 +294,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
                 .compare(e1.getEventMentions(0), e2.getEventMentions(0))).mapToInt(
                 event -> {
                     UimaAnnotationUtils.finishTop(event, COMPONENT_ID, eventId[0], aJCas);
-                    event.setEventIndex(eventId[0]);
+                    event.setIndex(eventId[0]);
                     eventId[0]++;
                     return event.getEventMentions().size() > 1 ? 1 : 0;
                 }
