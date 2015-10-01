@@ -688,11 +688,6 @@
                     <elementType>edu.cmu.cs.lti.script.type.EventArgumentLink</elementType>
                 </featureDescription>
                 <featureDescription>
-                    <name>eventIndex</name>
-                    <description>Event id assigned by our system</description>
-                    <rangeTypeName>uima.cas.Integer</rangeTypeName>
-                </featureDescription>
-                <featureDescription>
                     <name>eventMentions</name>
                     <description/>
                     <rangeTypeName>uima.cas.FSArray</rangeTypeName>

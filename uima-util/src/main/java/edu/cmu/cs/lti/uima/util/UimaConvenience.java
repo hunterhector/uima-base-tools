@@ -703,6 +703,14 @@ public class UimaConvenience extends BasicConvenience {
         return covers.get(0);
     }
 
+    public static <T extends Annotation> T selectCoveredLast(Annotation anno, Class<T> clazz) {
+        List<T> covers = JCasUtil.selectCovered(clazz, anno);
+        if (covers.isEmpty())
+            return null;
+        return JCasUtil.selectCovered(clazz, anno).get(covers.size() - 1);
+    }
+
+
     public static <K extends Annotation, T extends Annotation> Map<K, Collection<T>> indexCoveredAndCovering(
             JCas aJCas, Class<K> keyType, Class<T> valueType) {
         Map<K, Collection<T>> index = new HashMap<K, Collection<T>>();
