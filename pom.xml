@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.cmu.cs.lti</groupId>
     <artifactId>uima-tools</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.1</version>
     <name>Uima Tools</name>
     <description>Parent project for uima tools projects</description>
     <packaging>pom</packaging>
@@ -77,7 +77,7 @@
             <dependency>
                 <groupId>edu.cmu.cs.lti</groupId>
                 <artifactId>uima-base</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>0.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.uima</groupId>
@@ -104,12 +104,12 @@
             <dependency>
                 <groupId>edu.cmu.cs.lti</groupId>
                 <artifactId>uima-util</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>0.0.1</version>
             </dependency>
             <dependency>
                 <groupId>edu.cmu.cs.lti</groupId>
                 <artifactId>uima-base</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>0.0.1</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.uima</groupId>
@@ -185,7 +185,7 @@
             <dependency>
                 <groupId>edu.cmu.cs.lti</groupId>
                 <artifactId>uima-tools</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
+                <version>0.0.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

@@ -5,7 +5,7 @@
     <parent>
         <artifactId>uima-tools</artifactId>
         <groupId>edu.cmu.cs.lti</groupId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -27,12 +27,12 @@
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>uima-util</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>uima-base</artifactId>
-            <version>0.0.1-SNAPSHOT</version>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.uimafit</groupId>
