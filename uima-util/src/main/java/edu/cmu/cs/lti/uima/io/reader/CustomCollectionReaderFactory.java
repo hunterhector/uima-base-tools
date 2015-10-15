@@ -63,7 +63,7 @@ public class CustomCollectionReaderFactory {
      * @throws ResourceInitializationException
      */
     public static CollectionReaderDescription createXmiReader(TypeSystemDescription typeSystemDescription, String
-            parentInputDirName,String baseInputDirName, Integer stepNumber)
+            parentInputDirName, String baseInputDirName, Integer stepNumber)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
 
@@ -91,6 +91,30 @@ public class CustomCollectionReaderFactory {
                 StepBasedDirXmiCollectionReader.class, typeSystemDescription,
                 StepBasedDirXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
                 StepBasedDirXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName
+        );
+    }
+
+
+    /**
+     * Creates a simple XMI reader assuming the directory naming convention
+     *
+     * @param parentInputDirName
+     * @param baseInputDirName
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createRandomizedXmiReader(TypeSystemDescription typeSystemDescription,
+                                                                        String parentInputDirName,
+                                                                        String baseInputDirName,
+                                                                        int randomSeed)
+            throws ResourceInitializationException {
+        // Instantiate a collection reader to get XMI as input.
+
+        return CollectionReaderFactory.createReaderDescription(
+                RandomizedXmiCollectionReader.class, typeSystemDescription,
+                RandomizedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
+                RandomizedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
+                RandomizedXmiCollectionReader.PARAM_SEED, randomSeed
         );
     }
 

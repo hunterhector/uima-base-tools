@@ -32,7 +32,6 @@ public abstract class AbstractDirReader extends CollectionReader_ImplBase {
 
     public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
 
-
     protected Boolean failOnUnknownType;
 
     protected File inputDir;

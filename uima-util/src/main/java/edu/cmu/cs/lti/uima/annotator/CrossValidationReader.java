@@ -29,6 +29,7 @@ import java.util.*;
 public class CrossValidationReader extends AbstractStepBasedDirReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
+
     public static final String PARAM_SEED = "seed";
     @ConfigurationParameter(name = PARAM_SEED, defaultValue = "17")
     private int seed;
@@ -51,9 +52,10 @@ public class CrossValidationReader extends AbstractStepBasedDirReader {
     private Iterator<File> corpusIter;
 
     @Override
-    public void initialize(UimaContext context)
-            throws ResourceInitializationException {
+    public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
+
+        logger.info("Starting cross validation reader for " + (modeEval ? "evaluation" : "training"));
 
         if (inputFileSuffix == null) {
             inputFileSuffix = DEFAULT_SUFFIX;
@@ -66,9 +68,12 @@ public class CrossValidationReader extends AbstractStepBasedDirReader {
                     files.size(), splitsCnt));
         }
 
+        // Always sorted to ensure the split are the same at different place.
+        Collections.sort(files);
         Collections.shuffle(files, new Random(seed));
         int splitSize = (int) Math.ceil(files.size() / splitsCnt);
         List<List<File>> partitions = Lists.partition(files, splitSize);
+
 
         if (modeEval) {
             corpus = partitions.get(slice);
