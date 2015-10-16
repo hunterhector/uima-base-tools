@@ -37,7 +37,9 @@ import java.io.IOException;
 import java.util.*;
 
 /**
- * Collection Reader for TBF format data.
+ * Collection Reader for TBF format data. This retrieves relevant annotations from the gold standard, including event
+ * mentions and coreference relations (if exists).
+ *
  * User: zhengzhongliu
  * Date: 1/21/15
  * Time: 11:40 PM
