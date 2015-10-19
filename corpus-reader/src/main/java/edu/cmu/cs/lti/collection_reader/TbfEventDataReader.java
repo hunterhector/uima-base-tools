@@ -39,7 +39,7 @@ import java.util.*;
 /**
  * Collection Reader for TBF format data. This retrieves relevant annotations from the gold standard, including event
  * mentions and coreference relations (if exists).
- *
+ * <p>
  * User: zhengzhongliu
  * Date: 1/21/15
  * Time: 11:40 PM
@@ -61,7 +61,6 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
     public static final String endOfDocument = "#EndOfDocument";
 
-
     public static final String COMPONENT_ID = TbfEventDataReader.class.getSimpleName();
 
     private int currentPointer;
@@ -76,28 +75,37 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
     private static String className = TbfEventDataReader.class.getSimpleName();
 
+    @ConfigurationParameter(name = PARAM_GOLD_STANDARD_FILE, mandatory = false)
+    private File annotationFile = null;
+
     @ConfigurationParameter(name = PARAM_INPUT_VIEW_NAME, mandatory = false)
     private String inputViewName;
+
+    @ConfigurationParameter(name = PARAM_TOKEN_EXT)
+    String tokenExt;
+
+    @ConfigurationParameter(name = PARAM_SOURCE_EXT)
+    String sourceExt;
+
+    @ConfigurationParameter(name = PARAM_SOURCE_TEXT_DIRECTORY)
+    File sourceTextDir;
+
+    @ConfigurationParameter(name = PARAM_TOKEN_DIRECTORY)
+    File tokenDir;
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
-        File sourceTextDir = new File(((String) getConfigParameterValue(PARAM_SOURCE_TEXT_DIRECTORY)).trim());
-        File tokenDir = new File((String) getConfigParameterValue(PARAM_TOKEN_DIRECTORY));
 
-        Object annotationPath = getConfigParameterValue(PARAM_GOLD_STANDARD_FILE);
-        if (annotationPath != null) {
-            File annotationFile = new File((String) annotationPath);
+        if (annotationFile != null) {
             hasGoldStandard = true;
+            logger.info("Loading gold standard file from " + annotationFile.getPath());
             try {
                 goldStandards = splitGoldStandard(annotationFile);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
-
-        String tokenExt = (String) getConfigParameterValue(PARAM_TOKEN_EXT);
-        String sourceExt = (String) getConfigParameterValue(PARAM_SOURCE_EXT);
 
         logger.info("Looking for data in source text directory : " + sourceTextDir.getPath());
         logger.info("Looking for data in token text directory : " + tokenDir.getPath());
