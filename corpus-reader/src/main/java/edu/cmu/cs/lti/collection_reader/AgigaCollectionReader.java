@@ -382,7 +382,6 @@ public class AgigaCollectionReader extends AbstractCollectionReader {
 
     @Override
     public void close() throws IOException {
-        // TODO Auto-generated method stub
     }
 
     @Override

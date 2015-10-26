@@ -210,7 +210,6 @@ public class AceDataCollectionReader extends AbstractCollectionReader {
 
     @Override
     public void close() throws IOException {
-        // TODO Auto-generated method stub
     }
 
     @Override
