@@ -1,7 +1,8 @@
 package edu.cmu.cs.lti.annotators;
 
 import edu.cmu.cs.lti.ling.WordNetSearcher;
-import edu.cmu.cs.lti.script.type.*;
+import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
+import edu.cmu.cs.lti.script.type.WordNetBasedEntity;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import org.apache.uima.UimaContext;
@@ -12,7 +13,6 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.javatuples.Pair;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Set;
 
@@ -25,12 +25,7 @@ import java.util.Set;
  */
 public class WordNetBasedEntityAnnotator extends AbstractLoggingAnnotator {
 
-    public static final String PARAM_JOB_TITLE_LIST = "JobTitleList";
-
     public static final String PARAM_WN_PATH = "WordNetPath";
-
-    @ConfigurationParameter(name = PARAM_JOB_TITLE_LIST)
-    private File jobTitleFile;
 
     @ConfigurationParameter(name = PARAM_WN_PATH)
     private String wnDictPath;
@@ -53,42 +48,50 @@ public class WordNetBasedEntityAnnotator extends AbstractLoggingAnnotator {
             // Nouns.
             if (token.getPos().startsWith("N")) {
                 if (isOfNounType(token, "worker", "leader")) {
-                    JobTitle jobTitle = new JobTitle(aJCas);
+                    WordNetBasedEntity jobTitle = new WordNetBasedEntity(aJCas);
                     UimaAnnotationUtils.finishAnnotation(jobTitle, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
+                    jobTitle.setSense("JobTitle");
                 } else if (isOfNounType(token, "body_part")) {
-                    BodyPart bodyPart = new BodyPart(aJCas);
+                    WordNetBasedEntity bodyPart = new WordNetBasedEntity(aJCas);
                     UimaAnnotationUtils.finishAnnotation(bodyPart, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
+                    bodyPart.setSense("BodyPart");
                 } else if (isOfNounType(token, "monetary_system")) {
-                    Monetary monetary = new Monetary(aJCas);
+                    WordNetBasedEntity monetary = new WordNetBasedEntity(aJCas);
                     UimaAnnotationUtils.finishAnnotation(monetary, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
+                    monetary.setSense("Monetary");
                 } else if (isOfNounType(token, "possession")) {
-                    Possession possession = new Possession(aJCas);
+                    WordNetBasedEntity possession = new WordNetBasedEntity(aJCas);
                     UimaAnnotationUtils.finishAnnotation(possession, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
+                    possession.setSense("Possession");
                 } else if (isOfNounType(token, "government")) {
-                    Government government = new Government(aJCas);
+                    WordNetBasedEntity government = new WordNetBasedEntity(aJCas);
                     UimaAnnotationUtils.finishAnnotation(government, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
+                    government.setSense("Government");
                 } else if (isOfNounType(token, "crime")) {
-                    Crime crime = new Crime(aJCas);
+                    WordNetBasedEntity crime = new WordNetBasedEntity(aJCas);
                     UimaAnnotationUtils.finishAnnotation(crime, token.getBegin(), token.getEnd(), COMPONENT_ID, 0,
                             aJCas);
+                    crime.setSense("Crime");
                 } else if (isOfNounType(token, "pathological_state")) {
-                    Pathology pathology = new Pathology(aJCas);
+                    WordNetBasedEntity pathology = new WordNetBasedEntity(aJCas);
                     UimaAnnotationUtils.finishAnnotation(pathology, token.getBegin(), token.getEnd(), COMPONENT_ID,
                             0, aJCas);
+                    pathology.setSense("Pathology");
                 }
             }
 
             // In cases where the original token is not a noun.
             for (Pair<String, String> der : wns.getDerivations(token.getLemma().toLowerCase(), token.getPos())) {
                 if (der.getValue1().equals("noun") && isOfNounType(der.getValue0(), "pathological_state")) {
-                    Pathology pathology = new Pathology(aJCas);
+                    WordNetBasedEntity pathology = new WordNetBasedEntity(aJCas);
                     UimaAnnotationUtils.finishAnnotation(pathology, token.getBegin(), token.getEnd(), COMPONENT_ID,
                             0, aJCas);
+                    pathology.setSense("Pathology");
                 }
             }
         });

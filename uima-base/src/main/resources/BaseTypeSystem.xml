@@ -1029,36 +1029,43 @@
             </features>
         </typeDescription>
         <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</name>
+            <name>edu.cmu.cs.lti.script.type.WordNetBasedEntity</name>
             <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>sense</name>
+                    <description>The wordnet sense of the entity.</description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+            </features>
         </typeDescription>
-        <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.JobTitle</name>
-            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
-        </typeDescription>
-        <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.BodyPart</name>
-            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
-        </typeDescription>
-        <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.Monetary</name>
-            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
-        </typeDescription>
-        <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.Possession</name>
-            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
-        </typeDescription>
-        <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.Government</name>
-            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
-        </typeDescription>
-        <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.Pathology</name>
-            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
-        </typeDescription>
-        <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.Crime</name>
-            <supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>
-        </typeDescription>
+        <!--<typeDescription>-->
+            <!--<name>edu.cmu.cs.lti.script.type.JobTitle</name>-->
+            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
+        <!--</typeDescription>-->
+        <!--<typeDescription>-->
+            <!--<name>edu.cmu.cs.lti.script.type.BodyPart</name>-->
+            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
+        <!--</typeDescription>-->
+        <!--<typeDescription>-->
+            <!--<name>edu.cmu.cs.lti.script.type.Monetary</name>-->
+            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
+        <!--</typeDescription>-->
+        <!--<typeDescription>-->
+            <!--<name>edu.cmu.cs.lti.script.type.Possession</name>-->
+            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
+        <!--</typeDescription>-->
+        <!--<typeDescription>-->
+            <!--<name>edu.cmu.cs.lti.script.type.Government</name>-->
+            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
+        <!--</typeDescription>-->
+        <!--<typeDescription>-->
+            <!--<name>edu.cmu.cs.lti.script.type.Pathology</name>-->
+            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
+        <!--</typeDescription>-->
+        <!--<typeDescription>-->
+            <!--<name>edu.cmu.cs.lti.script.type.Crime</name>-->
+            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
+        <!--</typeDescription>-->
     </types>
 </typeSystemDescription>
