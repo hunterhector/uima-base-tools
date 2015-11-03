@@ -3,10 +3,12 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>fanse-parser</artifactId>
     <name>Fanse Paser Uima Wrapper</name>
+    <version>0.0.1-j1.6</version>
+
     <parent>
         <artifactId>uima-tools</artifactId>
         <groupId>edu.cmu.cs.lti</groupId>
-        <version>0.0.1</version>
+        <version>0.0.1-j1.6</version>
     </parent>
 
     <!-- Use local lib directory as a Maven repository -->
@@ -57,12 +59,12 @@
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>uima-base</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.1-j1.6</version>
         </dependency>
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>uima-util</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.1-j1.6</version>
         </dependency>
         <dependency>
             <groupId>org.uimafit</groupId>

@@ -14,6 +14,11 @@ import edu.cmu.cs.lti.uima.util.Comparators;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.utils.StringUtils;
+import java8.util.function.Consumer;
+import java8.util.function.Predicate;
+import java8.util.function.ToIntFunction;
+import java8.util.stream.Collectors;
+import java8.util.stream.StreamSupport;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
@@ -39,7 +44,8 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.stream.Collectors;
+//import java.util.function.Consumer;
+//import java.util.stream.Collectors;
 
 /**
  * Created with IntelliJ IDEA.
@@ -210,7 +216,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         return id2Mentions;
     }
 
-    private void annotateRelations(JCas aJCas, List<Relation> relations, Map<String, EventMention> id2Mentions) {
+    private void annotateRelations(final JCas aJCas, List<Relation> relations, Map<String, EventMention> id2Mentions) {
         List<Set<EventMention>> clusters = new ArrayList<>();
 
         for (Relation relation : relations) {
@@ -258,47 +264,68 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         Collections.sort(discoursedSortedEventMentions, new Comparators.AnnotationSpanComparator<>());
 
         final int[] evmId = new int[1];
-        discoursedSortedEventMentions.forEach(
-                sortedEventMention -> UimaAnnotationUtils.finishAnnotation(sortedEventMention, COMPONENT_ID,
-                        evmId[0]++, aJCas)
-        );
 
-        List<Event> allEvents = new ArrayList<>();
-        Set<EventMention> mappedMentions = new HashSet<>();
+        for (EventMention sortedEventMention : discoursedSortedEventMentions) {
+            UimaAnnotationUtils.finishAnnotation(sortedEventMention, COMPONENT_ID, evmId[0]++, aJCas);
+        }
 
-        clusters.forEach(cluster -> {
+        final List<Event> allEvents = new ArrayList<>();
+        final Set<EventMention> mappedMentions = new HashSet<>();
+
+        for (Set<EventMention> cluster : clusters) {
             Event event = new Event(aJCas);
-            List<EventMention> sortedCluster = cluster.stream().sorted(new Comparators.AnnotationSpanComparator<>())
-                    .collect(Collectors.toList());
+
+            // Replace native java8 stream with streamsupport.
+            List<EventMention> sortedCluster = StreamSupport.stream(cluster).sorted().sorted(
+                    new Comparators.AnnotationSpanComparator<EventMention>()
+            ).collect(Collectors.<EventMention>toList());
+//            List<EventMention> sortedCluster = cluster.stream().sorted(new Comparators.AnnotationSpanComparator<>())
+//                    .collect(Collectors.toList());
+
             event.setEventMentions(FSCollectionFactory.createFSArray(aJCas, sortedCluster));
-            cluster.forEach(mention -> {
+
+            for (EventMention mention : cluster) {
                 mention.setReferringEvent(event);
                 mappedMentions.add(mention);
-            });
+            }
+
             allEvents.add(event);
+        }
+
+        StreamSupport.stream(discoursedSortedEventMentions).filter(new Predicate<EventMention>() {
+            @Override
+            public boolean test(EventMention mention) {
+                return !mappedMentions.contains(mention);
+            }
+        }).forEach(new Consumer<EventMention>() {
+            @Override
+            public void accept(EventMention sortedEventMention) {
+                Event event = new Event(aJCas);
+                event.setEventMentions(FSCollectionFactory.createFSArray(aJCas, Arrays.asList(sortedEventMention)));
+                sortedEventMention.setReferringEvent(event);
+                allEvents.add(event);
+            }
         });
 
-        discoursedSortedEventMentions.stream().filter(
-                mention -> !mappedMentions.contains(mention)
-        ).forEach(
-                sortedEventMention -> {
-                    Event event = new Event(aJCas);
-                    event.setEventMentions(FSCollectionFactory.createFSArray(aJCas, Arrays.asList(sortedEventMention)));
-                    sortedEventMention.setReferringEvent(event);
-                    allEvents.add(event);
-                }
-        );
+        final int[] eventId = new int[1];
 
-        int[] eventId = new int[1];
-        int numNonSingleton = allEvents.stream().sorted((e1, e2) -> new Comparators.AnnotationSpanComparator<>()
-                .compare(e1.getEventMentions(0), e2.getEventMentions(0))).mapToInt(
-                event -> {
-                    UimaAnnotationUtils.finishTop(event, COMPONENT_ID, eventId[0], aJCas);
-                    event.setIndex(eventId[0]);
-                    eventId[0]++;
-                    return event.getEventMentions().size() > 1 ? 1 : 0;
+        int numNonSingleton = StreamSupport.stream(allEvents).sorted(
+                new Comparator<Event>() {
+                    @Override
+                    public int compare(Event e1, Event e2) {
+                        return new Comparators.AnnotationSpanComparator<EventMention>().compare(
+                                e1.getEventMentions(0), e2.getEventMentions(0));
+                    }
                 }
-        ).sum();
+        ).mapToInt(new ToIntFunction<Event>() {
+            @Override
+            public int applyAsInt(Event event) {
+                UimaAnnotationUtils.finishTop(event, COMPONENT_ID, eventId[0], aJCas);
+                event.setIndex(eventId[0]);
+                eventId[0]++;
+                return event.getEventMentions().size() > 1 ? 1 : 0;
+            }
+        }).sum();
 
         logger.info(String.format("Contains %d non-singleton clusters", numNonSingleton));
     }
@@ -337,15 +364,21 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             }
         }
 
-        ArrayListMultimap<String, Span> textBoundId2TokenSpan = ArrayListMultimap.create();
-        for (Span tokenSpan : tokenOffsets) {
+        final ArrayListMultimap<String, Span> textBoundId2TokenSpan = ArrayListMultimap.create();
+        for (final Span tokenSpan : tokenOffsets) {
             for (Map.Entry<String, Pair<List<Span>, String>> textBoundById : textBoundId2SpanAndType.entrySet()) {
-                String annoId = textBoundById.getKey();
+                final String annoId = textBoundById.getKey();
                 // it should be implicitly ensured here that the number of tokenSpan is the same as textBoundSpan
-                textBoundById.getValue().getValue0().stream().filter(textBoundSpan -> textBoundSpan.covers(tokenSpan)
-                        || tokenSpan.covers(textBoundSpan)).forEach(textBoundSpan -> {
-                    // it should be implicitly ensured here that the number of tokenSpan is the same as textBoundSpan
-                    textBoundId2TokenSpan.put(annoId, tokenSpan);
+                StreamSupport.stream(textBoundById.getValue().getValue0()).filter(new Predicate<Span>() {
+                    @Override
+                    public boolean test(Span textBoundSpan) {
+                        return textBoundSpan.covers(tokenSpan) || tokenSpan.covers(textBoundSpan);
+                    }
+                }).forEach(new Consumer<Span>() {
+                    @Override
+                    public void accept(Span textBoundSpan) {
+                        textBoundId2TokenSpan.put(annoId, tokenSpan);
+                    }
                 });
             }
         }

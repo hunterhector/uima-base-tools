@@ -44,8 +44,7 @@ public class WordNetBasedEntityAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-        JCasUtil.select(aJCas, StanfordCorenlpToken.class).stream().forEach(token -> {
-            // Nouns.
+        for (StanfordCorenlpToken token : JCasUtil.select(aJCas, StanfordCorenlpToken.class)) {
             if (token.getPos().startsWith("N")) {
                 if (isOfNounType(token, "worker", "leader")) {
                     WordNetBasedEntity jobTitle = new WordNetBasedEntity(aJCas);
@@ -94,7 +93,7 @@ public class WordNetBasedEntityAnnotator extends AbstractLoggingAnnotator {
                     pathology.setSense("Pathology");
                 }
             }
-        });
+        }
     }
 
     private boolean isOfType(StanfordCorenlpToken token, String... targetTypes) {

@@ -33,6 +33,7 @@ import org.apache.uima.util.ProgressImpl;
 import org.javatuples.Triplet;
 
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
 
@@ -146,8 +147,11 @@ public class TbfEventDataReader extends AbstractCollectionReader {
     }
 
     private Map<String, File> getBaseNames(File dir, final String ext) {
-        File[] fileList = dir.listFiles((dir1, name) -> {
-            return name.toLowerCase().endsWith(ext);
+        File[] fileList = dir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.toLowerCase().endsWith(ext);
+            }
         });
 
         Map<String, File> baseName2File = new HashMap<>();

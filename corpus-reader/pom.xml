@@ -7,9 +7,10 @@
     <parent>
         <groupId>edu.cmu.cs.lti</groupId>
         <artifactId>uima-tools</artifactId>
-        <version>0.0.1</version>
+        <version>0.0.1-j1.6</version>
     </parent>
     <name>Uima Based Corpus Reader</name>
+    <version>0.0.1-j1.6</version>
 
     <!-- install 3rd party jars here-->
     <repositories>
@@ -88,6 +89,11 @@
         <dependency>
             <groupId>org.jdom</groupId>
             <artifactId>jdom2</artifactId>
+        </dependency>
+        <!-- Stream support for java under v1.8 -->
+        <dependency>
+            <groupId>net.sourceforge.streamsupport</groupId>
+            <artifactId>streamsupport</artifactId>
         </dependency>
     </dependencies>
 
