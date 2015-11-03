@@ -447,9 +447,9 @@ public class UimaConvenience extends BasicConvenience {
         List<String> newList;
 
         if (oldStringList != null) {
-            newList = new ArrayList<>(FSCollectionFactory.create(oldStringList));
+            newList = new ArrayList<String>(FSCollectionFactory.create(oldStringList));
         } else {
-            newList = new ArrayList<>();
+            newList = new ArrayList<String>();
         }
 
         newList.add(newItem);

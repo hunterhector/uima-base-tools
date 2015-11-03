@@ -48,7 +48,13 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
         try {
             logger.info(String.format("Initializing from model : %s", semaforModelDir.getCanonicalPath()));
             semafor = new SemaforFullPipeline(semaforModelDir);
-        } catch (IOException | URISyntaxException | ClassNotFoundException | MaltChainedException e) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (MaltChainedException e) {
             e.printStackTrace();
         }
     }
@@ -64,7 +70,7 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
 
     private void annotateSemafor(JCas aJCas) {
         for (Sentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
-            List<Token> semaforTokens = new ArrayList<>();
+            List<Token> semaforTokens = new ArrayList<Token>();
 
             List<StanfordCorenlpToken> words = JCasUtil.selectCovered(StanfordCorenlpToken.class, sentence);
 
@@ -76,7 +82,9 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
             try {
                 SemaforParseResult result = semafor.parse(semaforTokens);
                 annotateSemaforSentence(aJCas, sentence, result);
-            } catch (ParsingException | IOException e) {
+            } catch (ParsingException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -93,7 +101,7 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
 
             SemaforParseResult.Frame.NamedSpanSet target = frame.target;
             annotationSet.setFrameName(target.name);
-            List<SemaforLayer> layers = new ArrayList<>();
+            List<SemaforLayer> layers = new ArrayList<SemaforLayer>();
 
             SemaforLabel targetLabel = namedSpan2Label(aJCas, words, target, SemaforConstants.TARGET_LAYER_NAME);
             SemaforLayer targetLayer = new SemaforLayer(aJCas, targetLabel.getBegin(), targetLabel.getEnd());
@@ -118,7 +126,7 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
                 layer.setScore(score);
                 layers.add(layer);
 
-                List<SemaforLabel> labels = new ArrayList<>();
+                List<SemaforLabel> labels = new ArrayList<SemaforLabel>();
 
                 for (SemaforParseResult.Frame.NamedSpanSet frameElement : roleAssignment.frameElements) {
                     labels.add(namedSpan2Label(aJCas, words, frameElement, null));

@@ -182,7 +182,7 @@ public class DiscourseParserAnnotator extends AbstractLoggingAnnotator {
      * @return
      */
     private DirectedGraph<String> getDependencies(List<StanfordCorenlpToken> tokens) {
-        Set<Integer> roots = new HashSet<>();
+        Set<Integer> roots = new HashSet<Integer>();
 
         Table<Integer, Integer, String> allDeps = HashBasedTable.create();
         int baseId = -1;

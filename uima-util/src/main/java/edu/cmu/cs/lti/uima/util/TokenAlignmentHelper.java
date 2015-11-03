@@ -39,7 +39,7 @@ public class TokenAlignmentHelper {
 
     public void loadWord2Stanford(JCas aJCas, String targetComponentId) {
         w2s = getType2TypeMapping(aJCas, Word.class, StanfordCorenlpToken.class, targetComponentId);
-        s2w = new HashMap<>();
+        s2w = new HashMap<StanfordCorenlpToken, Word>();
         for (Map.Entry<Word, StanfordCorenlpToken> ws : w2s.entrySet()) {
             s2w.put(ws.getValue(), ws.getKey());
         }
@@ -47,7 +47,7 @@ public class TokenAlignmentHelper {
 
     public void loadWord2Stanford(JCas aJCas) {
         w2s = getType2TypeMapping(aJCas, Word.class, StanfordCorenlpToken.class);
-        s2w = new HashMap<>();
+        s2w = new HashMap<StanfordCorenlpToken, Word>();
         for (Map.Entry<Word, StanfordCorenlpToken> ws : w2s.entrySet()) {
             s2w.put(ws.getValue(), ws.getKey());
         }
@@ -55,7 +55,7 @@ public class TokenAlignmentHelper {
 
     public void loadWord2Fanse(JCas aJCas, String targetComponentId) {
         w2f = getType2TypeMapping(aJCas, Word.class, FanseToken.class, targetComponentId);
-        f2w = new HashMap<>();
+        f2w = new HashMap<FanseToken, Word>();
         for (Map.Entry<Word, FanseToken> wf : w2f.entrySet()) {
             f2w.put(wf.getValue(), wf.getKey());
         }
@@ -114,7 +114,7 @@ public class TokenAlignmentHelper {
         Map<ToType, Collection<FromType>> tokenCoveringWord = JCasUtil.indexCovering(aJCas, clazzTo,
                 clazzFrom);
 
-        Map<FromType, ToType> word2Token = new HashMap<>();
+        Map<FromType, ToType> word2Token = new HashMap<FromType, ToType>();
 
         for (ToType token : JCasUtil.select(aJCas, clazzTo)) {
             if (token.getBegin() == 0 && token.getEnd() == 0 || token.getBegin() < 0)
@@ -152,7 +152,7 @@ public class TokenAlignmentHelper {
         Map<ToType, Collection<FromType>> tokenCoveringWord = JCasUtil.indexCovering(aJCas, clazzTo,
                 clazzFrom);
 
-        Map<FromType, ToType> word2Token = new HashMap<>();
+        Map<FromType, ToType> word2Token = new HashMap<FromType, ToType>();
 
         for (ToType token : JCasUtil.select(aJCas, clazzTo)) {
             if (token.getBegin() == 0 && token.getEnd() == 0 || token.getBegin() < 0)
@@ -187,7 +187,7 @@ public class TokenAlignmentHelper {
     }
 
     private <T extends ComponentAnnotation> List<T> filterByComponentId(Collection<T> origin, String targetComponentId) {
-        List<T> targets = new ArrayList<>();
+        List<T> targets = new ArrayList<T>();
         for (T originToken : origin) {
             if (originToken.getComponentId().equals(targetComponentId)) {
                 targets.add(originToken);

@@ -30,7 +30,7 @@ public class SistaDocumentMaker {
     List<Sentence> sents;
 
     public SistaDocumentMaker() {
-        sents = new ArrayList<>();
+        sents = new ArrayList<Sentence>();
     }
 
     /**
@@ -62,7 +62,7 @@ public class SistaDocumentMaker {
     }
 
     public static DirectedGraph<String> toSistaDependencies(Table<Integer, Integer, String> allDeps, Set<Integer> roots) {
-        List<Tuple3<Object, Object, String>> edges = new ArrayList<>();
+        List<Tuple3<Object, Object, String>> edges = new ArrayList<Tuple3<Object, Object, String>>();
 
         for (Table.Cell<Integer, Integer, String> cell : allDeps.cellSet()) {
             int gov = cell.getRowKey();
@@ -77,7 +77,7 @@ public class SistaDocumentMaker {
     public static Tree<String> toSistaTree(StanfordTreeAnnotation stanfordTree, int position) {
         if (stanfordTree.getIsLeaf()) {
             Option<Tree<String>[]> noneChildren = Option.apply(null);
-            Tree<String> tree = new Tree<>(stanfordTree.getPennTreeLabel(), noneChildren, 0, position, position + 1);
+            Tree<String> tree = new Tree<String>(stanfordTree.getPennTreeLabel(), noneChildren, 0, position, position + 1);
             return tree;
         }
 
@@ -121,7 +121,7 @@ public class SistaDocumentMaker {
         int start = children[0].startOffset();
         int end = children[children.length - 1].endOffset();
 
-        return new Tree<>(stanfordTree.getPennTreeLabel(), Some.apply(children), headTreeIndex, start, end);
+        return new Tree<String>(stanfordTree.getPennTreeLabel(), Some.apply(children), headTreeIndex, start, end);
     }
 
     private static int firstTokenIndex(StanfordTreeAnnotation stanfordTree){

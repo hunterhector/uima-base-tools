@@ -108,11 +108,15 @@ public class CasSerialization {
      */
     public static void readXmi(JCas jCas, File xmiFile, boolean failOnUnknownType) throws IOException,
             CollectionException {
-        try (FileInputStream inputStream = new FileInputStream(xmiFile)) {
+
+        FileInputStream inputStream = new FileInputStream(xmiFile);
+
+        try {
             XmiCasDeserializer.deserialize(inputStream, jCas.getCas(), !failOnUnknownType);
         } catch (SAXException e) {
             throw new CollectionException(e);
         }
+
     }
 
     /**
@@ -136,7 +140,10 @@ public class CasSerialization {
             }
             buf.append(outputFileSuffix);
             return buf.toString();
-        } catch (IllegalArgumentException | MalformedURLException e) {
+        } catch (IllegalArgumentException e) {
+            logger.info("Cannot find original input for file.");
+            e.printStackTrace();
+        } catch (MalformedURLException e) {
             logger.info("Cannot find original input for file.");
             e.printStackTrace();
         }

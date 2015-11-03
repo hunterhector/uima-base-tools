@@ -114,13 +114,13 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         Map<String, File> sourceBaseNames = getBaseNames(sourceTextDir, sourceExt);
         Map<String, File> tokenBaseNames = getBaseNames(tokenDir, tokenExt);
 
-        fileList = new ArrayList<>();
+        fileList = new ArrayList<Triplet<String, File, File>>();
 
         for (Map.Entry<String, File> sourceBaseNameFile : sourceBaseNames.entrySet()) {
             String baseName = sourceBaseNameFile.getKey();
             File sourceFile = sourceBaseNameFile.getValue();
             if (tokenBaseNames.containsKey(baseName)) {
-                fileList.add(new Triplet<>(baseName, sourceFile, tokenBaseNames.get(baseName)));
+                fileList.add(new Triplet<String, File, File>(baseName, sourceFile, tokenBaseNames.get(baseName)));
             } else {
                 System.err.println("token based name not found " + baseName);
             }
@@ -154,7 +154,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
             }
         });
 
-        Map<String, File> baseName2File = new HashMap<>();
+        Map<String, File> baseName2File = new HashMap<String, File>();
 
         for (File file : fileList) {
             baseName2File.put(StringUtils.removeEnd(file.getName(), ext), file);
@@ -277,8 +277,8 @@ public class TbfEventDataReader extends AbstractCollectionReader {
             IOException {
         ArrayListMultimap<String, EventMention> tokenId2EventMention = ArrayListMultimap.create();
 
-        List<String[]> corefAnnos = new ArrayList<>();
-        Map<String, EventMention> id2Mentions = new HashMap<>();
+        List<String[]> corefAnnos = new ArrayList<String[]>();
+        Map<String, EventMention> id2Mentions = new HashMap<String, EventMention>();
 
         for (String goldAnno : goldStandards.asMap().get(baseName)) {
             if (goldAnno.startsWith("#")) {
@@ -321,7 +321,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
             Event event = new Event(goldView);
 
-            List<EventMention> corefMentions = new ArrayList<>();
+            List<EventMention> corefMentions = new ArrayList<EventMention>();
             for (String mentionId : mentionIds) {
                 EventMention mention = id2Mentions.get(mentionId);
                 corefMentions.add(mention);

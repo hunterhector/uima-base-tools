@@ -162,7 +162,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     }
 
     private Map<String, File> trimAsDocId(File[] annotationDocuments, String suffix) {
-        Map<String, File> annotationDocByName = new HashMap<>();
+        Map<String, File> annotationDocByName = new HashMap<String, File>();
         for (File annotationDocument : annotationDocuments) {
             String annotationDocName = StringUtils.removeEnd(annotationDocument.getName(), suffix);
             annotationDocByName.put(annotationDocName, annotationDocument);
@@ -173,7 +173,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     private Map<String, EventMention> annotateMentionAttribute(JCas aJCas, List<String> eventIds, List<String>
             eventTextBounds, Map<String, Pair<List<Span>, String>> textBoundId2SpanAndType, ArrayListMultimap<String,
             Attribute> id2Attribute, ArrayListMultimap<String, Span> textBoundId2TokenSpan) {
-        Map<String, EventMention> id2Mentions = new HashMap<>();
+        Map<String, EventMention> id2Mentions = new HashMap<String, EventMention>();
         for (int i = 0; i < eventIds.size(); i++) {
             String eventId = eventIds.get(i);
             String eventTextBoundId = eventTextBounds.get(i);
@@ -204,12 +204,10 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
 
             id2Mentions.put(eventId, eventMention);
             for (Attribute attribute : id2Attribute.get(eventId)) {
-                switch (attribute.attributeName) {
-                    case realisTypeName:
-                        eventMention.setRealisType(attribute.attributeValue);
-                        break;
-                    default:
-                        logger.warn("Attribute Name not recognized : " + attribute.attributeName);
+                if (attribute.attributeName.equals(realisTypeName)) {
+                    eventMention.setRealisType(attribute.attributeValue);
+                } else {
+                    logger.warn("Attribute Name not recognized : " + attribute.attributeName);
                 }
             }
         }
@@ -217,7 +215,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     }
 
     private void annotateRelations(final JCas aJCas, List<Relation> relations, Map<String, EventMention> id2Mentions) {
-        List<Set<EventMention>> clusters = new ArrayList<>();
+        List<Set<EventMention>> clusters = new ArrayList<Set<EventMention>>();
 
         for (Relation relation : relations) {
             String e1 = relation.arg1Id;
@@ -241,7 +239,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
                     }
                 }
                 if (!inCluster) {
-                    Set<EventMention> newCluster = new HashSet<>();
+                    Set<EventMention> newCluster = new HashSet<EventMention>();
                     newCluster.add(mention1);
                     newCluster.add(mention2);
                     clusters.add(newCluster);
@@ -260,8 +258,8 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             }
         }
 
-        ArrayList<EventMention> discoursedSortedEventMentions = new ArrayList<>(id2Mentions.values());
-        Collections.sort(discoursedSortedEventMentions, new Comparators.AnnotationSpanComparator<>());
+        ArrayList<EventMention> discoursedSortedEventMentions = new ArrayList<EventMention>(id2Mentions.values());
+        Collections.sort(discoursedSortedEventMentions, new Comparators.AnnotationSpanComparator<Annotation>());
 
         final int[] evmId = new int[1];
 
@@ -269,8 +267,8 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             UimaAnnotationUtils.finishAnnotation(sortedEventMention, COMPONENT_ID, evmId[0]++, aJCas);
         }
 
-        final List<Event> allEvents = new ArrayList<>();
-        final Set<EventMention> mappedMentions = new HashSet<>();
+        final List<Event> allEvents = new ArrayList<Event>();
+        final Set<EventMention> mappedMentions = new HashSet<EventMention>();
 
         for (Set<EventMention> cluster : clusters) {
             Event event = new Event(aJCas);
@@ -331,15 +329,15 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     }
 
     public void annotateGoldStandard(JCas aJCas, List<String> bratAnnotations, List<String> tokenOffsetAnnotations) {
-        Map<String, Pair<List<Span>, String>> textBoundId2SpanAndType = new HashMap<>();
+        Map<String, Pair<List<Span>, String>> textBoundId2SpanAndType = new HashMap<String, Pair<List<Span>, String>>();
 
-        List<String> eventIds = new ArrayList<>();
-        List<String> eventTextBounds = new ArrayList<>();
+        List<String> eventIds = new ArrayList<String>();
+        List<String> eventTextBounds = new ArrayList<String>();
 
         ArrayListMultimap<String, Attribute> id2Attribute = ArrayListMultimap.create();
-        List<Relation> relations = new ArrayList<>();
+        List<Relation> relations = new ArrayList<Relation>();
 
-        List<Span> tokenOffsets = new ArrayList<>();
+        List<Span> tokenOffsets = new ArrayList<Span>();
         for (String line : Iterables.skip(tokenOffsetAnnotations, 1)) {
             String[] parts = line.trim().split("\t");
             int tokenBegin = Integer.parseInt(parts[tokenOffsetBeginFieldNumber]);
@@ -443,7 +441,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         String type = typeAndSpan[0];
         String[] spanStrs = typeAndSpan[1].split(";");
 
-        List<Span> spans = new ArrayList<>();
+        List<Span> spans = new ArrayList<Span>();
         for (String spanStr : spanStrs) {
             String[] spanTexts = spanStr.split(" ");
             spans.add(Span.of(Integer.parseInt(spanTexts[0]), Integer.parseInt(spanTexts[1])));

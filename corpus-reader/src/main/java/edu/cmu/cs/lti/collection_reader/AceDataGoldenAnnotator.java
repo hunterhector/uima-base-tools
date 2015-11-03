@@ -86,7 +86,13 @@ public class AceDataGoldenAnnotator extends AbstractLoggingAnnotator {
             JCasUtil.select(goldStandardView, EntityMention.class);
 
             annotateEvents(apfEvents, goldStandardView, documentText, id2Entities, id2EntityMentions);
-        } catch (JDOMException | IOException | URISyntaxException | CASException e) {
+        } catch (JDOMException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (URISyntaxException e) {
+            e.printStackTrace();
+        } catch (CASException e) {
             e.printStackTrace();
         }
     }
@@ -115,7 +121,7 @@ public class AceDataGoldenAnnotator extends AbstractLoggingAnnotator {
 
             // annotate arguments
             List<Element> eventArguments = apfEvent.getChildren("event_argument");
-            List<EventArgumentLink> argumentLinks = new ArrayList<>();
+            List<EventArgumentLink> argumentLinks = new ArrayList<EventArgumentLink>();
 
             for (Element argument : eventArguments) {
                 String argumentId = argument.getAttributeValue("REFID");

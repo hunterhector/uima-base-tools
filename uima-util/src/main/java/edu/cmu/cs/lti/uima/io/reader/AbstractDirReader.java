@@ -78,7 +78,7 @@ public abstract class AbstractDirReader extends CollectionReader_ImplBase {
         exts[0] = inputFileSuffix;
 
         logger.info("Looking for files in " + inputDir + " with recursive set to " + recursive);
-        xmiFiles = new ArrayList<>(FileUtils.listFiles(inputDir, exts, recursive));
+        xmiFiles = new ArrayList<File>(FileUtils.listFiles(inputDir, exts, recursive));
 
         if (xmiFiles.size() == 0) {
             logger.warn("The directory " + inputDir.getAbsolutePath()

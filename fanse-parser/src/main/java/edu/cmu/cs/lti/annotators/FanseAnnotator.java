@@ -197,7 +197,7 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
 
 
     private List<Word> getUniqueWordList(Sentence sent) {
-        List<Word> wordList = new ArrayList<>();
+        List<Word> wordList = new ArrayList<Word>();
         for (StanfordCorenlpToken token : JCasUtil.selectCovered(StanfordCorenlpToken.class, sent)) {
             wordList.add(token);
         }

@@ -40,7 +40,7 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
         }
 
         // Get a list of XMI files in the specified directory
-        xmiFiles = new ArrayList<>();
+        xmiFiles = new ArrayList<File>();
         File[] files = inputDir.listFiles();
         for (int i = 0; i < files.length; i++) {
             if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {

@@ -61,7 +61,7 @@ public class CrossValidationReader extends AbstractStepBasedDirReader {
             inputFileSuffix = DEFAULT_SUFFIX;
         }
 
-        List<File> files = new ArrayList<>(FileUtils.listFiles(inputDir, new String[]{inputFileSuffix}, false));
+        List<File> files = new ArrayList<File>(FileUtils.listFiles(inputDir, new String[]{inputFileSuffix}, false));
 
         if (files.size() < splitsCnt) {
             throw new IllegalArgumentException(String.format("Number of files [%d] smaller than split count [%d].",
@@ -78,7 +78,7 @@ public class CrossValidationReader extends AbstractStepBasedDirReader {
         if (modeEval) {
             corpus = partitions.get(slice);
         } else {
-            corpus = new ArrayList<>();
+            corpus = new ArrayList<File>();
             for (int i = 0; i < partitions.size(); i++) {
                 if (i != slice) {
                     corpus.addAll(partitions.get(i));

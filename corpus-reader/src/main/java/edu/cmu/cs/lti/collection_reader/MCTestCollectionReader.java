@@ -178,7 +178,7 @@ public class MCTestCollectionReader extends AbstractCollectionReader {
 
         question.setIsMultipleChoice(strParts[0].equals("multiple"));
 
-        List<MCAnswerChoice> choices = new ArrayList<>();
+        List<MCAnswerChoice> choices = new ArrayList<MCAnswerChoice>();
 
         for (int i = 1; i < qaSet.length; i++) {
             String choiceStr = qaSet[i];

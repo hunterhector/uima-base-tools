@@ -99,7 +99,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
         Map<Span, StanfordEntityMention> spanMentionMap = new HashMap<Span, StanfordEntityMention>();
 
-        List<EntityMention> allMentions = new ArrayList<>();
+        List<EntityMention> allMentions = new ArrayList<EntityMention>();
         for (CoreLabel token : document.get(TokensAnnotation.class)) {
             int beginIndex = token.get(CharacterOffsetBeginAnnotation.class);
             int endIndex = token.get(CharacterOffsetEndAnnotation.class);

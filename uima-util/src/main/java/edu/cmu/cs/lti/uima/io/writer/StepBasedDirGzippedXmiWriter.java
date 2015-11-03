@@ -65,7 +65,9 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
         // serialize XCAS and write to output file
         try {
             CasSerialization.writeAsGzip(aJCas.getCas(), outputFile);
-        } catch (IOException | SAXException e) {
+        } catch (IOException e) {
+            throw new AnalysisEngineProcessException(e);
+        } catch (SAXException e) {
             throw new AnalysisEngineProcessException(e);
         }
     }
