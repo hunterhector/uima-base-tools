@@ -93,6 +93,8 @@ public class TbfEventDataReader extends AbstractCollectionReader {
     @ConfigurationParameter(name = PARAM_TOKEN_DIRECTORY)
     File tokenDir;
 
+    private static int numMentionsProcessed = 0;
+
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
@@ -205,6 +207,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
         annotateTokens(jCas, goldView, tokenId2EventMention);
 
+        Set<EventMention> alreadyFinished = new HashSet<>();
         for (Map.Entry<String, Collection<EventMention>> mentionEntry : tokenId2EventMention.asMap().entrySet()) {
             for (EventMention mention : mentionEntry.getValue()) {
                 int start = -1;
@@ -217,7 +220,10 @@ public class TbfEventDataReader extends AbstractCollectionReader {
                         end = word.getEnd();
                     }
                 }
-                UimaAnnotationUtils.finishAnnotation(mention, start, end, COMPONENT_ID, mention.getId(), goldView);
+                if (!alreadyFinished.contains(mention)) {
+                    alreadyFinished.add(mention);
+                    UimaAnnotationUtils.finishAnnotation(mention, start, end, COMPONENT_ID, mention.getId(), goldView);
+                }
             }
         }
 
@@ -307,6 +313,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
                 for (String tid : tokenIds.split(",")) {
                     tokenId2EventMention.put(tid, mention);
                 }
+                numMentionsProcessed++;
             }
         }
 
@@ -342,15 +349,19 @@ public class TbfEventDataReader extends AbstractCollectionReader {
     public static void main(String[] args) throws UIMAException {
         System.out.println(className + " started...");
 
-        String paramInputDir =
-                "/Users/zhengzhongliu/Documents/projects" +
-                        "/cmu-script/event-mention-detection" +
-                        "/data/Event-mention-detection-2014" +
-                        "/LDC2014E121_DEFT_Event_Nugget_Evaluation_Training_Data/data/";
+//        String paramInputDir =
+//                "/Users/zhengzhongliu/Documents/projects" +
+//                        "/cmu-script/event-mention-detection" +
+//                        "/data/Event-mention-detection-2014" +
+//                        "/LDC2014E121_DEFT_Event_Nugget_Evaluation_Training_Data/data/";
+//        String goldStandardFilePath = paramInputDir + "converted.tbf";
+//        String sourceDataPath = paramInputDir + "source";
+//        String tokenDataPath = paramInputDir + "token_offset";
 
-        String goldStandardFilePath = paramInputDir + "converted.tbf";
-        String sourceDataPath = paramInputDir + "source";
-        String tokenDataPath = paramInputDir + "token_offset";
+        String goldStandardPath = "data/mention/LDC/LDC2015R26/data/tbf/EvalEventHopper20150903.tbf";
+        String plainTextPath = "data/mention/LDC/LDC2015R26/data/source";
+        String tokenMapPath = "data/mention/LDC/LDC2015R26/data/tkn";
+
 
         // Parameters for the writer
         String paramParentOutputDir = "data/event_mention_detection";
@@ -365,11 +376,11 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 TbfEventDataReader.class, typeSystemDescription,
-                TbfEventDataReader.PARAM_GOLD_STANDARD_FILE, goldStandardFilePath,
-                TbfEventDataReader.PARAM_SOURCE_EXT, ".tkn.txt",
-                TbfEventDataReader.PARAM_SOURCE_TEXT_DIRECTORY, sourceDataPath,
-                TbfEventDataReader.PARAM_TOKEN_DIRECTORY, tokenDataPath,
-                TbfEventDataReader.PARAM_TOKEN_EXT, ".txt.tab"
+                TbfEventDataReader.PARAM_GOLD_STANDARD_FILE, goldStandardPath,
+                TbfEventDataReader.PARAM_SOURCE_EXT, ".txt",
+                TbfEventDataReader.PARAM_SOURCE_TEXT_DIRECTORY, plainTextPath,
+                TbfEventDataReader.PARAM_TOKEN_DIRECTORY, tokenMapPath,
+                TbfEventDataReader.PARAM_TOKEN_EXT, ".tab"
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
@@ -378,12 +389,14 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
         // Run the pipeline.
         try {
-            SimplePipeline.runPipeline(reader, writer);
+            SimplePipeline.runPipeline(reader
+//                    , writer
+            );
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
         }
 
-        System.out.println(className + " successfully completed.");
+        System.out.println("Number of mentions " + numMentionsProcessed);
     }
 }
