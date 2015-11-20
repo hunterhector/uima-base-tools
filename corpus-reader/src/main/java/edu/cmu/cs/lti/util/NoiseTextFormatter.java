@@ -41,6 +41,11 @@ public class NoiseTextFormatter {
         this.text = input;
     }
 
+    public NoiseTextFormatter cleanWithPattern(String... patterns) {
+        cleanTextWithPatterns(patterns);
+        return this;
+    }
+
     public NoiseTextFormatter cleanForum() {
         cleanTextWithPatterns(forumPatterns);
         return this;
