@@ -41,6 +41,11 @@ public class NoiseTextFormatter {
         this.text = input;
     }
 
+    public NoiseTextFormatter cleanWithPattern(String... patterns) {
+        cleanTextWithPatterns(patterns);
+        return this;
+    }
+
     public NoiseTextFormatter cleanForum() {
         cleanTextWithPatterns(forumPatterns);
         return this;
@@ -88,7 +93,8 @@ public class NoiseTextFormatter {
      */
     public NoiseTextFormatter multiNewLineBreaker() {
         //\h is only supported in java 8. replace with its unicode equivalence.
-        text = text.replaceAll("([^\\p{Punct}\\s][ \\t\\xA0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]*)(\\n)(\\s*\\n+)", "$1.$3");
+        text = text.replaceAll("([^\\p{Punct}\\s][ \\t\\xA0\\u1680\\u180e\\u2000-\\u200a\\u202f\\u205f\\u3000]*)(\\n)" +
+                "(\\s*\\n+)", "$1.$3");
         return this;
     }
 
