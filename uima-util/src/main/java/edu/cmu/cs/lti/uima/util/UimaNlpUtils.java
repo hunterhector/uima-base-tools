@@ -1,13 +1,13 @@
 package edu.cmu.cs.lti.uima.util;
 
-import edu.cmu.cs.lti.script.type.EntityMention;
-import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
-import edu.cmu.cs.lti.script.type.StanfordTreeAnnotation;
-import edu.cmu.cs.lti.script.type.Word;
+import edu.cmu.cs.lti.script.type.*;
+import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.FSList;
 import org.apache.uima.jcas.tcas.Annotation;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class UimaNlpUtils {
@@ -25,7 +25,7 @@ public class UimaNlpUtils {
     public static EntityMention createEntityMention(JCas jcas, int begin, int end, String componentId) {
         EntityMention mention = new EntityMention(jcas, begin, end);
         UimaAnnotationUtils.finishAnnotation(mention, componentId, null, jcas);
-        mention.setHead(findHeadFromTreeAnnotation(mention));
+        mention.setHead(findHeadFromAnnotation(mention));
         return mention;
     }
 
@@ -68,12 +68,49 @@ public class UimaNlpUtils {
         return findHeadFromTree(largestContainingTree);
     }
 
-    public static StanfordCorenlpToken findHeadFromTreeAnnotation(Annotation anno) {
-        return findHeadFromTree(findLargestContainingTree(anno));
+    public static StanfordCorenlpToken findHeadFromAnnotation(Annotation anno) {
+        StanfordCorenlpToken headWord = findHeadFromTree(findLargestContainingTree(anno));
+        if (headWord == null) {
+            headWord = JCasUtil.selectCovering(StanfordCorenlpToken.class, anno).get(0);
+        }
+        return headWord;
     }
 
     public static StanfordTreeAnnotation findLargestContainingTree(Annotation anno) {
         return findLargest(JCasUtil.selectCovered(StanfordTreeAnnotation.class, anno));
+    }
+
+    public static List<Word> getDependentWords(Word word) {
+        List<Word> dependentTokens = new ArrayList<>();
+
+        FSList childDeps = word.getChildDependencyRelations();
+        if (childDeps != null) {
+            for (Dependency dep : FSCollectionFactory.create(childDeps, StanfordDependencyRelation.class)) {
+                dependentTokens.add(dep.getChild());
+            }
+        }
+
+        return dependentTokens;
+    }
+
+    /**
+     * Get dependent words with a specific word type.
+     *
+     * @param word      The head word.
+     * @param wordClass The word type class.
+     * @param <T>       The word type class name.
+     * @return
+     */
+    public static <T extends Word> List<T> getDependentWords(T word, Class<T> wordClass) {
+        List<T> dependentTokens = new ArrayList<>();
+
+        FSList childDeps = word.getChildDependencyRelations();
+        if (childDeps != null) {
+            for (Dependency dep : FSCollectionFactory.create(childDeps, Dependency.class)) {
+                dependentTokens.add((T) dep.getChild());
+            }
+        }
+        return dependentTokens;
     }
 
     public static StanfordCorenlpToken findHeadFromTree(StanfordTreeAnnotation tree) {

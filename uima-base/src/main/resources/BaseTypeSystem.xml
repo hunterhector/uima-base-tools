@@ -1039,33 +1039,77 @@
                 </featureDescription>
             </features>
         </typeDescription>
-        <!--<typeDescription>-->
-            <!--<name>edu.cmu.cs.lti.script.type.JobTitle</name>-->
-            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
-        <!--</typeDescription>-->
-        <!--<typeDescription>-->
-            <!--<name>edu.cmu.cs.lti.script.type.BodyPart</name>-->
-            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
-        <!--</typeDescription>-->
-        <!--<typeDescription>-->
-            <!--<name>edu.cmu.cs.lti.script.type.Monetary</name>-->
-            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
-        <!--</typeDescription>-->
-        <!--<typeDescription>-->
-            <!--<name>edu.cmu.cs.lti.script.type.Possession</name>-->
-            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
-        <!--</typeDescription>-->
-        <!--<typeDescription>-->
-            <!--<name>edu.cmu.cs.lti.script.type.Government</name>-->
-            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
-        <!--</typeDescription>-->
-        <!--<typeDescription>-->
-            <!--<name>edu.cmu.cs.lti.script.type.Pathology</name>-->
-            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
-        <!--</typeDescription>-->
-        <!--<typeDescription>-->
-            <!--<name>edu.cmu.cs.lti.script.type.Crime</name>-->
-            <!--<supertypeName>edu.cmu.cs.lti.script.type.WordNetBasedEntityTypes</supertypeName>-->
-        <!--</typeDescription>-->
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.FrameTrigger</name>
+            <description>represent the trigger word of the frame.</description>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>arguments</name>
+                    <description>the list of arguments of this trigger.</description>
+                    <rangeTypeName>uima.cas.FSList</rangeTypeName>
+                    <elementType>edu.cmu.cs.lti.script.type.FrameArgument</elementType>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.FrameArgument</name>
+            <description>represent the argument of a frame.</description>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>trigger</name>
+                    <description>the associated trigger of this argument.</description>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.FrameTrigger</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>verbNetRoleName</name>
+                    <description>The thematic role name in VerbNet</description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>frameElementName</name>
+                    <description>The frame element name in frame net</description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>propbankRoleName</name>
+                    <description>Argument role name in terms of PropBank</description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>argumentRole</name>
+                    <description>If you don't know what kind of argument it is, use this one, otherwise use one of the
+                        specific role name such as : "verbNet" "frameElement" or "probank".
+                    </description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>confidence</name>
+                    <description>Some sort of confidence score for this argument.</description>
+                    <rangeTypeName>uima.cas.Double</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>superFrameElementRoleNames</name>
+                    <description>store the super frame element names based on the frame relation table, current format
+                        "frameRelationType#superFrameName#superFEname"
+                    </description>
+                    <rangeTypeName>uima.cas.StringList</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>argument</name>
+                    <description>The argument attached to this link, represented as an Entity
+                    </description>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.EntityMention</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>verbPreposition</name>
+                    <description>The preposition that used to link this argument, for example " put on the clothes",
+                        "on" is the preposition to link to the actual argument "clothes"
+                    </description>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
     </types>
 </typeSystemDescription>

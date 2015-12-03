@@ -25,7 +25,7 @@ public class RandomizedXmiCollectionReader extends AbstractStepBasedDirReader {
 
     public static final String PARAM_SEED = "seed";
     @ConfigurationParameter(name = PARAM_SEED, defaultValue = "17")
-    private int seed;
+    private int initialSeed;
 
     private String inputViewName;
 
@@ -40,7 +40,7 @@ public class RandomizedXmiCollectionReader extends AbstractStepBasedDirReader {
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
 
-        logger.info("Reading data with random seed " + seed);
+        logger.info("Reading data with random seed " + initialSeed);
 
         inputViewName = (String) getConfigParameterValue(PARAM_INPUT_VIEW_NAME);
         if (StringUtils.isEmpty(inputFileSuffix)) {
@@ -57,7 +57,7 @@ public class RandomizedXmiCollectionReader extends AbstractStepBasedDirReader {
         }
 
         Collections.sort(xmiFiles);
-        Collections.shuffle(xmiFiles, new Random(seed));
+        Collections.shuffle(xmiFiles, new Random(initialSeed));
 
         currentDocIndex = 0;
     }

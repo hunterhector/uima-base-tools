@@ -290,7 +290,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             }
 
             if (mention.getHead() == null) {
-                mention.setHead(UimaNlpUtils.findHeadFromTreeAnnotation(mention));
+                mention.setHead(UimaNlpUtils.findHeadFromAnnotation(mention));
             }
         }
     }
