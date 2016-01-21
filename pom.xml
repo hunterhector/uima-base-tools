@@ -99,7 +99,7 @@
             <dependency>
                 <groupId>edu.cmu.cs.lti</groupId>
                 <artifactId>zl-utils</artifactId>
-                <version>0.0.1</version>
+                <version>0.0.2</version>
             </dependency>
             <dependency>
                 <groupId>edu.cmu.cs.lti</groupId>

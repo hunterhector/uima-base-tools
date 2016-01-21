@@ -89,6 +89,10 @@
             <groupId>org.jdom</groupId>
             <artifactId>jdom2</artifactId>
         </dependency>
+        <dependency>
+            <groupId>edu.cmu.cs.lti</groupId>
+            <artifactId>zl-utils</artifactId>
+        </dependency>
     </dependencies>
 
 </project>

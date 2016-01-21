@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
  * @author Zhengzhong Liu
  */
 public abstract class AbstractCollectionReader extends JCasCollectionReader_ImplBase {
-
     public final static String PARAM_GOLD_STANDARD_VIEW_NAME = "goldStandard";
 
     public final static String PARAM_ENCODING = "encoding";

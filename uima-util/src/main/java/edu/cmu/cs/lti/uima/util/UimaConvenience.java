@@ -759,15 +759,24 @@ public class UimaConvenience extends BasicConvenience {
     }
 
     public static void printProcessLog(JCas aJCas, Logger logger) {
-        String fileName = getShortDocumentNameWithOffset(aJCas);
-        logger.info(String.format("Processing article: %s", fileName));
+        printProcessLog(aJCas, logger, false);
     }
+
+    public static void printProcessLog(JCas aJCas, Logger logger, boolean debug) {
+        String fileName = getShortDocumentNameWithOffset(aJCas);
+        if (debug) {
+            logger.debug(String.format("Processing article: %s", fileName));
+        } else {
+            logger.info(String.format("Processing article: %s", fileName));
+        }
+    }
+
 
     public static String getShortDocumentName(JCas aJCas) {
         SourceDocumentInformation srcDocInfo = selectSingle(aJCas,
                 SourceDocumentInformation.class);
         if (srcDocInfo == null) {
-            return null;
+            return "";
         }
         return FilenameUtils.getBaseName(srcDocInfo.getUri());
     }

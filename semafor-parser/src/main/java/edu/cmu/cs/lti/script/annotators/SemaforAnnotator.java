@@ -25,7 +25,7 @@ import java.util.List;
 
 /**
  * Required Stanford Corenlp ssplit, tokenize, pos, lemma
- * <p/>
+ * <p>
  * Created with IntelliJ IDEA.
  * User: zhengzhongliu
  * Date: 1/23/15
@@ -70,8 +70,24 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
 
             for (int i = 0; i < words.size(); i++) {
                 Word word = words.get(i);
-                semaforTokens.add(new Token(i + 1, word.getCoveredText(), word.getLemma(), word.getCoarsePos(), word.getPos(), null, null, null, null, null));
+
+                String surface = word.getCoveredText();
+                String lemma = word.getLemma();
+
+                // "|" symbol is used by semafor for special purpose, we replace all "|" occurred in text before
+                // passed in.
+                surface = surface.replaceAll("\\|", "-");
+                lemma = lemma.replaceAll("\\|", "-");
+
+                semaforTokens.add(new Token(i + 1, surface, lemma, word.getCoarsePos(),
+                        word.getPos(), null, null, null, null, null));
             }
+
+
+//            logger.info("Number of words " + words.size());
+//            for (Token semaforToken : semaforTokens) {
+//                System.out.println(semaforToken.getForm());
+//            }
 
             try {
                 SemaforParseResult result = semafor.parse(semaforTokens);
@@ -87,7 +103,8 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
         int frameId = 0;
 
         for (SemaforParseResult.Frame frame : result.frames) {
-            SemaforAnnotationSet annotationSet = new SemaforAnnotationSet(aJCas, sentence.getBegin(), sentence.getEnd());
+            SemaforAnnotationSet annotationSet = new SemaforAnnotationSet(aJCas, sentence.getBegin(),
+                    sentence.getEnd());
             UimaAnnotationUtils.finishAnnotation(annotationSet, COMPONENT_ID, frameId, aJCas);
             frameId++;
 
@@ -129,7 +146,8 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
         }
     }
 
-    private SemaforLabel namedSpan2Label(JCas aJCas, List<StanfordCorenlpToken> words, SemaforParseResult.Frame.NamedSpanSet namedSpanSet, String name) {
+    private SemaforLabel namedSpan2Label(JCas aJCas, List<StanfordCorenlpToken> words,
+                                         SemaforParseResult.Frame.NamedSpanSet namedSpanSet, String name) {
         //assume only continous span is predicted, so return only one label
         int first = -1;
         int last = -1;
