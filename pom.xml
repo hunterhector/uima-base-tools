@@ -87,13 +87,19 @@
             <dependency>
                 <groupId>edu.stanford.nlp</groupId>
                 <artifactId>stanford-corenlp</artifactId>
-                <version>3.4.1</version>
+                <version>3.6.0</version>
                 <type>jar</type>
             </dependency>
             <dependency>
                 <groupId>edu.stanford.nlp</groupId>
                 <artifactId>stanford-corenlp</artifactId>
-                <version>3.4.1</version>
+                <version>3.6.0</version>
+                <classifier>models-chinese</classifier>
+            </dependency>
+            <dependency>
+                <groupId>edu.stanford.nlp</groupId>
+                <artifactId>stanford-corenlp</artifactId>
+                <version>3.6.0</version>
                 <classifier>models</classifier>
             </dependency>
             <dependency>

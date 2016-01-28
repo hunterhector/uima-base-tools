@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.uima.annotator;
 
+import edu.cmu.cs.lti.model.UimaConst;
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.component.JCasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -19,12 +20,21 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
 
     public final static String PARAM_ENCODING = "encoding";
 
+    public static final String PARAM_INPUT_VIEW_NAME = "inputViewName";
+
     @ConfigurationParameter(mandatory = false, description = "The view name for the golden standard view", name =
             PARAM_GOLD_STANDARD_VIEW_NAME)
     protected String goldStandardViewName;
 
+    @ConfigurationParameter(name = PARAM_INPUT_VIEW_NAME, defaultValue = UimaConst.inputViewName)
+    protected String inputViewName;
+
     @ConfigurationParameter(mandatory = false, description = "Specify the encoding of the input", name = PARAM_ENCODING)
     protected String encoding;
+
+    public static final String PARAM_LANGUAGE = "language";
+    @ConfigurationParameter(name = PARAM_LANGUAGE)
+    protected String language;
 
     public static final String DEFAULT_ENCODING = "UTF-8";
 

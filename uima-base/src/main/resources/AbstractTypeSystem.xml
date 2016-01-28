@@ -64,5 +64,46 @@
                 </featureDescription>
             </features>
         </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.TopRelation</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentTOP</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>relationType</name>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>head</name>
+                    <description/>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.ComponentTOP</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>child</name>
+                    <description/>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.ComponentTOP</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.ComponentRelation</name>
+            <description>Relation between components.</description>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentTOP</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>relationType</name>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>head</name>
+                    <description/>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>child</name>
+                    <description/>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
     </types>
 </typeSystemDescription>

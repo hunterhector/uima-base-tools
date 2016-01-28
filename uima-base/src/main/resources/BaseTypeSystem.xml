@@ -36,11 +36,6 @@
             <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
             <features>
                 <featureDescription>
-                    <name>entityType</name>
-                    <description/>
-                    <rangeTypeName>uima.cas.String</rangeTypeName>
-                </featureDescription>
-                <featureDescription>
                     <name>head</name>
                     <description/>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
@@ -60,6 +55,10 @@
                     <name>headAnnotation</name>
                     <description>used to hold ACE head value, which could be multiple words</description>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>entityType</name>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
             </features>
         </typeDescription>
@@ -84,6 +83,37 @@
                     <name>child</name>
                     <description/>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.EventMention</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.EventRelation</name>
+            <description>Relation between event, such as subevent, after. As a convention,
+                coreference is normally annotated as a group, instead of relation links.
+            </description>
+            <supertypeName>edu.cmu.cs.lti.script.type.TopRelation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>sourceMentionRelation</name>
+                    <description>An entity relation can come from a mention relation.</description>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.EventMentionRelation</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.EntityMentionRelation</name>
+            <description>Relation between entities, such as part-whole.</description>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentRelation</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.EntityRelation</name>
+            <description>Relation between entitiy mentions, such as part-whole.</description>
+            <supertypeName>edu.cmu.cs.lti.script.type.TopRelation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>sourceMentionRelation</name>
+                    <description>An entity relation can come from a mention relation.</description>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.EntityMentionRelation</rangeTypeName>
                 </featureDescription>
             </features>
         </typeDescription>
@@ -461,6 +491,16 @@
             </features>
         </typeDescription>
         <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.Time</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>normalizedTime</name>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
             <name>edu.cmu.cs.lti.script.type.Location</name>
             <description/>
             <supertypeName>edu.cmu.cs.lti.script.type.EntityBasedComponent</supertypeName>
@@ -752,16 +792,20 @@
                 </featureDescription>
                 <featureDescription>
                     <name>argument</name>
-                    <description>The argument attached to this link, represented as an Entity
+                    <description>The argument attached to this link, represented as an Entity.
                     </description>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.EntityMention</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
                     <name>verbPreposition</name>
                     <description>The preposition that used to link this argument, for example " put on the clothes",
-                        "on" is the preposition to link to the actual argument "clothes"
+                        "on" is the preposition to link to the actual argument "clothes".
                     </description>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>realis</name>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
             </features>
         </typeDescription>
