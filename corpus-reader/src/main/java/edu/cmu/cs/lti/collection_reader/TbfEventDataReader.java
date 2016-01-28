@@ -55,8 +55,6 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
     public static final String PARAM_SOURCE_EXT = "SourceExtension";
 
-    public static final String PARAM_INPUT_VIEW_NAME = "InputViewName";
-
     public static final String startOfDocument = "#BeginOfDocument";
 
     public static final String endOfDocument = "#EndOfDocument";
@@ -77,9 +75,6 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
     @ConfigurationParameter(name = PARAM_GOLD_STANDARD_FILE, mandatory = false)
     private File annotationFile = null;
-
-    @ConfigurationParameter(name = PARAM_INPUT_VIEW_NAME, mandatory = false)
-    private String inputViewName;
 
     @ConfigurationParameter(name = PARAM_TOKEN_EXT)
     String tokenExt;
@@ -348,15 +343,6 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
     public static void main(String[] args) throws UIMAException {
         System.out.println(className + " started...");
-
-//        String paramInputDir =
-//                "/Users/zhengzhongliu/Documents/projects" +
-//                        "/cmu-script/event-mention-detection" +
-//                        "/data/Event-mention-detection-2014" +
-//                        "/LDC2014E121_DEFT_Event_Nugget_Evaluation_Training_Data/data/";
-//        String goldStandardFilePath = paramInputDir + "converted.tbf";
-//        String sourceDataPath = paramInputDir + "source";
-//        String tokenDataPath = paramInputDir + "token_offset";
 
         String goldStandardPath = "data/mention/LDC/LDC2015R26/data/tbf/EvalEventHopper20150903.tbf";
         String plainTextPath = "data/mention/LDC/LDC2015R26/data/source";

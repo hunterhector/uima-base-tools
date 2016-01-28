@@ -92,18 +92,39 @@ public class NoiseTextFormatter {
      * period, which ensure the offset of the rest won't change.
      */
     public NoiseTextFormatter multiNewLineBreaker() {
-        text = text.replaceAll("([^\\p{Punct}\\s]\\h*)(\\n)(\\s*\\n+)", "$1.$3");
+        return multiNewLineBreaker("en");
+    }
+
+
+    /**
+     * For multiple consecutive new lines, replace first one with a period. Only one new line will be replaced by a
+     * period, which ensure the offset of the rest won't change.
+     */
+    public NoiseTextFormatter multiNewLineBreaker(String language) {
+        String stopSymbol = ".";
+        String pattern = "([^\\p{Punct}\\s]\\h*)(\\n)(\\s*\\n+)";
+
+        if (language.equals("zh")) {
+            stopSymbol = "。";
+            pattern = "([^，。！？\\s]\\h*)(\\n)(\\s*\\n+)";
+        }
+
+        text = text.replaceAll(pattern, "$1" + stopSymbol + "$3");
         return this;
     }
 
     public static void main(String[] args) throws BoilerpipeProcessingException, IOException, SAXException,
             TikaException {
-        String noisyText = FileUtils.readFileToString(
-                new File("/Users/zhengzhongliu/Documents/projects/cmu-script/data/mention/LDC/LDC2015E73/data/source" +
-                        "/1b386c986f9d06fd0a0dda70c3b8ade9.txt"));
+//        String noisyText = FileUtils.readFileToString(
+//                new File("/Users/zhengzhongliu/Documents/projects/cmu-script/data/mention/LDC/LDC2015E73/data/source" +
+//                        "/1b386c986f9d06fd0a0dda70c3b8ade9.txt"));
+
+        String noisyText = FileUtils.readFileToString(new File("/Users/zhengzhongliu/Documents/projects/cmu-script/data/mention/LDC/LDC2015E78_DEFT_Rich_ERE_Chinese_and_English_Parallel_Annotation_V2/data/cmn/source/020f7dc5023a3dcdff18cb12b621d2a8.mp.txt"));
+
+        String language = "zh";
 
         NoiseTextFormatter formatter = new NoiseTextFormatter(noisyText);
-        String ruleCleaned = formatter.cleanForum().cleanNews().multiNewLineBreaker().getText();
+        String ruleCleaned = formatter.cleanForum().cleanNews().multiNewLineBreaker(language).getText();
 
         System.out.println("=== Rule results ===");
         System.out.println(ruleCleaned);

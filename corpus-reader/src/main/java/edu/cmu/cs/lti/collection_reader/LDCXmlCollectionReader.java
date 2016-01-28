@@ -1,10 +1,10 @@
 package edu.cmu.cs.lti.collection_reader;
 
-import edu.cmu.cs.lti.model.UimaConst;
 import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.utils.XMLUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -45,13 +45,11 @@ public class LDCXmlCollectionReader extends AbstractCollectionReader {
     @ConfigurationParameter(name = PARAM_DATA_PATH)
     private String dataPath;
 
-    @ConfigurationParameter(name = PARAM_INPUT_VIEW_NAME, defaultValue = UimaConst.inputViewName)
-    private String inputViewName;
-
     public static final String COMPONENT_ID = LDCXmlCollectionReader.class.getSimpleName();
 
     private List<File> files;
     private int fileIndex;
+
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -95,7 +93,7 @@ public class LDCXmlCollectionReader extends AbstractCollectionReader {
     }
 
     private String getDocumentText(String xmlText) throws XMLStreamException {
-        return XMLUtils.parseXMLTextWithOffsets(xmlText, true);
+        return new NoiseTextFormatter(XMLUtils.parseXMLTextWithOffsets(xmlText, true)).multiNewLineBreaker().getText();
     }
 
     @Override
