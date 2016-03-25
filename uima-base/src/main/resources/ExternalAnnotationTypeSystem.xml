@@ -70,7 +70,6 @@
                     <description/>
                     <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
-
             </features>
         </typeDescription>
         <typeDescription>

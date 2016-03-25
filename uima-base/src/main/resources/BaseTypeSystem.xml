@@ -165,6 +165,14 @@
                     <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
+                    <name>frameName</name>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>propbankSense</name>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
                     <name>morpha</name>
                     <description>Unifying the morphological type and change it into a more based form</description>
                     <rangeTypeName>uima.cas.String</rangeTypeName>
@@ -954,8 +962,46 @@
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
-                    <name>child</name>
+                    <name>childSpan</name>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>childHead</name>
                     <description/>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>verbNetRoleName</name>
+                    <description>The thematic role name in VerbNet</description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>frameElementName</name>
+                    <description>The frame element name in frame net</description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>propbankRoleName</name>
+                    <description>Argument role name in terms of PropBank</description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>confidence</name>
+                    <description/>
+                    <rangeTypeName>uima.cas.Double</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>superFrameElementRoleNames</name>
+                    <description>store the super frame element names based on the frame relation table, current format
+                        "frameRelationType#superFrameName#superFEname"
+                    </description>
+                    <rangeTypeName>uima.cas.StringList</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>verbPreposition</name>
+                    <description>The preposition that used to link this argument, for example " put on the clothes",
+                        "on" is the preposition to link to the actual argument "clothes".
+                    </description>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
                 </featureDescription>
             </features>

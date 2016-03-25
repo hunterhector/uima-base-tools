@@ -1,23 +1,32 @@
 package edu.cmu.cs.lti.uima.util;
 
-import edu.cmu.cs.lti.script.type.*;
+import edu.cmu.cs.lti.script.type.ComponentAnnotation;
+import edu.cmu.cs.lti.script.type.FanseToken;
+import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
+import edu.cmu.cs.lti.script.type.Word;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
 public class TokenAlignmentHelper {
-    Map<FanseToken, StanfordCorenlpToken> f2s;
+    private Logger logger = LoggerFactory.getLogger(this.getClass().getName());
 
-    Map<StanfordCorenlpToken, FanseToken> s2f;
+    private Map<FanseToken, StanfordCorenlpToken> f2s;
 
-    Map<Word, StanfordCorenlpToken> w2s;
+    private Map<StanfordCorenlpToken, FanseToken> s2f;
 
-    Map<StanfordCorenlpToken, Word> s2w;
+    private Map<Word, StanfordCorenlpToken> w2s;
 
-    Map<Word, FanseToken> w2f;
+    private Map<StanfordCorenlpToken, Word> s2w;
 
-    Map<FanseToken, Word> f2w;
+    private Map<Word, FanseToken> w2f;
+
+    private Map<FanseToken, Word> f2w;
+
+//    private Map<SemaforLabel, StanfordCorenlpToken> semafor2Stanford;
 
     private final boolean verbose;
 
@@ -30,7 +39,16 @@ public class TokenAlignmentHelper {
     }
 
     public void loadFanse2Stanford(JCas aJCas) {
-        f2s = getType2TypeMapping(aJCas, FanseToken.class, StanfordCorenlpToken.class);
+        int stanfordSize = JCasUtil.select(aJCas, StanfordCorenlpToken.class).size();
+        int fanseSize = JCasUtil.select(aJCas, FanseToken.class).size();
+
+        if (stanfordSize == 0) {
+            logger.error("Stanford tokens do not exist, cannot load.");
+        } else if (fanseSize == 0) {
+            logger.error("Fanse tokens does not exists, cannot load.");
+        } else {
+            f2s = getType2TypeMapping(aJCas, FanseToken.class, StanfordCorenlpToken.class);
+        }
     }
 
     public void loadStanford2Fanse(JCas aJCas) {
@@ -97,6 +115,9 @@ public class TokenAlignmentHelper {
         return w2s.get(t);
     }
 
+//    public StanfordCorenlpToken getStanfordToken(SemaforLabel s) {
+//        return semafor2Stanford.get(s);
+//    }
 
     public Word getWord(FanseToken t) {
         return f2w.get(t);
@@ -106,8 +127,13 @@ public class TokenAlignmentHelper {
         return s2w.get(t);
     }
 
-    private <ToType extends ComponentAnnotation, FromType extends ComponentAnnotation> Map<FromType, ToType> getType2TypeMapping(
-            JCas aJCas, Class<FromType> clazzFrom, Class<ToType> clazzTo) {
+    private <ToType extends ComponentAnnotation, FromType extends ComponentAnnotation> Map<FromType, ToType>
+    getType2TypeMapping(JCas aJCas, Class<FromType> clazzFrom, Class<ToType> clazzTo) {
+        return getType2TypeMapping(aJCas, clazzFrom, clazzTo, null);
+    }
+
+    private <ToType extends ComponentAnnotation, FromType extends ComponentAnnotation> Map<FromType, ToType>
+    getType2TypeMapping(JCas aJCas, Class<FromType> clazzFrom, Class<ToType> clazzTo, String targetComponentId) {
         Map<ToType, Collection<FromType>> tokenCoveredWord = JCasUtil.indexCovered(aJCas, clazzTo,
                 clazzFrom);
 
@@ -120,22 +146,38 @@ public class TokenAlignmentHelper {
             if (token.getBegin() == 0 && token.getEnd() == 0 || token.getBegin() < 0)
                 continue;
 
-            Collection<FromType> coveredWords = tokenCoveredWord.get(token);
+            Collection<FromType> coveredWords;
+            if (targetComponentId != null) {
+                coveredWords = filterByComponentId(tokenCoveredWord.get(token), targetComponentId);
+            } else {
+                coveredWords = tokenCoveredWord.get(token);
+            }
 
             if (coveredWords.size() > 0) {
                 for (FromType word : coveredWords) {
                     word2Token.put(word, token);
                 }
             } else {// in case the token range is larger than the word, use its covering token
-                Collection<FromType> coveringToken = tokenCoveringWord.get(token);
+                Collection<FromType> coveringToken = filterByComponentId(tokenCoveringWord.get(token),
+                        targetComponentId);
                 if (coveringToken.size() == 0) {
-                    System.err.println(String.format("The word : %s [%d, %d] cannot be associated with a %s",
-                            token.getCoveredText(), token.getBegin(), token.getEnd(),
-                            clazzTo.getSimpleName()));
+                    if (verbose) {
+                        logger.warn(String.format("The word : %s [%s] [%d, %d] cannot be associated with a %s",
+                                token.getCoveredText(), token.getClass().getSimpleName(), token.getBegin(),
+                                token.getEnd(), clazzFrom.getSimpleName()));
+                    }
                 } else {
-                    System.err.println("Use covering");
+                    if (verbose) {
+                        logger.warn("Use covering for alignment");
+                    }
                     for (FromType word : coveringToken) {
                         word2Token.put(word, token);
+                        logger.warn(
+                                String.format("Using covering : %s [%s] [%d, %d] covering  %s [%s] [%d, %d]",
+                                        word.getCoveredText(), word.getClass().getSimpleName(), word.getBegin(),
+                                        word.getEnd(), token.getCoveredText(), token.getClass().getSimpleName(),
+                                        token.getBegin(), token.getEnd())
+                        );
                     }
                 }
             }
@@ -144,49 +186,8 @@ public class TokenAlignmentHelper {
         return word2Token;
     }
 
-    private <ToType extends ComponentAnnotation, FromType extends ComponentAnnotation> Map<FromType, ToType> getType2TypeMapping(
-            JCas aJCas, Class<FromType> clazzFrom, Class<ToType> clazzTo, String targetComponentId) {
-        Map<ToType, Collection<FromType>> tokenCoveredWord = JCasUtil.indexCovered(aJCas, clazzTo,
-                clazzFrom);
-
-        Map<ToType, Collection<FromType>> tokenCoveringWord = JCasUtil.indexCovering(aJCas, clazzTo,
-                clazzFrom);
-
-        Map<FromType, ToType> word2Token = new HashMap<>();
-
-        for (ToType token : JCasUtil.select(aJCas, clazzTo)) {
-            if (token.getBegin() == 0 && token.getEnd() == 0 || token.getBegin() < 0)
-                continue;
-
-            Collection<FromType> coveredWords = filterByComponentId(tokenCoveredWord.get(token), targetComponentId);
-
-            if (coveredWords.size() > 0) {
-                for (FromType word : coveredWords) {
-                    word2Token.put(word, token);
-                }
-            } else {// in case the token range is larger than the word, use its covering token
-                Collection<FromType> coveringToken = filterByComponentId(tokenCoveringWord.get(token), targetComponentId);
-                if (coveringToken.size() == 0) {
-                    if (verbose) {
-                        System.err.println(String.format("The word : %s [%d, %d] cannot be associated with a %s",
-                                        token.getCoveredText(), token.getBegin(), token.getEnd(),
-                                        clazzTo.getSimpleName()));
-                    }
-                } else {
-                    if (verbose) {
-                        System.err.println("Use covering for alignment");
-                    }
-                    for (FromType word : coveringToken) {
-                        word2Token.put(word, token);
-                    }
-                }
-            }
-        }
-
-        return word2Token;
-    }
-
-    private <T extends ComponentAnnotation> List<T> filterByComponentId(Collection<T> origin, String targetComponentId) {
+    private <T extends ComponentAnnotation> List<T> filterByComponentId(Collection<T> origin, String
+            targetComponentId) {
         List<T> targets = new ArrayList<>();
         for (T originToken : origin) {
             if (originToken.getComponentId().equals(targetComponentId)) {

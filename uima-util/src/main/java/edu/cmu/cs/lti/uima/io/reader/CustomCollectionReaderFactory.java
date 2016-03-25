@@ -153,6 +153,7 @@ public class CustomCollectionReaderFactory {
                                                                           String baseInputDirName,
                                                                           boolean takeEvalSplit,
                                                                           int randomSeed,
+                                                                          int split,
                                                                           int slice)
             throws ResourceInitializationException {
         return CollectionReaderFactory.createReaderDescription(
@@ -161,7 +162,8 @@ public class CustomCollectionReaderFactory {
                 CrossValidationReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
                 CrossValidationReader.PARAM_MODE_EVAL, takeEvalSplit,
                 CrossValidationReader.PARAM_SEED, randomSeed,
-                CrossValidationReader.PARAM_SLICE, slice
+                CrossValidationReader.PARAM_SLICE, slice,
+                CrossValidationReader.PARAM_SPLITS, split
         );
     }
 

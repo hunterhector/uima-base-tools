@@ -43,6 +43,8 @@ import java.util.*;
  * and entity coreference
  * <p>
  * The current issue is that it does not split on DATETIME and TITLE correctly.
+ * <p>
+ * We recently added Chinese support.
  *
  * @author Zhengzhong Liu, Hector
  * @author Jun Araki
@@ -116,21 +118,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         Annotation document = new Annotation(text);
         logger.info("Annotate document with Chinese CoreNLP.");
         pipeline.annotate(document);
-        logger.info("Done.");
-
-//        // Chinese coref system use a different chain class.
-//        for (edu.stanford.nlp.hcoref.data.CorefChain cc : document.get(edu.stanford.nlp.hcoref.CorefCoreAnnotations
-//                .CorefChainAnnotation.class).values()) {
-//            System.out.println("\t" + cc);
-//        }
-//        for (CoreMap sentence : document.get(CoreAnnotations.SentencesAnnotation.class)) {
-//            System.out.println("---");
-//            System.out.println("mentions");
-//            for (Mention m : sentence.get(edu.stanford.nlp.hcoref.CorefCoreAnnotations.CorefMentionsAnnotation
-// .class)) {
-//                System.out.println("\t" + m);
-//            }
-//        }
+        logger.info("Annotation done, applying to JCas.");
 
         // Adding token level annotations.
         Map<Span, StanfordEntityMention> spanMentionMap = new HashMap<Span, StanfordEntityMention>();
@@ -148,7 +136,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
     private void annotateEnglish(String text, JCas aJCas, int textOffset) {
         Annotation document = new Annotation(text);
-        logger.info("Annotate with CoreNLP ...");
+        logger.info("Annotate with English CoreNLP ...");
         pipeline.annotate(document);
         logger.info("Annotation done, applying to JCas.");
 
@@ -161,7 +149,9 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         addSentenceLevelAnnotation(aJCas, document, textOffset);
 
         // Adding coreference level annotations.
-        addDCoreferenceAnnotation(aJCas, document, spanMentionMap, allMentions);
+//        addDCoreferenceAnnotation(aJCas, document, spanMentionMap, allMentions);
+
+        addHCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
 
         createEntities(aJCas, allMentions);
     }
@@ -252,10 +242,24 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         }
     }
 
+    /**
+     * @param aJCas
+     * @param document
+     * @param spanMentionMap
+     * @param allMentions
+     * @deprecated DCoref.CorefChainAnnotations is not used in new stanford version, use addHCorefAnnotation() instead.
+     */
+    @Deprecated
     private void addDCoreferenceAnnotation(JCas aJCas, Annotation document, Map<Span, StanfordEntityMention>
             spanMentionMap, List<EntityMention> allMentions) {
         // The following set the coreference chain to CAS annotation.
         Map<Integer, CorefChain> graph = document.get(CorefCoreAnnotations.CorefChainAnnotation.class);
+
+        for (Class<?> aClass : document.keySet()) {
+            System.out.println(aClass.getName());
+        }
+
+        System.out.println(graph);
 
         List<List<StanfordCorenlpToken>> sentTokens = new ArrayList<List<StanfordCorenlpToken>>();
 
