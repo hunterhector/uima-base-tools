@@ -7,11 +7,11 @@ import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.fit.util.FSCollectionFactory;
+import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.uimafit.descriptor.ConfigurationParameter;
-import org.uimafit.util.FSCollectionFactory;
-import org.uimafit.util.JCasUtil;
 import tratz.parse.FullSystemWrapper;
 import tratz.parse.FullSystemWrapper.FullSystemResult;
 import tratz.parse.types.Arc;
@@ -22,6 +22,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+//import org.uimafit.util.FSCollectionFactory;
+//import org.uimafit.util.JCasUtil;
 
 /**
  * Runs FANSE parser, and annotate associated types.
@@ -71,6 +74,7 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
+        logger.info("Annotated with Fanse.");
         annotateFanse(aJCas);
         for (JCas view : getAdditionalViews(aJCas)) {
             annotateFanse(view);
@@ -164,7 +168,7 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                 if (childToken != null || headToken != null) {
                     FanseSemanticRelation fArc = new FanseSemanticRelation(aJCas);
                     fArc.setHead(headToken);
-                    fArc.setChild(childToken);
+                    fArc.setChildHead(childToken);
                     fArc.setSemanticAnnotation(arc.getSemanticAnnotation());
 
                     semanticHeadRelationMap.put(childToken, fArc);
@@ -193,6 +197,8 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                 }
             }
         }
+
+        logger.info(String.format("Annotated %d fanse tokens.", JCasUtil.select(aJCas, FanseToken.class).size()));
     }
 
 

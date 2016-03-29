@@ -172,7 +172,7 @@ public class TokenAlignmentHelper {
                     }
                     for (FromType word : coveringToken) {
                         word2Token.put(word, token);
-                        logger.warn(
+                        logger.debug(
                                 String.format("Using covering : %s [%s] [%d, %d] covering  %s [%s] [%d, %d]",
                                         word.getCoveredText(), word.getClass().getSimpleName(), word.getBegin(),
                                         word.getEnd(), token.getCoveredText(), token.getClass().getSimpleName(),
