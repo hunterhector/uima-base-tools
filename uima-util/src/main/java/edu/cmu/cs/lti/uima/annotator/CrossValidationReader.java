@@ -77,6 +77,7 @@ public class CrossValidationReader extends AbstractStepBasedDirReader {
 
         if (modeEval) {
             corpus = partitions.get(slice);
+            logger.info(String.format("Reading %d files for development.", corpus.size()));
         } else {
             corpus = new ArrayList<>();
             for (int i = 0; i < partitions.size(); i++) {
@@ -84,6 +85,7 @@ public class CrossValidationReader extends AbstractStepBasedDirReader {
                     corpus.addAll(partitions.get(i));
                 }
             }
+            logger.info(String.format("Reading %d files for training.", corpus.size()));
         }
         corpusIter = corpus.iterator();
         currentIndex = 0;

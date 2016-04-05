@@ -48,6 +48,8 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
             }
         }
 
+        logger.info("Number of files read : " + xmiFiles.size());
+
         currentDocIndex = 0;
     }
 
