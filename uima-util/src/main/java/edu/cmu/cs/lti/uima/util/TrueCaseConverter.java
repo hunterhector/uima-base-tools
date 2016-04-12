@@ -1,4 +1,4 @@
-package edu.cmu.cs.lti.util;
+package edu.cmu.cs.lti.uima.util;
 
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;

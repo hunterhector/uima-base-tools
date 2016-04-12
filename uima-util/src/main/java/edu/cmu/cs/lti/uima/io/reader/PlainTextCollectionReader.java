@@ -1,6 +1,10 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
+import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
+import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
+import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.collection.CollectionException;
@@ -20,9 +24,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 /**
- * A collection reader for text in the IC++ domain.
+ * A collection reader for plain text documents.
  *
  * @author Jun Araki
+ * @author zhengzhongliu
  */
 public class PlainTextCollectionReader extends AbstractCollectionReader {
 
@@ -32,14 +37,16 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
 
     public static final String PARAM_TEXT_SUFFIX = "TextSuffix";
 
-    @ConfigurationParameter(name = PARAM_INPUT_VIEW_NAME, mandatory = false)
-    private String inputViewName;
+    public static final String PARAM_DO_NOISE_FILTER = "NoiseFilter";
 
     @ConfigurationParameter(name = PARAM_INPUTDIR)
     private String inputDirPath;
 
     @ConfigurationParameter(name = PARAM_TEXT_SUFFIX, mandatory = false)
     String[] suffix;
+
+    @ConfigurationParameter(name = PARAM_DO_NOISE_FILTER, defaultValue = "false")
+    boolean doNoiseFilter;
 
     private ArrayList<File> textFiles;
 
@@ -53,9 +60,12 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
             logger.error("Cannot find directory at : " + inputDirPath);
         }
 
+        if (suffix == null) {
+            suffix = new String[]{""};
+        }
 
         currentDocIndex = 0;
-        textFiles = new ArrayList<File>();
+        textFiles = new ArrayList<>();
         File[] files = directory.listFiles();
         for (int i = 0; i < files.length; i++) {
             if (!files[i].isDirectory() && isText(files[i], suffix)) {
@@ -93,14 +103,23 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
         File file = (File) textFiles.get(currentDocIndex++);
         String text = FileUtils.file2String(file, encoding);
 
+        if (doNoiseFilter) {
+            text = new NoiseTextFormatter(text).cleanForum().cleanNews().multiNewLineBreaker().getText();
+        }
+
         // put document in CAS
         if (inputView != null) {
             // This view is intended to be used in order to put an original document text to a view other
             // than the default view.
             inputView.setDocumentText(text);
-        } else {
-            aJCas.setDocumentText(text);
         }
+
+        aJCas.setDocumentText(text);
+
+        Article article = new Article(aJCas);
+        UimaAnnotationUtils.finishAnnotation(article, 0, text.length(), COMPONENT_ID, 0, aJCas);
+        article.setArticleName(FilenameUtils.getBaseName(file.getName()));
+        article.setLanguage("en");
 
         // Also store location of source document in CAS. This information is critical
         // if CAS Consumers will need to know where the original document contents are located.

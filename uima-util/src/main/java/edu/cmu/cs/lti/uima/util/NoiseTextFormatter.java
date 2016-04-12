@@ -1,4 +1,4 @@
-package edu.cmu.cs.lti.util;
+package edu.cmu.cs.lti.uima.util;
 
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
 import de.l3s.boilerpipe.extractors.ArticleExtractor;
@@ -115,10 +115,6 @@ public class NoiseTextFormatter {
 
     public static void main(String[] args) throws BoilerpipeProcessingException, IOException, SAXException,
             TikaException {
-//        String noisyText = FileUtils.readFileToString(
-//                new File("/Users/zhengzhongliu/Documents/projects/cmu-script/data/mention/LDC/LDC2015E73/data/source" +
-//                        "/1b386c986f9d06fd0a0dda70c3b8ade9.txt"));
-
         String noisyText = FileUtils.readFileToString(new File("/Users/zhengzhongliu/Documents/projects/cmu-script/data/mention/LDC/LDC2015E78_DEFT_Rich_ERE_Chinese_and_English_Parallel_Annotation_V2/data/cmn/source/020f7dc5023a3dcdff18cb12b621d2a8.mp.txt"));
 
         String language = "zh";

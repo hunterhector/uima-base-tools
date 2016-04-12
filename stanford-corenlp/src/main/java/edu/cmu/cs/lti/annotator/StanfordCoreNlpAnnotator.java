@@ -101,15 +101,17 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         UimaConvenience.printProcessLog(aJCas, logger);
 
+        String text = aJCas.getDocumentText();
+
         if (language.equals("en")) {
-            annotateEnglish(aJCas.getDocumentText(), aJCas, 0);
+            annotateEnglish(text, aJCas, 0);
             for (JCas view : getAdditionalViews(aJCas)) {
-                annotateEnglish(aJCas.getDocumentText(), view, 0);
+                annotateEnglish(text, view, 0);
             }
         } else if (language.equals("zh")) {
-            annotateChinese(aJCas.getDocumentText(), aJCas, 0);
+            annotateChinese(text, aJCas, 0);
             for (JCas view : getAdditionalViews(aJCas)) {
-                annotateChinese(aJCas.getDocumentText(), view, 0);
+                annotateChinese(text, view, 0);
             }
         }
     }

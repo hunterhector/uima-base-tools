@@ -33,12 +33,14 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
     protected String encoding;
 
     public static final String PARAM_LANGUAGE = "language";
-    @ConfigurationParameter(name = PARAM_LANGUAGE)
+    @ConfigurationParameter(name = PARAM_LANGUAGE, defaultValue = "en")
     protected String language;
 
     public static final String DEFAULT_ENCODING = "UTF-8";
 
     public static final String DEFAULT_GOLD_STANDARD_NAME = "GoldStandard";
+
+    public final String COMPONENT_ID = this.getClass().getSimpleName();
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
