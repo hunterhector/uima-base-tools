@@ -4,7 +4,7 @@ import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
-import edu.cmu.cs.lti.util.NoiseTextFormatter;
+import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.utils.XMLUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;

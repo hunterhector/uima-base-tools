@@ -3,7 +3,7 @@ package edu.cmu.cs.lti.collection_reader;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
-import edu.cmu.cs.lti.util.NoiseTextFormatter;
+import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
