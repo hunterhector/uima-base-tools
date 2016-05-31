@@ -36,7 +36,7 @@ public abstract class LoopPipeline {
 
     protected abstract void stopActions();
 
-    protected abstract void loopActions();
+    protected abstract boolean loopActions();
 
     protected LoopPipeline(final CollectionReaderDescription readerDescription,
                            final AnalysisEngineDescription... descs) throws ResourceInitializationException {
