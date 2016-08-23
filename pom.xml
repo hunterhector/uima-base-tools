@@ -17,6 +17,8 @@
         <module>discourse-parser</module>
         <module>opennlp</module>
         <module>misc-annotators</module>
+        <module>mate-tools</module>
+        <module>zpar</module>
     </modules>
     <build>
         <plugins>
@@ -113,11 +115,6 @@
                 <version>0.0.1</version>
             </dependency>
             <dependency>
-                <groupId>edu.cmu.cs.lti</groupId>
-                <artifactId>uima-base</artifactId>
-                <version>0.0.1</version>
-            </dependency>
-            <dependency>
                 <groupId>org.apache.uima</groupId>
                 <artifactId>uimaj-examples</artifactId>
                 <version>2.5.0</version>
@@ -207,6 +204,11 @@
                 <groupId>org.apache.tika</groupId>
                 <artifactId>tika-parsers</artifactId>
                 <version>1.7</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.maven</groupId>
+                <artifactId>maven-project</artifactId>
+                <version>2.2.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

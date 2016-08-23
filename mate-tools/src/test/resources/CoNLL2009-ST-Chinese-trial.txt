@@ -1,0 +1,644 @@
+1	中国	中国	中国	NR	NR	_	_	3	3	SBJ	SBJ	_	_	LOC	
+2	去年	去年	去年	NT	NT	_	_	3	3	TMP	TMP	_	_	TMP	
+3	发现	发现	发现	VV	VV	_	_	0	0	ROOT	ROOT	Y	发现.01	_	
+4	十	十	十	CD	CD	_	_	12	12	DMOD	DMOD	_	_	_	
+5	个	个	个	M	M	_	_	4	4	COMP	COMP	_	_	_	
+6	亿	亿	亿	CD	CD	_	_	8	8	DMOD	DMOD	_	_	_	
+7	吨	吨	吨	M	M	_	_	6	6	COMP	COMP	_	_	_	
+8	级	级	级	NN	NN	_	_	10	10	NMOD	NMOD	_	_	_	
+9	储量	储量	储量	NN	NN	_	_	10	10	NMOD	NMOD	_	_	_	
+10	规模	规模	规模	NN	NN	_	_	11	11	COMP	COMP	_	_	_	
+11	的	的	的	DEG	DEG	_	_	12	12	NMOD	NMOD	_	_	_	
+12	油气区	油气区	油气区	NN	NN	_	_	3	3	COMP	COMP	_	_	A1	
+
+1	新华社	新华社	新华社	NN	NN	_	_	5	5	UNK	UNK	_	_	
+2	北京	北京	北京	NR	NR	_	_	5	5	UNK	UNK	_	_	
+3	一月	一月	一月	NT	NT	_	_	5	5	UNK	UNK	_	_	
+4	十日	十日	十日	NT	NT	_	_	5	5	UNK	UNK	_	_	
+5	电	电	电	NN	NN	_	_	0	0	ROOT	ROOT	_	_	
+
+1	中国	中国	中国	NR	NR	_	_	4	4	NMOD	NMOD	_	_	_	_	
+2	陆上	陆上	陆上	NN	NN	_	_	4	4	NMOD	NMOD	_	_	_	_	
+3	石油	石油	石油	NN	NN	_	_	4	4	NMOD	NMOD	_	_	_	_	
+4	工业	工业	工业	NN	NN	_	_	10	10	SBJ	SBJ	_	_	A2	_	
+5	在	在	在	P	P	_	_	10	10	LOC	LOC	_	_	TMP	_	
+6	过去	过去	过去	NT	NT	_	_	7	7	ADV	ADV	_	_	_	_	
+7	一	一	一	CD	CD	_	_	9	9	COMP	COMP	_	_	_	_	
+8	年	年	年	M	M	_	_	7	7	COMP	COMP	_	_	_	_	
+9	中	中	中	LC	LC	_	_	5	5	COMP	COMP	_	_	_	_	
+10	取得	取得	取得	VV	VV	_	_	0	0	ROOT	ROOT	Y	取得.01	_	_	
+11	重大	重大	重大	JJ	JJ	_	_	12	12	AMOD	AMOD	_	_	_	_	
+12	成绩	成绩	成绩	NN	NN	_	_	10	10	COMP	COMP	_	_	A1	_	
+13	：	：	：	PU	PU	_	_	10	10	CJTN	CJTN	_	_	_	_	
+14	全	全	全	DT	DT	_	_	16	16	ADV	ADV	_	_	_	ADV	
+15	年	年	年	M	M	_	_	14	14	COMP	COMP	_	_	_	_	
+16	发现	发现	发现	VV	VV	_	_	13	13	CJT	CJT	Y	发现.01	_	_	
+17	十	十	十	CD	CD	_	_	25	25	DMOD	DMOD	_	_	_	_	
+18	个	个	个	M	M	_	_	17	17	COMP	COMP	_	_	_	_	
+19	亿	亿	亿	CD	CD	_	_	21	21	DMOD	DMOD	_	_	_	_	
+20	吨	吨	吨	M	M	_	_	19	19	COMP	COMP	_	_	_	_	
+21	级	级	级	NN	NN	_	_	23	23	NMOD	NMOD	_	_	_	_	
+22	储量	储量	储量	NN	NN	_	_	23	23	NMOD	NMOD	_	_	_	_	
+23	规模	规模	规模	NN	NN	_	_	24	24	COMP	COMP	_	_	_	_	
+24	的	的	的	DEG	DEG	_	_	25	25	NMOD	NMOD	_	_	_	_	
+25	油气区	油气区	油气区	NN	NN	_	_	16	16	COMP	COMP	_	_	_	A1	
+26	。	。	。	PU	PU	_	_	10	10	_	_	_	_	_	_	
+
+1	东部	东部	东部	NN	NN	_	_	3	3	NMOD	NMOD	_	_	_	_	_	_	_	_	_	
+2	油田	油田	油田	NN	NN	_	_	3	3	NMOD	NMOD	_	_	_	_	_	_	_	_	_	
+3	原油	原油	原油	NN	NN	_	_	4	4	SBJ	SBJ	_	_	A0	_	_	_	_	_	_	
+4	递减	递减	递减	VV	VV	_	_	5	5	RELC	RELC	Y	递减.01	_	_	_	_	_	_	_	
+5	速度	速度	速度	NN	NN	_	_	7	7	SBJ	SBJ	_	_	ADV	A1	_	_	_	_	_	
+6	明显	明显	明显	AD	AD	_	_	7	7	AUX	AUX	_	_	_	ADV	_	_	_	_	_	
+7	放慢	放慢	放慢	VV	VV	_	_	0	0	ROOT	ROOT	Y	放慢.01	_	_	_	_	_	_	_	
+8	，	，	，	PU	PU	_	_	7	7	CJTN	CJTN	_	_	_	_	_	_	_	_	_	
+9	西部	西部	西部	NN	NN	_	_	11	11	NMOD	NMOD	_	_	_	_	_	_	_	_	_	
+10	油田	油田	油田	NN	NN	_	_	11	11	NMOD	NMOD	_	_	_	_	_	_	_	_	_	
+11	原油	原油	原油	NN	NN	_	_	12	12	SBJ	SBJ	_	_	_	_	A0	_	_	_	_	
+12	增长	增长	增长	VV	VV	_	_	13	13	RELC	RELC	Y	增长.01	_	_	_	_	_	_	_	
+13	速度	速度	速度	NN	NN	_	_	15	15	SBJ	SBJ	_	_	_	_	MNR	A1	_	_	_	
+14	不断	不断	不断	AD	AD	_	_	15	15	AUX	AUX	_	_	_	_	_	ADV	_	_	_	
+15	加快	加快	加快	VV	VV	_	_	8	8	CJT	CJT	Y	加快.01	_	_	_	_	_	_	_	
+16	，	，	，	PU	PU	_	_	7	7	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	
+17	“	“	“	PU	PU	_	_	18	18	CJTN	CJTN	_	_	_	_	_	_	_	_	_	
+18	稳定	稳定	稳定	VV	VV	_	_	24	24	COMP	COMP	Y	稳定.01	_	_	_	_	_	_	_	
+19	东部	东部	东部	NN	NN	_	_	18	18	COMP	COMP	_	_	_	_	_	_	A1	_	_	
+20	、	、	、	PU	PU	_	_	18	18	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	
+21	发展	发展	发展	VV	VV	_	_	20	20	CJT	CJT	Y	发展.01	_	_	_	_	_	_	_	
+22	西部	西部	西部	NN	NN	_	_	21	21	COMP	COMP	_	_	_	_	_	_	_	A1	_	
+23	”	”	”	PU	PU	_	_	18	18	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	
+24	的	的	的	DEC	DEC	_	_	26	26	RELC	RELC	_	_	_	_	_	_	_	_	_	
+25	战略	战略	战略	NN	NN	_	_	26	26	NMOD	NMOD	_	_	_	_	_	_	_	_	_	
+26	格局	格局	格局	NN	NN	_	_	29	29	SBJ	SBJ	_	_	_	_	_	_	_	_	A2	
+27	已	已	已	AD	AD	_	_	29	29	AUX	AUX	_	_	_	_	_	_	_	_	ADV	
+28	基本	基本	基本	AD	AD	_	_	29	29	AUX	AUX	_	_	_	_	_	_	_	_	ADV	
+29	形成	形成	形成	VV	VV	_	_	16	16	CJT	CJT	Y	形成.01	_	_	_	_	_	_	_	
+30	。	。	。	PU	PU	_	_	7	7	_	_	_	_	_	_	_	_	_	_	_	
+
+1	这	这	这	PN	PN	_	_	2	2	SBJ	SBJ	_	_	A0	_	_	_	_	_	_	_	_	_	
+2	是	是	是	VC	VC	_	_	0	0	ROOT	ROOT	Y	是.01	_	_	_	_	_	_	_	_	_	_	
+3	今天	今天	今天	NT	NT	_	_	4	4	TMP	TMP	_	_	_	TMP	_	_	_	_	_	_	_	_	
+4	召开	召开	召开	VV	VV	_	_	5	5	COMP	COMP	Y	召开.01	_	_	_	_	_	_	_	_	_	_	
+5	的	的	的	DEC	DEC	_	_	12	12	RELC	RELC	_	_	_	_	_	_	_	_	_	_	_	_	
+6	中国	中国	中国	NR	NR	_	_	10	10	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+7	石油	石油	石油	NN	NN	_	_	8	8	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+8	天然气	天然气	天然气	NN	NN	_	_	10	10	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+9	总	总	总	JJ	JJ	_	_	10	10	AMOD	AMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+10	公司	公司	公司	NN	NN	_	_	12	12	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+11	工作	工作	工作	NN	NN	_	_	12	12	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+12	会议	会议	会议	NN	NN	_	_	13	13	COMP	COMP	_	_	_	A1	_	_	_	_	_	_	_	_	
+13	上	上	上	LC	LC	_	_	14	14	LOC	LOC	_	_	_	_	A1	_	_	_	_	_	_	_	
+14	传出	传出	传出	VV	VV	_	_	15	15	COMP	COMP	Y	传出.01	_	_	_	_	_	_	_	_	_	_	
+15	的	的	的	DEC	DEC	_	_	16	16	RELC	RELC	_	_	_	_	_	_	_	_	_	_	_	_	
+16	信息	信息	信息	NN	NN	_	_	2	2	PRD	PRD	_	_	A1	_	A0	_	_	_	_	_	_	_	
+17	，	，	，	PU	PU	_	_	2	2	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+18	会	会	会	NN	NN	_	_	19	19	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	
+19	上	上	上	LC	LC	_	_	22	22	LOC	LOC	_	_	_	_	_	LOC	_	_	_	_	_	_	
+20	周永康	周永康	周永康	NR	NR	_	_	21	21	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+21	总经理	总经理	总经理	NN	NN	_	_	22	22	SBJ	SBJ	_	_	_	_	_	A0	_	_	_	_	_	_	
+22	传达	传达	传达	VV	VV	_	_	17	17	CJT	CJT	Y	传达.01	_	_	_	_	_	_	_	_	_	_	
+23	了	了	了	AS	AS	_	_	22	22	PRT	PRT	_	_	_	_	_	_	_	_	_	_	_	_	
+24	中共	中共	中共	NR	NR	_	_	26	26	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+25	中央	中央	中央	NN	NN	_	_	26	26	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+26	政治局	政治局	政治局	NN	NN	_	_	27	27	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+27	委员	委员	委员	NN	NN	_	_	31	31	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+28	、	、	、	PU	PU	_	_	27	27	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+29	国务院	国务院	国务院	NN	NN	_	_	30	30	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+30	副总理	副总理	副总理	NN	NN	_	_	28	28	CJT	CJT	_	_	_	_	_	_	_	_	_	_	_	_	
+31	吴邦国	吴邦国	吴邦国	NR	NR	_	_	47	47	NMOD	NMOD	_	_	_	_	_	_	_	_	_	A0	_	A0	
+32	日前	日前	日前	NT	NT	_	_	33	33	TMP	TMP	_	_	_	_	_	_	TMP	_	_	_	_	_	
+33	听取	听取	听取	VV	VV	_	_	38	38	COMP	COMP	Y	听取.01	_	_	_	_	_	_	_	_	_	_	
+34	总	总	总	JJ	JJ	_	_	35	35	AMOD	AMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+35	公司	公司	公司	NN	NN	_	_	37	37	NMOD	NMOD	_	_	_	_	_	_	_	A0	_	_	_	_	
+36	工作	工作	工作	NN	NN	_	_	37	37	NMOD	NMOD	_	_	_	_	_	_	_	A1	_	_	_	_	
+37	汇报	汇报	汇报	NN	NN	_	_	33	33	COMP	COMP	Y	汇报.01	_	_	_	_	A1	_	_	_	_	_	
+38	时	时	时	LC	LC	_	_	47	47	TMP	TMP	_	_	_	_	_	_	_	_	_	TMP	_	TMP	
+39	对	对	对	P	P	_	_	46	46	COMP	COMP	_	_	_	_	_	_	_	_	_	A2	_	_	
+40	中国	中国	中国	NR	NR	_	_	43	43	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+41	陆上	陆上	陆上	NN	NN	_	_	43	43	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+42	石油	石油	石油	NN	NN	_	_	43	43	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+43	工业	工业	工业	NN	NN	_	_	44	44	SBJ	SBJ	_	_	_	_	_	_	_	_	A0	_	_	_	
+44	取得	取得	取得	VV	VV	_	_	45	45	RELC	RELC	Y	取得.01	_	_	_	_	_	_	_	_	_	_	
+45	成绩	成绩	成绩	NN	NN	_	_	39	39	OBJ	OBJ	_	_	_	_	_	_	_	_	A1	_	_	_	
+46	的	的	的	DEG	DEG	_	_	47	47	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+47	祝贺	祝贺	祝贺	NN	NN	_	_	22	22	COMP	COMP	Y	祝贺.01	_	_	_	A1	_	_	_	_	_	_	
+48	和	和	和	CC	CC	_	_	47	47	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+49	对	对	对	P	P	_	_	52	52	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	A2	
+50	今后	今后	今后	NT	NT	_	_	51	51	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	TMP	_	
+51	工作	工作	工作	NN	NN	_	_	49	49	OBJ	OBJ	Y	工作.01	_	_	_	_	_	_	_	_	_	_	
+52	的	的	的	DEG	DEG	_	_	53	53	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+53	要求	要求	要求	NN	NN	_	_	48	48	CJT	CJT	Y	要求.01	_	_	_	_	_	_	_	_	_	_	
+54	。	。	。	PU	PU	_	_	2	2	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+
+1	吴邦国	吴邦国	吴邦国	NR	NR	_	_	2	2	SBJ	SBJ	_	_	A0	_	_	_	_	_	_	_	_	_	_	
+2	指出	指出	指出	VV	VV	_	_	0	0	ROOT	ROOT	Y	指出.01	_	_	_	_	_	_	_	_	_	_	_	
+3	，	，	，	PU	PU	_	_	2	2	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+4	去年	去年	去年	NT	NT	_	_	9	9	TMP	TMP	_	_	_	TMP	TMP	TMP	TMP	_	_	_	_	_	_	
+5	中国	中国	中国	NR	NR	_	_	8	8	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	
+6	陆上	陆上	陆上	NN	NN	_	_	8	8	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	
+7	石油	石油	石油	NN	NN	_	_	8	8	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	
+8	工业	工业	工业	NN	NN	_	_	9	9	SBJ	SBJ	_	_	_	A0	_	_	_	_	_	_	_	_	_	
+9	取得	取得	取得	VV	VV	_	_	2	2	COMP	COMP	Y	取得.01	A1	_	_	_	_	_	_	_	_	_	_	
+10	了	了	了	AS	AS	_	_	9	9	PRT	PRT	_	_	_	_	_	_	_	_	_	_	_	_	_	
+11	很大	很大	很大	JJ	JJ	_	_	12	12	AMOD	AMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	
+12	成绩	成绩	成绩	NN	NN	_	_	9	9	COMP	COMP	_	_	_	A1	_	_	_	_	_	_	_	_	_	
+13	，	，	，	PU	PU	_	_	9	9	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	
+14	油气	油气	油气	NN	NN	_	_	15	15	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	
+15	产量	产量	产量	NN	NN	_	_	20	20	SBJ	SBJ	_	_	_	_	A1	_	_	_	_	_	_	_	_	
+16	分别	分别	分别	AD	AD	_	_	20	20	AUX	AUX	_	_	_	_	ADV	_	_	_	_	_	_	_	_	
+17	比	比	比	P	P	_	_	20	20	AUX	AUX	_	_	_	_	ADV	_	_	_	_	_	_	_	_	
+18	上	上	上	DT	DT	_	_	17	17	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	_	
+19	年	年	年	M	M	_	_	18	18	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	_	
+20	增加	增加	增加	VV	VV	_	_	13	13	CJT	CJT	Y	增加.01	_	_	_	_	_	_	_	_	_	_	_	
+21	一百八十一万	一百八十一万	一百八十一万	CD	CD	_	_	20	20	COMP	COMP	_	_	_	_	A2	_	_	_	_	_	_	_	_	
+22	吨	吨	吨	M	M	_	_	21	21	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	_	
+23	和	和	和	CC	CC	_	_	21	21	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	
+24	七点三亿	七点三亿	七点三亿	CD	CD	_	_	23	23	CJT	CJT	_	_	_	_	_	_	_	_	_	_	_	_	_	
+25	立方米	立方米	立方米	M	M	_	_	24	24	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	_	
+26	，	，	，	PU	PU	_	_	9	9	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	
+27	还	还	还	AD	AD	_	_	30	30	AUX	AUX	_	_	_	_	_	ADV	_	_	_	_	_	_	_	
+28	从	从	从	P	P	_	_	30	30	DIR	DIR	_	_	_	_	_	A2	_	_	_	_	_	_	_	
+29	国外	国外	国外	NN	NN	_	_	28	28	OBJ	OBJ	_	_	_	_	_	_	_	_	_	_	_	_	_	
+30	获得	获得	获得	VV	VV	_	_	26	26	CJT	CJT	Y	获得.01	_	_	_	_	_	_	_	_	_	_	_	
+31	份额油	份额油	份额油	NN	NN	_	_	30	30	COMP	COMP	_	_	_	_	_	A1	_	_	_	_	_	_	_	
+32	近	近	近	AD	AD	_	_	33	33	ADV	ADV	_	_	_	_	_	_	_	_	_	_	_	_	_	
+33	百万	百万	百万	CD	CD	_	_	30	30	EXT	EXT	_	_	_	_	_	C-A1	_	_	_	_	_	_	_	
+34	吨	吨	吨	M	M	_	_	33	33	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	_	
+35	，	，	，	PU	PU	_	_	9	9	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	
+36	增长	增长	增长	NN	NN	_	_	37	37	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	
+37	幅度	幅度	幅度	NN	NN	_	_	38	38	SBJ	SBJ	_	_	_	_	_	_	A0	_	_	_	_	_	_	
+38	是	是	是	VC	VC	_	_	35	35	CJT	CJT	Y	是.01	_	_	_	_	_	_	_	_	_	_	_	
+39	“	“	“	PU	PU	_	_	40	40	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+40	七五	七五	七五	NT	NT	_	_	47	47	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	_	
+41	”	”	”	PU	PU	_	_	40	40	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+42	（	（	（	PU	PU	_	_	43	43	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+43	一九八六	一九八六	一九八六	NT	NT	_	_	40	40	UNK	UNK	_	_	_	_	_	_	_	_	_	_	_	_	_	
+44	至	至	至	CC	CC	_	_	43	43	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	
+45	一九九０年	一九九０年	一九九０年	NT	NT	_	_	44	44	CJT	CJT	_	_	_	_	_	_	_	_	_	_	_	_	_	
+46	）	）	）	PU	PU	_	_	43	43	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+47	以来	以来	以来	LC	LC	_	_	49	49	TMP	TMP	_	_	_	_	_	_	_	TMP	_	_	_	_	_	
+48	最	最	最	AD	AD	_	_	49	49	AUX	AUX	_	_	_	_	_	_	_	ADV	_	_	_	_	_	
+49	大	大	大	VA	VA	_	_	50	50	COMP	COMP	Y	大.01	_	_	_	_	_	_	_	_	_	_	_	
+50	的	的	的	DEC	DEC	_	_	38	38	PRD	PRD	_	_	_	_	_	_	A1	_	_	_	_	_	_	
+51	；	；	；	PU	PU	_	_	9	9	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	
+52	经济	经济	经济	NN	NN	_	_	53	53	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	
+53	效益	效益	效益	NN	NN	_	_	54	54	SBJ	SBJ	_	_	_	_	_	_	_	_	A0	_	_	_	_	
+54	可观	可观	可观	VA	VA	_	_	51	51	CJT	CJT	Y	可观.01	_	_	_	_	_	_	_	_	_	_	_	
+55	，	，	，	PU	PU	_	_	9	9	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	
+56	上缴	上缴	上缴	JJ	JJ	_	_	57	57	AMOD	AMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	
+57	税费	税费	税费	NN	NN	_	_	58	58	SBJ	SBJ	_	_	_	_	_	_	_	_	_	A1	_	_	_	
+58	实现	实现	实现	VV	VV	_	_	55	55	CJT	CJT	Y	实现.01	_	_	_	_	_	_	_	_	_	_	_	
+59	二百五十八亿	二百五十八亿	二百五十八亿	CD	CD	_	_	58	58	COMP	COMP	_	_	_	_	_	_	_	_	_	C-A1	_	_	_	
+60	元	元	元	M	M	_	_	59	59	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	_	
+61	，	，	，	PU	PU	_	_	9	9	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	
+62	实现	实现	实现	VV	VV	_	_	61	61	CJT	CJT	Y	实现.01	_	_	_	_	_	_	_	_	_	_	_	
+63	利润	利润	利润	NN	NN	_	_	62	62	COMP	COMP	_	_	_	_	_	_	_	_	_	_	A1	_	_	
+64	一百亿	一百亿	一百亿	CD	CD	_	_	62	62	EXT	EXT	_	_	_	_	_	_	_	_	_	_	C-A1	_	_	
+65	元	元	元	M	M	_	_	64	64	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	_	
+66	；	；	；	PU	PU	_	_	9	9	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	
+67	科技	科技	科技	NN	NN	_	_	68	68	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	A0	_	
+68	进步	进步	进步	NN	NN	_	_	69	69	SBJ	SBJ	Y	进步.01	_	_	_	_	_	_	_	_	_	_	A2	
+69	取得	取得	取得	VV	VV	_	_	66	66	CJT	CJT	Y	取得.01	_	_	_	_	_	_	_	_	_	_	_	
+70	了	了	了	AS	AS	_	_	69	69	PRT	PRT	_	_	_	_	_	_	_	_	_	_	_	_	_	
+71	很大	很大	很大	JJ	JJ	_	_	72	72	AMOD	AMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	
+72	成绩	成绩	成绩	NN	NN	_	_	69	69	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	A1	
+73	。	。	。	PU	PU	_	_	2	2	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+
+1	周永康	周永康	周永康	NR	NR	_	_	7	7	SBJ	SBJ	_	_	A0	A0	_	_	_	_	_	_	_	
+2	在	在	在	P	P	_	_	7	7	LOC	LOC	_	_	_	LOC	_	_	_	_	_	_	_	
+3	会议	会议	会议	NN	NN	_	_	5	5	NMOD	NMOD	_	_	LOC	_	_	_	_	_	_	_	_	
+4	工作	工作	工作	NN	NN	_	_	5	5	NMOD	NMOD	_	_	A1	_	_	_	_	_	_	_	_	
+5	报告	报告	报告	NN	NN	_	_	6	6	COMP	COMP	Y	报告.01	_	_	_	_	_	_	_	_	_	
+6	中	中	中	LC	LC	_	_	2	2	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	
+7	指出	指出	指出	VV	VV	_	_	0	0	ROOT	ROOT	Y	指出.01	_	_	_	_	_	_	_	_	_	
+8	，	，	，	PU	PU	_	_	7	7	_	_	_	_	_	_	_	_	_	_	_	_	_	
+9	目前	目前	目前	NT	NT	_	_	15	15	TMP	TMP	_	_	_	_	_	_	TMP	TMP	_	_	TMP	
+10	，	，	，	PU	PU	_	_	15	15	_	_	_	_	_	_	_	_	_	_	_	_	_	
+11	陆上	陆上	陆上	NN	NN	_	_	14	14	NMOD	NMOD	_	_	_	_	LOC	A1	_	_	_	_	_	
+12	石油	石油	石油	NN	NN	_	_	14	14	NMOD	NMOD	_	_	_	_	A1	C-A1	_	_	_	_	_	
+13	勘探	勘探	勘探	NN	NN	_	_	14	14	NMOD	NMOD	Y	勘探.01	_	_	_	C-A1	_	_	_	_	_	
+14	开发	开发	开发	NN	NN	_	_	15	15	SBJ	SBJ	Y	开发.XX	_	_	_	_	A0	_	_	_	_	
+15	遇到	遇到	遇到	VV	VV	_	_	7	7	COMP	COMP	Y	遇到.01	_	A1	_	_	_	_	_	_	_	
+16	一	一	一	CD	CD	_	_	19	19	DMOD	DMOD	_	_	_	_	_	_	_	_	_	_	_	
+17	系列	系列	系列	M	M	_	_	16	16	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	
+18	世界级	世界级	世界级	JJ	JJ	_	_	19	19	AMOD	AMOD	_	_	_	_	_	_	_	_	_	_	_	
+19	难题	难题	难题	NN	NN	_	_	15	15	COMP	COMP	_	_	_	_	_	_	A1	_	_	_	_	
+20	，	，	，	PU	PU	_	_	15	15	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	
+21	投资	投资	投资	NN	NN	_	_	22	22	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	
+22	成本	成本	成本	NN	NN	_	_	24	24	SBJ	SBJ	_	_	_	_	_	_	_	A0	_	_	_	
+23	日益	日益	日益	AD	AD	_	_	24	24	AUX	AUX	_	_	_	_	_	_	_	ADV	_	_	_	
+24	上升	上升	上升	VV	VV	_	_	20	20	CJT	CJT	Y	上升.01	_	_	_	_	_	_	_	_	_	
+25	，	，	，	PU	PU	_	_	15	15	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	_	
+26	企业	企业	企业	NN	NN	_	_	27	27	NMOD	NMOD	_	_	_	_	_	_	_	_	A1	_	_	
+27	改革	改革	改革	NN	NN	_	_	33	33	TPC	TPC	Y	改革.01	_	_	_	_	_	_	_	_	A0	
+28	和	和	和	CC	CC	_	_	27	27	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	
+29	产业	产业	产业	NN	NN	_	_	31	31	NMOD	NMOD	_	_	_	_	_	_	_	_	_	A1	_	
+30	结构	结构	结构	NN	NN	_	_	31	31	NMOD	NMOD	_	_	_	_	_	_	_	_	_	C-A1	_	
+31	调整	调整	调整	NN	NN	_	_	28	28	CJT	CJT	Y	调整.01	_	_	_	_	_	_	_	_	_	
+32	任务	任务	任务	NN	NN	_	_	33	33	SBJ	SBJ	_	_	_	_	_	_	_	_	_	_	C-A0	
+33	艰巨	艰巨	艰巨	VA	VA	_	_	25	25	CJT	CJT	Y	艰巨.01	_	_	_	_	_	_	_	_	_	
+34	。	。	。	PU	PU	_	_	7	7	_	_	_	_	_	_	_	_	_	_	_	_	_	
+
+1	在	在	在	P	P	_	_	8	8	LOC	LOC	_	_	_	_	LOC	_	LOC	LOC	_	LOC	
+2	企业	企业	企业	NN	NN	_	_	4	4	NMOD	NMOD	_	_	A1	_	_	_	_	_	_	_	
+3	改革	改革	改革	NN	NN	_	_	4	4	NMOD	NMOD	Y	改革.01	_	_	_	_	_	_	_	_	
+4	方面	方面	方面	NN	NN	_	_	1	1	OBJ	OBJ	_	_	_	_	_	_	_	_	_	_	
+5	，	，	，	PU	PU	_	_	8	8	_	_	_	_	_	_	_	_	_	_	_	_	
+6	要	要	要	VV	VV	_	_	8	8	AUX	AUX	Y	要.03	_	_	_	_	_	_	_	_	
+7	积极	积极	积极	AD	AD	_	_	8	8	AUX	AUX	_	_	_	_	ADV	_	_	_	_	_	
+8	推进	推进	推进	VV	VV	_	_	0	0	ROOT	ROOT	Y	推进.01	_	_	_	_	_	_	_	_	
+9	企业	企业	企业	NN	NN	_	_	11	11	NMOD	NMOD	_	_	_	_	_	A1	_	_	_	_	
+10	战略性	战略性	战略性	NN	NN	_	_	11	11	NMOD	NMOD	_	_	_	_	_	MNR	_	_	_	_	
+11	改组	改组	改组	NN	NN	_	_	8	8	COMP	COMP	Y	改组.01	_	_	A1	_	_	_	_	_	
+12	，	，	，	PU	PU	_	_	8	8	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	
+13	实施	实施	实施	VV	VV	_	_	12	12	CJT	CJT	Y	实施.01	_	_	_	_	_	_	_	_	
+14	下岗	下岗	下岗	NN	NN	_	_	15	15	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	
+15	分流	分流	分流	NN	NN	_	_	13	13	COMP	COMP	_	_	_	_	_	_	A1	_	_	_	
+16	、	、	、	PU	PU	_	_	15	15	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	
+17	减员	减员	减员	NN	NN	_	_	18	18	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	
+18	增效	增效	增效	NN	NN	_	_	16	16	CJT	CJT	_	_	_	_	_	_	_	_	_	_	
+19	和	和	和	CC	CC	_	_	15	15	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	
+20	再就业	再就业	再就业	NN	NN	_	_	21	21	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	
+21	工程	工程	工程	NN	NN	_	_	19	19	CJT	CJT	_	_	_	_	_	_	_	_	_	_	
+22	，	，	，	PU	PU	_	_	8	8	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	
+23	全面	全面	全面	AD	AD	_	_	24	24	AUX	AUX	_	_	_	_	_	_	_	ADV	_	_	
+24	推行	推行	推行	VV	VV	_	_	22	22	CJT	CJT	Y	推行.01	_	_	_	_	_	_	_	_	
+25	资产	资产	资产	NN	NN	_	_	27	27	NMOD	NMOD	_	_	_	_	_	_	_	_	A1	_	
+26	经营	经营	经营	NN	NN	_	_	27	27	NMOD	NMOD	Y	经营.01	_	_	_	_	_	_	_	_	
+27	责任制	责任制	责任制	NN	NN	_	_	24	24	COMP	COMP	_	_	_	_	_	_	_	A1	_	_	
+28	，	，	，	PU	PU	_	_	8	8	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	
+29	进一步	进一步	进一步	AD	AD	_	_	30	30	AUX	AUX	_	_	_	_	_	_	_	_	_	ADV	
+30	加大	加大	加大	VV	VV	_	_	28	28	CJT	CJT	Y	加大.01	_	_	_	_	_	_	_	_	
+31	扭亏	扭亏	扭亏	NN	NN	_	_	33	33	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	
+32	增盈	增盈	增盈	NN	NN	_	_	33	33	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	
+33	力度	力度	力度	NN	NN	_	_	30	30	COMP	COMP	_	_	_	_	_	_	_	_	_	A1	
+34	。	。	。	PU	PU	_	_	8	8	_	_	_	_	_	_	_	_	_	_	_	_	
+
+1	在	在	在	P	P	_	_	14	14	LOC	LOC	_	_	_	_	LOC	LOC	LOC	_	
+2	科技	科技	科技	NN	NN	_	_	4	4	NMOD	NMOD	_	_	A1	_	_	_	_	_	
+3	攻关	攻关	攻关	NN	NN	_	_	4	4	NMOD	NMOD	Y	攻关.01	_	_	_	_	_	_	
+4	方面	方面	方面	NN	NN	_	_	1	1	OBJ	OBJ	_	_	_	_	_	_	_	_	
+5	，	，	，	PU	PU	_	_	14	14	_	_	_	_	_	_	_	_	_	_	
+6	要	要	要	VV	VV	_	_	14	14	AUX	AUX	Y	要.03	_	_	_	_	_	_	
+7	以	以	以	P	P	_	_	14	14	MNR	MNR	_	_	_	_	A2	_	_	_	
+8	西部	西部	西部	NN	NN	_	_	10	10	NMOD	NMOD	_	_	_	_	_	_	_	_	
+9	塔里木	塔里木	塔里木	NR	NR	_	_	10	10	NMOD	NMOD	_	_	_	_	_	_	_	_	
+10	盆地	盆地	盆地	NN	NN	_	_	13	13	NMOD	NMOD	_	_	_	_	_	_	_	_	
+11	等	等	等	ETC	ETC	_	_	10	10	CJTN	CJTN	_	_	_	_	_	_	_	_	
+12	新	新	新	JJ	JJ	_	_	13	13	AMOD	AMOD	_	_	_	_	_	_	_	_	
+13	油气区	油气区	油气区	NN	NN	_	_	7	7	OBJ	OBJ	_	_	_	_	_	_	_	_	
+14	为	为	为	VV	VV	_	_	0	0	ROOT	ROOT	Y	为.02	_	_	_	_	_	_	
+15	重点	重点	重点	NN	NN	_	_	14	14	COMP	COMP	_	_	_	_	A1	_	_	_	
+16	，	，	，	PU	PU	_	_	14	14	CJTN	CJTN	_	_	_	_	_	_	_	_	
+17	打开	打开	打开	VV	VV	_	_	16	16	CJT	CJT	Y	打开.01	_	_	_	_	_	_	
+18	勘探	勘探	勘探	NN	NN	_	_	20	20	NMOD	NMOD	_	_	_	_	_	_	_	_	
+19	新	新	新	JJ	JJ	_	_	20	20	AMOD	AMOD	_	_	_	_	_	_	_	_	
+20	局面	局面	局面	NN	NN	_	_	17	17	COMP	COMP	_	_	_	_	_	A1	_	_	
+21	，	，	，	PU	PU	_	_	14	14	cCJTN	cCJTN	_	_	_	_	_	_	_	_	
+22	拿到	拿到	拿到	VV	VV	_	_	21	21	CJT	CJT	Y	拿到.01	_	_	_	_	_	_	
+23	更	更	更	AD	AD	_	_	24	24	AUX	AUX	_	_	_	_	_	_	_	ADV	
+24	多	多	多	VA	VA	_	_	25	25	COMP	COMP	Y	多.01	_	_	_	_	_	_	
+25	的	的	的	DEC	DEC	_	_	27	27	RELC	RELC	_	_	_	_	_	_	_	_	
+26	油气	油气	油气	NN	NN	_	_	27	27	NMOD	NMOD	_	_	_	_	_	_	_	_	
+27	资源	资源	资源	NN	NN	_	_	22	22	COMP	COMP	_	_	_	_	_	_	A1	A0	
+28	。	。	。	PU	PU	_	_	14	14	_	_	_	_	_	_	_	_	_	_	
+
+1	同时	同时	同时	AD	AD	_	_	8	8	ADV	ADV	_	_	_	ADV	ADV	ADV	_	_	
+2	，	，	，	PU	PU	_	_	8	8	_	_	_	_	_	_	_	_	_	_	
+3	要	要	要	VV	VV	_	_	8	8	AUX	AUX	Y	要.03	_	_	_	_	_	_	
+4	以	以	以	P	P	_	_	8	8	MNR	MNR	_	_	_	A2	_	_	_	_	
+5	东部	东部	东部	NN	NN	_	_	7	7	NMOD	NMOD	_	_	_	_	_	_	_	_	
+6	老	老	老	JJ	JJ	_	_	7	7	AMOD	AMOD	_	_	_	_	_	_	_	_	
+7	油气区	油气区	油气区	NN	NN	_	_	4	4	OBJ	OBJ	_	_	_	_	_	_	_	_	
+8	为	为	为	VV	VV	_	_	0	0	ROOT	ROOT	Y	为.02	_	_	_	_	_	_	
+9	重点	重点	重点	NN	NN	_	_	8	8	COMP	COMP	_	_	_	A1	_	_	_	_	
+10	，	，	，	PU	PU	_	_	8	8	CJTN	CJTN	_	_	_	_	_	_	_	_	
+11	努力	努力	努力	AD	AD	_	_	12	12	AUX	AUX	_	_	_	_	ADV	_	_	_	
+12	提高	提高	提高	VV	VV	_	_	10	10	CJT	CJT	Y	提高.01	_	_	_	_	_	_	
+13	采收率	采收率	采收率	NN	NN	_	_	12	12	COMP	COMP	_	_	_	_	A1	_	_	_	
+14	，	，	，	PU	PU	_	_	8	8	cCJTN	cCJTN	_	_	_	_	_	_	_	_	
+15	使	使	使	VV	VV	_	_	14	14	CJT	CJT	Y	使.01	_	_	_	_	_	_	
+16	油田	油田	油田	NN	NN	_	_	18	18	NMOD	NMOD	_	_	_	_	_	_	A1	_	
+17	开发	开发	开发	NN	NN	_	_	18	18	NMOD	NMOD	Y	开发.01	_	_	_	_	_	_	
+18	水平	水平	水平	NN	NN	_	_	15	15	COMP	COMP	_	_	_	_	_	A1	_	_	
+19	再	再	再	AD	AD	_	_	20	20	AUX	AUX	_	_	_	_	_	_	_	ADV	
+20	上	上	上	VV	VV	_	_	15	15	COMP	COMP	Y	上.03	_	_	_	A2	_	_	
+21	新	新	新	JJ	JJ	_	_	22	22	AMOD	AMOD	_	_	_	_	_	_	_	_	
+22	台阶	台阶	台阶	NN	NN	_	_	20	20	COMP	COMP	_	_	_	_	_	_	_	A1	
+23	。	。	。	PU	PU	_	_	8	8	_	_	_	_	_	_	_	_	_	_	
+
+1	（	（	（	PU	PU	_	_	2	2	UNK	UNK	_	_	_	
+2	完	完	完	VV	VV	_	_	0	0	ROOT	ROOT	Y	完.01	_	
+3	）	）	）	PU	PU	_	_	2	2	UNK	UNK	_	_	_	
+
+1	一九九七年	一九九七年	一九九七年	NT	NT	_	_	7	7	TMP	TMP	_	_	_	TMP	
+2	内地	内地	内地	NN	NN	_	_	6	6	NMOD	NMOD	_	_	A0	_	
+3	与	与	与	CC	CC	_	_	2	2	CJTN	CJTN	_	_	_	_	
+4	香港	香港	香港	NR	NR	_	_	3	3	CJT	CJT	_	_	_	_	
+5	经贸	经贸	经贸	NN	NN	_	_	6	6	NMOD	NMOD	_	_	LOC	_	
+6	交流	交流	交流	NN	NN	_	_	7	7	SBJ	SBJ	Y	交流.01	_	A1	
+7	活跃	活跃	活跃	VA	VA	_	_	0	0	ROOT	ROOT	Y	活跃.01	_	_	
+
+1	新华社	新华社	新华社	NN	NN	_	_	10	10	UNK	UNK	_	_	
+2	北京	北京	北京	NR	NR	_	_	10	10	UNK	UNK	_	_	
+3	一月	一月	一月	NT	NT	_	_	10	10	UNK	UNK	_	_	
+4	十一日	十一日	十一日	NT	NT	_	_	10	10	UNK	UNK	_	_	
+5	电	电	电	NN	NN	_	_	10	10	UNK	UNK	_	_	
+6	（	（	（	PU	PU	_	_	10	10	UNK	UNK	_	_	
+7	记者	记者	记者	NN	NN	_	_	10	10	UNK	UNK	_	_	
+8	李鲲	李鲲	李鲲	NR	NR	_	_	10	10	UNK	UNK	_	_	
+9	、	、	、	PU	PU	_	_	10	10	UNK	UNK	_	_	
+10	李凯	李凯	李凯	NR	NR	_	_	0	0	ROOT	ROOT	_	_	
+11	）	）	）	PU	PU	_	_	10	10	UNK	UNK	_	_	
+
+1	一九九七年	一九九七年	一九九七年	NT	NT	_	_	9	9	TMP	TMP	_	_	_	TMP	_	
+2	内地	内地	内地	NN	NN	_	_	5	5	COMP	COMP	_	_	_	_	_	
+3	与	与	与	CC	CC	_	_	2	2	CJTN	CJTN	_	_	_	_	_	
+4	香港	香港	香港	NR	NR	_	_	3	3	CJT	CJT	_	_	_	_	_	
+5	之间	之间	之间	LC	LC	_	_	6	6	COMP	COMP	_	_	A0	_	_	
+6	的	的	的	DEG	DEG	_	_	8	8	NMOD	NMOD	_	_	_	_	_	
+7	经贸	经贸	经贸	NN	NN	_	_	8	8	NMOD	NMOD	_	_	LOC	_	_	
+8	交流	交流	交流	NN	NN	_	_	9	9	SBJ	SBJ	Y	交流.01	_	A0	_	
+9	呈现	呈现	呈现	VV	VV	_	_	0	0	ROOT	ROOT	Y	呈现.01	_	_	_	
+10	高速	高速	高速	AD	AD	_	_	15	15	AUX	AUX	_	_	_	_	ADV	
+11	、	、	、	PU	PU	_	_	10	10	CJTN	CJTN	_	_	_	_	_	
+12	健康	健康	健康	AD	AD	_	_	11	11	CJT	CJT	_	_	_	_	_	
+13	和	和	和	CC	CC	_	_	10	10	cCJTN	cCJTN	_	_	_	_	_	
+14	稳定	稳定	稳定	AD	AD	_	_	13	13	CJT	CJT	_	_	_	_	_	
+15	发展	发展	发展	VV	VV	_	_	16	16	COMP	COMP	Y	发展.01	_	_	_	
+16	的	的	的	DEC	DEC	_	_	17	17	RELC	RELC	_	_	_	_	_	
+17	态势	态势	态势	NN	NN	_	_	9	9	COMP	COMP	_	_	_	A1	_	
+18	。	。	。	PU	PU	_	_	9	9	_	_	_	_	_	_	_	
+
+1	中国	中国	中国	NR	NR	_	_	2	2	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+2	海关	海关	海关	NN	NN	_	_	3	3	NMOD	NMOD	_	_	A0	_	_	_	_	_	_	_	_	_	
+3	统计	统计	统计	NN	NN	_	_	4	4	SBJ	SBJ	Y	统计.01	_	A2	_	_	_	_	_	_	_	_	
+4	表明	表明	表明	VV	VV	_	_	0	0	ROOT	ROOT	Y	表明.01	_	_	_	_	_	_	_	_	_	_	
+5	，	，	，	PU	PU	_	_	4	4	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+6	一九九七年	一九九七年	一九九七年	NT	NT	_	_	7	7	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+7	一	一	一	NT	NT	_	_	17	17	TMP	TMP	_	_	_	_	_	TMP	_	TMP	_	TMP	_	TMP	
+8	至	至	至	CC	CC	_	_	7	7	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+9	十一月	十一月	十一月	NT	NT	_	_	8	8	CJT	CJT	_	_	_	_	_	_	_	_	_	_	_	_	
+10	，	，	，	PU	PU	_	_	17	17	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+11	香港	香港	香港	NR	NR	_	_	16	16	NMOD	NMOD	_	_	_	_	A0	_	_	_	_	_	_	_	
+12	与	与	与	CC	CC	_	_	11	11	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+13	内地	内地	内地	NN	NN	_	_	12	12	CJT	CJT	_	_	_	_	_	_	_	_	_	_	_	_	
+14	进出口	进出口	进出口	NN	NN	_	_	16	16	NMOD	NMOD	_	_	_	_	MNR	_	_	_	_	_	_	_	
+15	贸易	贸易	贸易	NN	NN	_	_	16	16	NMOD	NMOD	Y	贸易.01	_	_	_	_	_	_	_	_	_	_	
+16	总额	总额	总额	NN	NN	_	_	17	17	SBJ	SBJ	_	_	_	_	_	A0	A0	A0	_	_	_	_	
+17	为	为	为	VC	VC	_	_	4	4	COMP	COMP	Y	为.01	_	A1	_	_	_	_	_	_	_	_	
+18	四百五十点八五亿	四百五十点八五亿	四百五十点八五亿	CD	CD	_	_	17	17	PRD	PRD	_	_	_	_	_	A1	_	_	_	_	_	_	
+19	美元	美元	美元	M	M	_	_	18	18	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	
+20	，	，	，	PU	PU	_	_	17	17	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+21	占	占	占	VV	VV	_	_	20	20	CJT	CJT	Y	占.01	_	_	_	_	_	_	_	_	_	_	
+22	内地	内地	内地	NN	NN	_	_	24	24	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+23	进出口	进出口	进出口	NN	NN	_	_	24	24	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+24	总额	总额	总额	NN	NN	_	_	25	25	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	
+25	的	的	的	DEG	DEG	_	_	26	26	ADV	ADV	_	_	_	_	_	_	_	_	_	_	_	_	
+26	百分之十五点七	百分之十五点七	百分之十五点七	CD	CD	_	_	21	21	COMP	COMP	_	_	_	_	_	_	A1	_	_	_	_	_	
+27	，	，	，	PU	PU	_	_	17	17	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+28	比	比	比	P	P	_	_	33	33	AUX	AUX	_	_	_	_	_	_	_	ADV	_	_	_	_	
+29	上	上	上	DT	DT	_	_	32	32	DMOD	DMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+30	年	年	年	M	M	_	_	29	29	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	
+31	同	同	同	DT	DT	_	_	32	32	DMOD	DMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+32	期	期	期	NN	NN	_	_	28	28	OBJ	OBJ	_	_	_	_	_	_	_	_	_	_	_	_	
+33	增长	增长	增长	VV	VV	_	_	27	27	CJT	CJT	Y	增长.01	_	_	_	_	_	_	_	_	_	_	
+34	百分之二十七	百分之二十七	百分之二十七	CD	CD	_	_	33	33	EXT	EXT	_	_	_	_	_	_	_	A1	_	_	_	_	
+35	；	；	；	PU	PU	_	_	17	17	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+36	其中	其中	其中	NN	NN	_	_	41	41	ADV	ADV	_	_	_	_	_	_	_	_	_	ADV	_	_	
+37	内地	内地	内地	NN	NN	_	_	40	40	NMOD	NMOD	_	_	_	_	_	_	_	_	A0	_	_	_	
+38	对	对	对	P	P	_	_	40	40	AMOD	AMOD	_	_	_	_	_	_	_	_	A2	_	_	_	
+39	香港	香港	香港	NR	NR	_	_	38	38	OBJ	OBJ	_	_	_	_	_	_	_	_	_	_	_	_	
+40	出口	出口	出口	NN	NN	_	_	41	41	SBJ	SBJ	Y	出口.01	_	_	_	_	_	_	_	A0	_	_	
+41	三百八十九点一三亿	三百八十九点一三亿	三百八十九点一三亿	CD	CD	_	_	35	35	CJT	CJT	_	_	_	_	_	_	_	_	_	_	_	_	
+42	美元	美元	美元	M	M	_	_	41	41	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	
+43	，	，	，	PU	PU	_	_	41	41	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+44	比	比	比	P	P	_	_	49	49	AUX	AUX	_	_	_	_	_	_	_	_	_	ADV	_	_	
+45	上	上	上	DT	DT	_	_	48	48	DMOD	DMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+46	年	年	年	M	M	_	_	45	45	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	
+47	同	同	同	DT	DT	_	_	48	48	DMOD	DMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+48	期	期	期	NN	NN	_	_	44	44	OBJ	OBJ	_	_	_	_	_	_	_	_	_	_	_	_	
+49	增长	增长	增长	VV	VV	_	_	43	43	CJT	CJT	Y	增长.01	_	_	_	_	_	_	_	_	_	_	
+50	百分之三十六点二	百分之三十六点二	百分之三十六点二	CD	CD	_	_	49	49	EXT	EXT	_	_	_	_	_	_	_	_	_	A1	_	_	
+51	；	；	；	PU	PU	_	_	17	17	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+52	内地	内地	内地	NN	NN	_	_	55	55	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	A0	_	
+53	从	从	从	P	P	_	_	55	55	AMOD	AMOD	_	_	_	_	_	_	_	_	_	_	A2	_	
+54	香港	香港	香港	NR	NR	_	_	53	53	OBJ	OBJ	_	_	_	_	_	_	_	_	_	_	_	_	
+55	进口	进口	进口	NN	NN	_	_	56	56	SBJ	SBJ	Y	进口.01	_	_	_	_	_	_	_	_	_	A0	
+56	六十一点七二亿	六十一点七二亿	六十一点七二亿	CD	CD	_	_	51	51	CJT	CJT	_	_	_	_	_	_	_	_	_	_	_	_	
+57	美元	美元	美元	M	M	_	_	56	56	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	
+58	，	，	，	PU	PU	_	_	56	56	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	
+59	比	比	比	P	P	_	_	64	64	AUX	AUX	_	_	_	_	_	_	_	_	_	_	_	ADV	
+60	上	上	上	DT	DT	_	_	63	63	DMOD	DMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+61	年	年	年	M	M	_	_	60	60	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	
+62	同	同	同	DT	DT	_	_	63	63	DMOD	DMOD	_	_	_	_	_	_	_	_	_	_	_	_	
+63	期	期	期	NN	NN	_	_	59	59	OBJ	OBJ	_	_	_	_	_	_	_	_	_	_	_	_	
+64	下降	下降	下降	VV	VV	_	_	58	58	CJT	CJT	Y	下降.01	_	_	_	_	_	_	_	_	_	_	
+65	百分之十点七	百分之十点七	百分之十点七	CD	CD	_	_	64	64	EXT	EXT	_	_	_	_	_	_	_	_	_	_	_	A1	
+66	。	。	。	PU	PU	_	_	4	4	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+
+1	外经贸部	外经贸部	外经贸部	NN	NN	_	_	2	2	TPC	TPC	_	_	A0	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+2	主管	主管	主管	VV	VV	_	_	7	7	COMP	COMP	Y	主管.01	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+3	对	对	对	P	P	_	_	6	6	AMOD	AMOD	_	_	_	A0	_	_	_	_	_	_	_	_	_	_	_	_	_	
+4	港	港	港	NR	NR	_	_	3	3	OBJ	OBJ	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+5	经贸	经贸	经贸	NN	NN	_	_	6	6	NMOD	NMOD	_	_	_	LOC	_	_	_	_	_	_	_	_	_	_	_	_	_	
+6	交流	交流	交流	NN	NN	_	_	2	2	COMP	COMP	Y	交流.01	A1	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+7	的	的	的	DEC	DEC	_	_	8	8	RELC	RELC	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+8	官员	官员	官员	NN	NN	_	_	9	9	SBJ	SBJ	_	_	C-A0	_	A0	A0	_	_	_	_	_	_	_	_	_	_	_	
+9	介绍	介绍	介绍	VV	VV	_	_	0	0	ROOT	ROOT	Y	介绍.02	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+10	说	说	说	VV	VV	_	_	9	9	CJT	CJT	Y	说.01	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+11	，	，	，	PU	PU	_	_	9	9	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+12	内地	内地	内地	NN	NN	_	_	17	17	NMOD	NMOD	_	_	_	_	_	_	A0	A0	A0	A0	_	_	_	_	_	_	_	
+13	对	对	对	P	P	_	_	17	17	AMOD	AMOD	_	_	_	_	_	_	DIR	C-A0	A2	C-A0	_	_	_	_	_	_	_	
+14	香港	香港	香港	NR	NR	_	_	13	13	OBJ	OBJ	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+15	进出口	进出口	进出口	NN	NN	_	_	17	17	NMOD	NMOD	Y	进出口.01	_	_	_	_	_	C-A0	_	_	_	_	_	_	_	_	_	
+16	增长	增长	增长	NN	NN	_	_	17	17	NMOD	NMOD	Y	增长.01	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+17	速度	速度	速度	NN	NN	_	_	23	23	SBJ	SBJ	_	_	_	_	_	_	_	_	_	_	A0	_	_	A0	_	_	_	
+18	和	和	和	CC	CC	_	_	17	17	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+19	出口	出口	出口	NN	NN	_	_	21	21	NMOD	NMOD	Y	出口.01	_	_	_	_	_	_	_	C-A0	_	_	_	_	_	_	_	
+20	增长	增长	增长	NN	NN	_	_	21	21	NMOD	NMOD	Y	增长.01	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+21	速度	速度	速度	NN	NN	_	_	18	18	CJT	CJT	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+22	远	远	远	AD	AD	_	_	23	23	AUX	AUX	_	_	_	_	_	_	_	_	_	_	ADV	_	_	_	_	_	_	
+23	高于	高于	高于	VV	VV	_	_	9	9	COMP	COMP	Y	高于.01	_	_	A1	A1	_	_	_	_	_	_	_	_	_	_	_	
+24	同	同	同	DT	DT	_	_	25	25	DMOD	DMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+25	期	期	期	NN	NN	_	_	31	31	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	TMP	_	_	_	_	
+26	内地	内地	内地	NN	NN	_	_	31	31	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	A0	A0	_	_	_	_	
+27	进出口	进出口	进出口	NN	NN	_	_	31	31	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	C-A0	_	_	_	_	
+28	和	和	和	CC	CC	_	_	27	27	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+29	出口	出口	出口	NN	NN	_	_	28	28	CJT	CJT	Y	出口.01	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+30	增长	增长	增长	NN	NN	_	_	31	31	NMOD	NMOD	Y	增长.01	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+31	速度	速度	速度	NN	NN	_	_	23	23	COMP	COMP	_	_	_	_	_	_	_	_	_	_	A1	_	_	_	_	_	_	
+32	（	（	（	PU	PU	_	_	37	37	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+33	百分之十四	百分之十四	百分之十四	CD	CD	_	_	36	36	COMP	COMP	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+34	和	和	和	CC	CC	_	_	33	33	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+35	百分之二十三点二	百分之二十三点二	百分之二十三点二	CD	CD	_	_	34	34	CJT	CJT	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+36	的	的	的	DEG	DEG	_	_	37	37	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+37	速度	速度	速度	NN	NN	_	_	31	31	UNK	UNK	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+38	）	）	）	PU	PU	_	_	37	37	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+39	，	，	，	PU	PU	_	_	23	23	CJTN	CJTN	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+40	是	是	是	VC	VC	_	_	39	39	CJT	CJT	Y	是.01	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+41	内地	内地	内地	NN	NN	_	_	43	43	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	_	A0	A0	_	
+42	出口	出口	出口	NN	NN	_	_	43	43	NMOD	NMOD	Y	出口.01	_	_	_	_	_	_	_	_	_	_	_	_	_	C-A0	_	
+43	增长	增长	增长	NN	NN	_	_	45	45	TPC	TPC	Y	增长.01	_	_	_	_	_	_	_	_	_	_	_	_	_	_	C-A0	
+44	最	最	最	AD	AD	_	_	45	45	AUX	AUX	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	ADV	
+45	快	快	快	VA	VA	_	_	46	46	COMP	COMP	Y	快.01	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+46	的	的	的	DEC	DEC	_	_	48	48	RELC	RELC	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+47	地区	地区	地区	NN	NN	_	_	48	48	NMOD	NMOD	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+48	之一	之一	之一	NN	NN	_	_	40	40	PRD	PRD	_	_	_	_	_	_	_	_	_	_	_	_	_	A1	_	_	A0	
+49	。	。	。	PU	PU	_	_	9	9	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	_	
+
+1	目前	目前	目前	NT	NT	_	_	4	4	TMP	TMP	_	_	TMP	_	_	_	
+2	，	，	，	PU	PU	_	_	4	4	_	_	_	_	_	_	_	_	
+3	香港	香港	香港	NR	NR	_	_	4	4	SBJ	SBJ	_	_	A0	_	_	_	
+4	是	是	是	VC	VC	_	_	0	0	ROOT	ROOT	Y	是.01	_	_	_	_	
+5	内地	内地	内地	NN	NN	_	_	6	6	COMP	COMP	_	_	_	_	_	_	
+6	的	的	的	DEG	DEG	_	_	10	10	NMOD	NMOD	_	_	_	_	_	_	
+7	第二	第二	第二	OD	OD	_	_	10	10	DMOD	DMOD	_	_	_	_	_	_	
+8	大	大	大	JJ	JJ	_	_	10	10	AMOD	AMOD	_	_	_	_	_	_	
+9	贸易	贸易	贸易	NN	NN	_	_	10	10	NMOD	NMOD	Y	贸易.01	_	_	_	_	
+10	伙伴	伙伴	伙伴	NN	NN	_	_	4	4	PRD	PRD	_	_	A1	A0	_	_	
+11	及	及	及	CC	CC	_	_	10	10	CJTN	CJTN	_	_	_	_	_	_	
+12	最	最	最	AD	AD	_	_	13	13	AUX	AUX	_	_	_	_	ADV	_	
+13	大	大	大	VA	VA	_	_	14	14	COMP	COMP	Y	大.01	_	_	_	_	
+14	的	的	的	DEC	DEC	_	_	16	16	RELC	RELC	_	_	_	_	_	_	
+15	出口	出口	出口	NN	NN	_	_	16	16	NMOD	NMOD	Y	出口.01	_	_	_	_	
+16	市场	市场	市场	NN	NN	_	_	11	11	CJT	CJT	_	_	_	_	A0	A2	
+17	。	。	。	PU	PU	_	_	4	4	_	_	_	_	_	_	_	_	
+
+1	在	在	在	P	P	_	_	7	7	LOC	LOC	_	_	LOC	_	_	
+2	投资	投资	投资	NN	NN	_	_	3	3	NMOD	NMOD	_	_	_	_	_	
+3	方面	方面	方面	NN	NN	_	_	1	1	OBJ	OBJ	_	_	_	_	_	
+4	，	，	，	PU	PU	_	_	7	7	_	_	_	_	_	_	_	
+5	香港	香港	香港	NR	NR	_	_	7	7	SBJ	SBJ	_	_	A0	_	_	
+6	仍然	仍然	仍然	AD	AD	_	_	7	7	AUX	AUX	_	_	ADV	_	_	
+7	是	是	是	VC	VC	_	_	0	0	ROOT	ROOT	Y	是.01	_	_	_	
+8	内地	内地	内地	NN	NN	_	_	9	9	SBJ	SBJ	_	_	_	A0	_	
+9	吸引	吸引	吸引	VV	VV	_	_	12	12	COMP	COMP	Y	吸引.01	_	_	_	
+10	境外	境外	境外	NN	NN	_	_	11	11	NMOD	NMOD	_	_	_	_	A0	
+11	投资	投资	投资	NN	NN	_	_	9	9	COMP	COMP	Y	投资.01	_	A1	_	
+12	的	的	的	DEC	DEC	_	_	14	14	RELC	RELC	_	_	_	_	_	
+13	首要	首要	首要	JJ	JJ	_	_	14	14	AMOD	AMOD	_	_	_	_	_	
+14	来源地	来源地	来源地	NN	NN	_	_	7	7	PRD	PRD	_	_	A1	LOC	_	
+15	。	。	。	PU	PU	_	_	7	7	_	_	_	_	_	_	_	
+
+1	去年	去年	去年	NT	NT	_	_	2	2	NMOD	NMOD	_	_	_	_	_	_	_	_	_	
+2	一	一	一	NT	NT	_	_	12	12	TMP	TMP	_	_	_	_	TMP	TMP	_	_	TMP	
+3	至	至	至	CC	CC	_	_	2	2	CJTN	CJTN	_	_	_	_	_	_	_	_	_	
+4	九月	九月	九月	NT	NT	_	_	3	3	CJT	CJT	_	_	_	_	_	_	_	_	_	
+5	，	，	，	PU	PU	_	_	12	12	_	_	_	_	_	_	_	_	_	_	_	
+6	内地	内地	内地	NN	NN	_	_	7	7	SBJ	SBJ	_	_	A0	_	_	_	_	_	_	
+7	吸引	吸引	吸引	VV	VV	_	_	11	11	RELC	RELC	Y	吸引.01	_	_	_	_	_	_	_	
+8	香港	香港	香港	NR	NR	_	_	10	10	NMOD	NMOD	_	_	_	A0	_	_	_	_	_	
+9	直接	直接	直接	JJ	JJ	_	_	10	10	AMOD	AMOD	_	_	_	MNR	_	_	_	_	_	
+10	投资	投资	投资	NN	NN	_	_	11	11	NMOD	NMOD	Y	投资.01	_	_	_	_	_	_	_	
+11	项目	项目	项目	NN	NN	_	_	12	12	SBJ	SBJ	_	_	A1	A1	A0	_	_	_	_	
+12	六千一百六十五	六千一百六十五	六千一百六十五	CD	CD	_	_	0	0	ROOT	ROOT	_	_	_	_	_	_	_	_	_	
+13	个	个	个	M	M	_	_	12	12	COMP	COMP	_	_	_	_	_	_	_	_	_	
+14	，	，	，	PU	PU	_	_	12	12	CJTN	CJTN	_	_	_	_	_	_	_	_	_	
+15	占	占	占	VV	VV	_	_	14	14	CJT	CJT	Y	占.01	_	_	_	_	_	_	_	
+16	全	全	全	DT	DT	_	_	17	17	DMOD	DMOD	_	_	_	_	_	_	_	_	_	
+17	国	国	国	NN	NN	_	_	20	20	NMOD	NMOD	_	_	_	_	_	_	_	_	_	
+18	同	同	同	DT	DT	_	_	19	19	DMOD	DMOD	_	_	_	_	_	_	_	_	_	
+19	期	期	期	NN	NN	_	_	20	20	NMOD	NMOD	_	_	_	_	_	_	_	_	_	
+20	总数	总数	总数	NN	NN	_	_	21	21	COMP	COMP	_	_	_	_	_	_	_	_	_	
+21	的	的	的	DEG	DEG	_	_	22	22	ADV	ADV	_	_	_	_	_	_	_	_	_	
+22	百分之四十点九九	百分之四十点九九	百分之四十点九九	CD	CD	_	_	15	15	COMP	COMP	_	_	_	_	A1	_	_	_	_	
+23	，	，	，	PU	PU	_	_	12	12	CJTN	CJTN	_	_	_	_	_	_	_	_	_	
+24	协议	协议	协议	NN	NN	_	_	26	26	NMOD	NMOD	_	_	_	_	_	_	_	_	_	
+25	港资	港资	港资	NN	NN	_	_	26	26	NMOD	NMOD	_	_	_	_	_	_	_	_	_	
+26	金额	金额	金额	NN	NN	_	_	27	27	SBJ	SBJ	_	_	_	_	_	A0	_	_	_	
+27	一百一十七点一一亿	一百一十七点一一亿	一百一十七点一一亿	CD	CD	_	_	23	23	CJT	CJT	_	_	_	_	_	_	_	_	_	
+28	美元	美元	美元	M	M	_	_	27	27	COMP	COMP	_	_	_	_	_	_	_	_	_	
+29	，	，	，	PU	PU	_	_	27	27	CJTN	CJTN	_	_	_	_	_	_	_	_	_	
+30	占	占	占	VV	VV	_	_	29	29	CJT	CJT	Y	占.01	_	_	_	_	_	_	_	
+31	全	全	全	DT	DT	_	_	32	32	DMOD	DMOD	_	_	_	_	_	_	_	_	_	
+32	国	国	国	NN	NN	_	_	38	38	ADV	ADV	_	_	_	_	_	_	_	_	_	
+33	同	同	同	DT	DT	_	_	34	34	DMOD	DMOD	_	_	_	_	_	_	_	_	_	
+34	期	期	期	NN	NN	_	_	38	38	ADV	ADV	_	_	_	_	_	_	_	_	_	
+35	投资	投资	投资	NN	NN	_	_	36	36	NMOD	NMOD	Y	投资.02	_	_	_	_	_	_	_	
+36	总额	总额	总额	NN	NN	_	_	37	37	COMP	COMP	_	_	_	_	_	_	A2	_	_	
+37	的	的	的	DEG	DEG	_	_	38	38	ADV	ADV	_	_	_	_	_	_	_	_	_	
+38	百分之三十三点八	百分之三十三点八	百分之三十三点八	CD	CD	_	_	30	30	COMP	COMP	_	_	_	_	_	A1	_	_	_	
+39	，	，	，	PU	PU	_	_	12	12	cCJTN	cCJTN	_	_	_	_	_	_	_	_	_	
+40	实际	实际	实际	AD	AD	_	_	41	41	AUX	AUX	_	_	_	_	_	_	_	ADV	_	
+41	利用	利用	利用	VV	VV	_	_	42	42	RELC	RELC	Y	利用.01	_	_	_	_	_	_	_	
+42	港资	港资	港资	NN	NN	_	_	43	43	SBJ	SBJ	_	_	_	_	_	_	_	A1	A0	
+43	一百五十四点一八亿	一百五十四点一八亿	一百五十四点一八亿	CD	CD	_	_	39	39	CJT	CJT	_	_	_	_	_	_	_	_	_	
+44	美元	美元	美元	M	M	_	_	43	43	COMP	COMP	_	_	_	_	_	_	_	_	_	
+45	，	，	，	PU	PU	_	_	43	43	CJTN	CJTN	_	_	_	_	_	_	_	_	_	
+46	占	占	占	VV	VV	_	_	45	45	CJT	CJT	Y	占.01	_	_	_	_	_	_	_	
+47	全	全	全	DT	DT	_	_	48	48	DMOD	DMOD	_	_	_	_	_	_	_	_	_	
+48	国	国	国	NN	NN	_	_	53	53	ADV	ADV	_	_	_	_	_	_	_	_	_	
+49	同	同	同	DT	DT	_	_	50	50	DMOD	DMOD	_	_	_	_	_	_	_	_	_	
+50	期	期	期	NN	NN	_	_	53	53	ADV	ADV	_	_	_	_	_	_	_	_	_	
+51	总额	总额	总额	NN	NN	_	_	52	52	COMP	COMP	_	_	_	_	_	_	_	_	_	
+52	的	的	的	DEG	DEG	_	_	53	53	ADV	ADV	_	_	_	_	_	_	_	_	_	
+53	百分之四十八点九三	百分之四十八点九三	百分之四十八点九三	CD	CD	_	_	46	46	COMP	COMP	_	_	_	_	_	_	_	_	A1	
+54	。	。	。	PU	PU	_	_	12	12	_	_	_	_	_	_	_	_	_	_	_	
+
+1	在	在	在	P	P	_	_	14	14	LOC	LOC	_	_	_	_	LOC	_	
+2	对	对	对	P	P	_	_	5	5	AMOD	AMOD	_	_	DIR	DIR	_	_	
+3	外	外	外	NN	NN	_	_	2	2	OBJ	OBJ	_	_	_	_	_	_	
+4	承包	承包	承包	NN	NN	_	_	5	5	NMOD	NMOD	Y	承包.01	_	_	_	_	
+5	工程	工程	工程	NN	NN	_	_	9	9	NMOD	NMOD	_	_	A1	_	_	_	
+6	和	和	和	CC	CC	_	_	5	5	CJTN	CJTN	_	_	_	_	_	_	
+7	劳务	劳务	劳务	NN	NN	_	_	8	8	NMOD	NMOD	_	_	_	A1	_	_	
+8	合作	合作	合作	NN	NN	_	_	6	6	CJT	CJT	Y	合作.01	_	_	_	_	
+9	方面	方面	方面	NN	NN	_	_	1	1	OBJ	OBJ	_	_	_	_	_	_	
+10	，	，	，	PU	PU	_	_	14	14	_	_	_	_	_	_	_	_	
+11	香港	香港	香港	NR	NR	_	_	12	12	NMOD	NMOD	_	_	_	_	_	_	
+12	地区	地区	地区	NN	NN	_	_	14	14	SBJ	SBJ	_	_	_	A0	A0	_	
+13	仍	仍	仍	AD	AD	_	_	14	14	AUX	AUX	_	_	_	_	ADV	_	
+14	是	是	是	VC	VC	_	_	0	0	ROOT	ROOT	Y	是.01	_	_	_	_	
+15	内地	内地	内地	NN	NN	_	_	17	17	LOC	LOC	_	_	_	_	_	LOC	
+16	最	最	最	AD	AD	_	_	17	17	AUX	AUX	_	_	_	_	_	ADV	
+17	重要	重要	重要	VA	VA	_	_	18	18	COMP	COMP	Y	重要.01	_	_	_	_	
+18	的	的	的	DEC	DEC	_	_	19	19	RELC	RELC	_	_	_	_	_	_	
+19	市场	市场	市场	NN	NN	_	_	14	14	PRD	PRD	_	_	_	_	A1	A0	
+20	。	。	。	PU	PU	_	_	14	14	_	_	_	_	_	_	_	_	
+
+1	去年	去年	去年	NT	NT	_	_	2	2	NMOD	NMOD	_	_	_	_	_	_	_	_	
+2	一	一	一	NT	NT	_	_	21	21	TMP	TMP	_	_	_	_	_	_	TMP	TMP	
+3	至	至	至	CC	CC	_	_	2	2	CJTN	CJTN	_	_	_	_	_	_	_	_	
+4	十一月	十一月	十一月	NT	NT	_	_	3	3	CJT	CJT	_	_	_	_	_	_	_	_	
+5	，	，	，	PU	PU	_	_	21	21	_	_	_	_	_	_	_	_	_	_	
+6	内地	内地	内地	NN	NN	_	_	9	9	SBJ	SBJ	_	_	A0	_	_	_	_	_	
+7	在	在	在	P	P	_	_	9	9	LOC	LOC	_	_	LOC	_	_	_	_	_	
+8	香港	香港	香港	NR	NR	_	_	7	7	OBJ	OBJ	_	_	_	_	_	_	_	_	
+9	新签	新签	新签	VV	VV	_	_	20	20	RELC	RELC	Y	新签.01	_	_	_	_	_	_	
+10	对	对	对	P	P	_	_	13	13	AMOD	AMOD	_	_	_	DIR	DIR	_	_	_	
+11	外	外	外	NN	NN	_	_	10	10	OBJ	OBJ	_	_	_	_	_	_	_	_	
+12	承包	承包	承包	NN	NN	_	_	13	13	NMOD	NMOD	Y	承包.01	_	_	_	_	_	_	
+13	工程	工程	工程	NN	NN	_	_	20	20	NMOD	NMOD	_	_	_	A1	_	_	_	_	
+14	、	、	、	PU	PU	_	_	13	13	CJTN	CJTN	_	_	_	_	_	_	_	_	
+15	劳务	劳务	劳务	NN	NN	_	_	16	16	NMOD	NMOD	_	_	_	_	A1	_	_	_	
+16	合作	合作	合作	NN	NN	_	_	14	14	CJT	CJT	Y	合作.01	_	_	_	_	_	_	
+17	和	和	和	CC	CC	_	_	13	13	cCJTN	cCJTN	_	_	_	_	_	_	_	_	
+18	设计	设计	设计	NN	NN	_	_	19	19	NMOD	NMOD	_	_	_	_	_	A2	_	_	
+19	咨询	咨询	咨询	NN	NN	_	_	17	17	CJT	CJT	Y	咨询.01	_	_	_	_	_	_	
+20	合同	合同	合同	NN	NN	_	_	21	21	SBJ	SBJ	_	_	A1	_	_	_	_	_	
+21	一千四百七十四	一千四百七十四	一千四百七十四	CD	CD	_	_	0	0	ROOT	ROOT	_	_	_	_	_	_	_	_	
+22	份	份	份	M	M	_	_	21	21	COMP	COMP	_	_	_	_	_	_	_	_	
+23	，	，	，	PU	PU	_	_	21	21	CJTN	CJTN	_	_	_	_	_	_	_	_	
+24	合同	合同	合同	NN	NN	_	_	25	25	NMOD	NMOD	_	_	_	_	_	_	_	_	
+25	金额	金额	金额	NN	NN	_	_	26	26	SBJ	SBJ	_	_	_	_	_	_	_	_	
+26	二十点九四亿	二十点九四亿	二十点九四亿	CD	CD	_	_	23	23	CJT	CJT	_	_	_	_	_	_	_	_	
+27	美元	美元	美元	M	M	_	_	26	26	COMP	COMP	_	_	_	_	_	_	_	_	
+28	，	，	，	PU	PU	_	_	21	21	cCJTN	cCJTN	_	_	_	_	_	_	_	_	
+29	完成	完成	完成	VV	VV	_	_	28	28	CJT	CJT	Y	完成.01	_	_	_	_	_	_	
+30	营业额	营业额	营业额	NN	NN	_	_	29	29	COMP	COMP	_	_	_	_	_	_	A1	_	
+31	十五点八亿	十五点八亿	十五点八亿	CD	CD	_	_	29	29	EXT	EXT	_	_	_	_	_	_	C-A1	_	
+32	美元	美元	美元	M	M	_	_	31	31	COMP	COMP	_	_	_	_	_	_	_	_	
+33	，	，	，	PU	PU	_	_	29	29	CJTN	CJTN	_	_	_	_	_	_	_	_	
+34	输	输	输	VV	VV	_	_	33	33	CJT	CJT	Y	输.03	_	_	_	_	_	_	
+35	港	港	港	NR	NR	_	_	34	34	IO	IO	_	_	_	_	_	_	_	A2	
+36	派出	派出	派出	JJ	JJ	_	_	37	37	AMOD	AMOD	_	_	_	_	_	_	_	_	
+37	劳务	劳务	劳务	NN	NN	_	_	34	34	COMP	COMP	_	_	_	_	_	_	_	A1	
+38	二万一千一百五十三	二万一千一百五十三	二万一千一百五十三	CD	CD	_	_	34	34	EXT	EXT	_	_	_	_	_	_	_	C-A1	
+39	人次	人次	人次	M	M	_	_	38	38	COMP	COMP	_	_	_	_	_	_	_	_	
+40	。	。	。	PU	PU	_	_	21	21	_	_	_	_	_	_	_	_	_	_	
+
+1	（	（	（	PU	PU	_	_	2	2	UNK	UNK	_	_	_	
+2	完	完	完	VV	VV	_	_	0	0	ROOT	ROOT	Y	完.01	_	
+3	）	）	）	PU	PU	_	_	2	2	UNK	UNK	_	_	_	
+

@@ -211,6 +211,28 @@
                     <description/>
                     <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
+                <featureDescription>
+                    <name>inSentenceIndex</name>
+                    <rangeTypeName>uima.cas.Integer</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>lexicalSense</name>
+                    <description/>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.CharacterAnnotation</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
+            <description>Represent a single character. We make it inherent a Word type, so that we can attach linguistic
+                properties such as dependency, pos, semantic relations to it.
+            </description>
+            <features>
+                <featureDescription>
+                    <name>isBegin</name>
+                    <rangeTypeName>uima.cas.Boolean</rangeTypeName>
+                </featureDescription>
             </features>
         </typeDescription>
         <typeDescription>
@@ -313,6 +335,10 @@
                     <name>headWord</name>
                     <description/>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>headCharacter</name>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.CharacterAnnotation</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
                     <name>singleEventFeatures</name>

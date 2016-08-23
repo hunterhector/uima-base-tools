@@ -9,6 +9,7 @@ import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations;
+import edu.stanford.nlp.ling.ChineseCoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.*;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -18,7 +19,6 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.trees.AbstractCollinsHeadFinder;
-import edu.stanford.nlp.trees.HeadFinder;
 import edu.stanford.nlp.trees.SemanticHeadFinder;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
@@ -125,6 +125,8 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         // Adding token level annotations.
         Map<Span, StanfordEntityMention> spanMentionMap = new HashMap<Span, StanfordEntityMention>();
         List<EntityMention> allMentions = new ArrayList<>();
+
+        addCharacterAnnotation(aJCas, document, textOffset);
         addTokenLevelAnnotation(aJCas, document, textOffset, spanMentionMap, allMentions);
 
         // Adding sentence level annotations.
@@ -180,7 +182,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             }
 
             if (mention.getHead() == null) {
-                mention.setHead(UimaNlpUtils.findHeadFromAnnotation(mention));
+                mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
             }
         }
     }
@@ -330,7 +332,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
             // The following deals with tree annotation.
             Tree tree = sentAnno.get(TreeAnnotation.class);
-            addPennTreeAnnotation(aJCas, tree, null, null, textOffset, hf);
+            addPennTreeAnnotation(aJCas, tree, null, null, textOffset);
 
             // The following add the collapsed cc processed dependencies of each sentence into CAS annotation.
             SemanticGraph depends = sentAnno.get(CollapsedCCProcessedDependenciesAnnotation.class);
@@ -387,6 +389,18 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         }
     }
 
+    private void addCharacterAnnotation(JCas aJCas, Annotation document, int textOffset) {
+        int characterId = 0;
+        for (CoreLabel character : document.get(ChineseCoreAnnotations.CharactersAnnotation.class)) {
+            int beginIndex = character.get(CharacterOffsetBeginAnnotation.class) + textOffset;
+            int endIndex = character.get(CharacterOffsetEndAnnotation.class) + textOffset;
+
+            CharacterAnnotation sChar = new CharacterAnnotation(aJCas, beginIndex, endIndex);
+
+            UimaAnnotationUtils.finishAnnotation(sChar, COMPONENT_ID, characterId++, aJCas);
+        }
+    }
+
     private void addTokenLevelAnnotation(JCas aJCas, Annotation document, int textOffset, Map<Span,
             StanfordEntityMention> spanMentionMap, List<EntityMention> allMentions) {
         // The following put token annotation to CAS
@@ -396,12 +410,11 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         int neEnd = 0;
 
         for (CoreLabel token : document.get(TokensAnnotation.class)) {
-            int beginIndex = token.get(CharacterOffsetBeginAnnotation.class);
-            int endIndex = token.get(CharacterOffsetEndAnnotation.class);
+            int beginIndex = token.get(CharacterOffsetBeginAnnotation.class) + textOffset;
+            int endIndex = token.get(CharacterOffsetEndAnnotation.class) + textOffset;
 
             // add token annotation
-            StanfordCorenlpToken sToken = new StanfordCorenlpToken(aJCas, beginIndex + textOffset, endIndex +
-                    textOffset);
+            StanfordCorenlpToken sToken = new StanfordCorenlpToken(aJCas, beginIndex, endIndex);
             sToken.setPos(token.get(PartOfSpeechAnnotation.class));
             sToken.setLemma(token.get(LemmaAnnotation.class));
             UimaAnnotationUtils.finishAnnotation(sToken, COMPONENT_ID, tokenId++, aJCas);
@@ -418,8 +431,8 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 } else {
                     if (!preNe.equals("O")) {// "O" represent no label (other)
                         StanfordEntityMention sne = new StanfordEntityMention(aJCas);
-                        sne.setBegin(neBegin + textOffset);
-                        sne.setEnd(neEnd + textOffset);
+                        sne.setBegin(neBegin);
+                        sne.setEnd(neEnd);
                         sne.setEntityType(preNe);
                         allMentions.add(sne);
                         spanMentionMap.put(new Span(sne.getBegin(), sne.getEnd()), sne);
@@ -437,28 +450,29 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
 
     private StanfordTreeAnnotation addPennTreeAnnotation(JCas aJCas, Tree currentNode, Tree parentNode,
-                                                         StanfordTreeAnnotation parent, int textOffset,
-                                                         HeadFinder hf) {
+                                                         StanfordTreeAnnotation parent, int textOffset) {
         StanfordTreeAnnotation treeAnno = new StanfordTreeAnnotation(aJCas);
-        Tree headLeaf = currentNode.headTerminal(hf, parentNode);
+//        Tree headLeaf = currentNode.headTerminal(hf, parentNode);
 
-        if (headLeaf != null) {
-            List<edu.stanford.nlp.ling.Word> words = headLeaf.yieldWords();
-            int leafBegin = words.get(0).beginPosition() + textOffset;
-            int leafEnd = words.get(words.size() - 1).endPosition() + textOffset;
 
-            List<StanfordCorenlpToken> leafNodes = org.apache.uima.fit.util.JCasUtil.selectCovered(aJCas,
-                    StanfordCorenlpToken.class, leafBegin, leafEnd);
-
-            if (leafNodes.size() != 1) {
-                logger.warn("Incorrect leave span " + leafBegin + " " + leafEnd);
-            } else {
-                treeAnno.setHead(leafNodes.get(0));
-            }
-
-        }
+//        if (headLeaf != null) {
+//            List<edu.stanford.nlp.ling.Word> words = headLeaf.yieldWords();
+//            int leafBegin = words.get(0).beginPosition() + textOffset;
+//            int leafEnd = words.get(words.size() - 1).endPosition() + textOffset;
+//
+//            List<StanfordCorenlpToken> leafNodes = org.apache.uima.fit.util.JCasUtil.selectCovered(aJCas,
+//                    StanfordCorenlpToken.class, leafBegin, leafEnd);
+//
+//            if (leafNodes.size() != 1) {
+//                logger.warn("Incorrect leave span " + leafBegin + " " + leafEnd);
+//            } else {
+//                treeAnno.setHead(leafNodes.get(0));
+//            }
+//        }
 
         if (!currentNode.isLeaf()) {
+            Tree headTree = hf.determineHead(currentNode);
+
             int thisBegin = 0;
             int thisEnd = 0;
             int count = 0;
@@ -466,9 +480,18 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             String currentNodeLabel = currentNode.value();
 
             List<StanfordTreeAnnotation> childrenList = new ArrayList<StanfordTreeAnnotation>();
+
+            StanfordTreeAnnotation uimaHeadTree = null;
+
             for (Tree child : currentNode.children()) {
                 StanfordTreeAnnotation childTree = addPennTreeAnnotation(aJCas, child, currentNode,
-                        treeAnno, textOffset, hf);
+                        treeAnno, textOffset);
+//                stanford2UimaTree.put(child, childTree);
+
+                if (child.equals(headTree)) {
+                    uimaHeadTree = childTree;
+                }
+
                 childrenList.add(childTree);
                 if (count == 0) {
                     thisBegin = childTree.getBegin();
@@ -478,6 +501,9 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 }
                 count++;
             }
+
+            treeAnno.setHeadTree(uimaHeadTree);
+            treeAnno.setHead(uimaHeadTree.getHead());
 
             if (PARSE_TREE_ROOT_NODE_LABEL.equals(currentNodeLabel)) {
                 treeAnno.setIsRoot(true);
@@ -496,10 +522,26 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         } else {
             ArrayList<edu.stanford.nlp.ling.Word> words = currentNode.yieldWords();
             StanfordTreeAnnotation leafTree = new StanfordTreeAnnotation(aJCas);
-            leafTree.setBegin(words.get(0).beginPosition() + textOffset);
-            leafTree.setEnd(words.get(words.size() - 1).endPosition() + textOffset);
+
+            int leafBegin = words.get(0).beginPosition() + textOffset;
+            int leafEnd = words.get(words.size() - 1).endPosition() + textOffset;
+
+            leafTree.setBegin(leafBegin);
+            leafTree.setEnd(leafEnd);
             leafTree.setPennTreeLabel(currentNode.value());
             leafTree.setIsLeaf(true);
+
+            List<StanfordCorenlpToken> leafTokens = JCasUtil.selectCovered(StanfordCorenlpToken.class, leafTree);
+
+            if (leafTokens.size() != 1) {
+                logger.warn(String.format("Incorrect leave span [%d:%d], it contains %d words.", leafBegin, leafEnd,
+                        leafTokens.size()));
+            }
+
+            if (leafTokens.size() > 0) {
+                treeAnno.setHead(leafTokens.get(0));
+            }
+
             UimaAnnotationUtils.finishAnnotation(leafTree, COMPONENT_ID, 0, aJCas);
             return leafTree;
         }

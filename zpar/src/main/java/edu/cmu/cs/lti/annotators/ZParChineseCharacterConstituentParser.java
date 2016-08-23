@@ -1,0 +1,283 @@
+package edu.cmu.cs.lti.annotators;
+
+import com.google.common.base.Joiner;
+import edu.cmu.cs.lti.script.type.CharacterAnnotation;
+import edu.cmu.cs.lti.script.type.StanfordCorenlpSentence;
+import edu.cmu.cs.lti.script.type.ZparTreeAnnotation;
+import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
+import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.utils.DataForwarder;
+import edu.stanford.nlp.trees.AbstractCollinsHeadFinder;
+import edu.stanford.nlp.trees.Tree;
+import edu.stanford.nlp.trees.international.pennchinese.ChineseSemanticHeadFinder;
+import edu.stanford.nlp.util.IntPair;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.uima.UimaContext;
+import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.util.FSCollectionFactory;
+import org.apache.uima.fit.util.JCasUtil;
+import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.ResourceInitializationException;
+
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Created with IntelliJ IDEA.
+ * Date: 8/15/16
+ * Time: 10:07 AM
+ *
+ * @author Zhengzhong Liu
+ */
+public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnotator {
+
+    private Process zpar;
+    private BufferedReader zparOutput;
+    private OutputStream zparInput;
+
+    public static final String PARAM_CHINESE_MODEL = "chineseModel";
+
+    private final String charLabelSep = "ddd";
+
+    @ConfigurationParameter(name = PARAM_CHINESE_MODEL)
+    private String chineseModelPath;
+
+    private AbstractCollinsHeadFinder hf;
+
+
+    @Override
+    public void initialize(UimaContext context) throws ResourceInitializationException {
+        super.initialize(context);
+        String os = System.getProperty("os.name").toLowerCase();
+
+        String zparBinPath;
+
+        if (os.contains("mac")) {
+            zparBinPath = "zpar-07-mac/dist/zpar.zh";
+        } else if (os.contains("nix") || os.contains("nux")) {
+            zparBinPath = "zpar-linux/dist/zpar.zh";
+        } else {
+            throw new NotImplementedException(String.format("Not implemented for OS %s.", os));
+        }
+
+        String zparBin = "../models/zpar/" + zparBinPath;
+        logger.info("ZPar bin is " + zparBin);
+        logger.info("ZPar model located at " + chineseModelPath);
+        boolean setExe = new File(zparBin).setExecutable(true);
+
+        if (!setExe) {
+            throw new IllegalAccessError("Cannot make the ZPar binary executable.");
+        }
+
+        String[] command = {zparBin, chineseModelPath, "-oz"};
+
+        try {
+            zpar = new ProcessBuilder(command).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        zparOutput = new BufferedReader(new InputStreamReader(zpar.getInputStream()));
+
+        String s;
+        try {
+            while ((s = zparOutput.readLine()) != null) {
+                logger.info(s);
+                if (s.contains("initialized.")) {
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            throw new ResourceInitializationException(e);
+        }
+
+        try {
+            printError();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        zparInput = zpar.getOutputStream();
+
+        // Trying to use the Stanford head finder to find token level heads.
+        hf = new ChineseSemanticHeadFinder();
+
+        logger.info("Finish Zpar thread initialization..");
+    }
+
+    @Override
+    public void process(JCas aJCas) throws AnalysisEngineProcessException {
+        for (StanfordCorenlpSentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
+            try {
+                String parsedSent = getParse(sentence);
+                annotate(aJCas, sentence, parsedSent);
+                logger.debug(parsedSent);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private String getParse(StanfordCorenlpSentence sentence) throws IOException {
+        List<String> parses = new ArrayList<>();
+
+        // Zpar will consider each line as an input, and will also try to parse full-width spaces. We here remove them.
+        // Note that the regex is whitespace and the full width space.
+        String sentenceText = sentence.getCoveredText().replaceAll("[\\s　]", " ").replaceAll("#",".");
+        logger.debug("Processing " + sentenceText);
+
+        new DataForwarder(new BufferedReader(new InputStreamReader(IOUtils.toInputStream(
+                sentenceText, "UTF-8"))), zparInput).start();
+
+        int numCharacter = JCasUtil.selectCovered(CharacterAnnotation.class, sentence).size();
+
+        logger.debug("Waiting for parsing.");
+
+        String line;
+        int numParsedChars = 0;
+        while ((line = zparOutput.readLine()) != null) {
+            logger.debug("Next line is : " + line);
+
+            // First we replace brackets to -LRB- and -RRB-.
+            // Punctuations will be ignored by the tree reader.
+            String replacedParse = line.replaceAll("#b\\s\\(", "#b -LRB-").replaceAll("#b\\s\\)", "#b -RRB-")
+                    .replaceAll("#", "ddd");
+            Tree parseTree = Tree.valueOf(replacedParse);
+            numParsedChars += parseTree.getLeaves().size();
+
+            parses.add(replacedParse);
+
+            if (numParsedChars == numCharacter) {
+                break;
+            } else {
+                logger.error(String.format("Number of parsed character [%d] is not the same as number of actual " +
+                        "character [%d].", numParsedChars, numCharacter));
+            }
+        }
+
+        if (parses.size() == 1) {
+            return parses.get(0);
+        } else {
+            return "(IP " + Joiner.on(" ").join(parses) + ")";
+        }
+    }
+
+    private void annotate(JCas aJCas, StanfordCorenlpSentence sentence, String parse) {
+        List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
+
+        Tree parseTree = Tree.valueOf(parse);
+        parseTree.setSpans();
+
+        logger.debug("Going to annotate the parse into the sentence.");
+        annotateParse(aJCas, null, parseTree, characters);
+        logger.debug("Done.");
+    }
+
+    private ZparTreeAnnotation annotateParse(JCas aJCas, ZparTreeAnnotation parent, Tree parseTree,
+                                             List<CharacterAnnotation> characters) {
+        IntPair span = parseTree.getSpan();
+        int from = span.getSource();
+        int to = span.getTarget();
+
+        ZparTreeAnnotation zparTree = new ZparTreeAnnotation(aJCas);
+
+        zparTree.setBegin(characters.get(from).getBegin());
+        zparTree.setEnd(characters.get(to).getEnd());
+        zparTree.setIsLeaf(parseTree.isLeaf());
+        zparTree.setParent(parent);
+        zparTree.setIsRoot(parent == null);
+
+        String[] labelParts = parseTree.label().value().split(charLabelSep);
+
+        boolean isCharacterParse = labelParts.length == 2;
+
+        zparTree.setPennTreeLabel(labelParts[0]);
+
+        // Find head.
+        Tree headTree = null;
+        if (!isCharacterParse && !parseTree.isLeaf()) {
+            headTree = hf.determineHead(parseTree);
+        }
+
+        ZparTreeAnnotation headZparTree = null;
+        List<ZparTreeAnnotation> childAnnotations = new ArrayList<>();
+        for (Tree child : parseTree.children()) {
+            ZparTreeAnnotation childAnnotation = annotateParse(aJCas, zparTree, child, characters);
+            childAnnotations.add(childAnnotation);
+
+            if (headTree != null && headTree.equals(child)) {
+                headZparTree = childAnnotation;
+            }
+        }
+
+        zparTree.setChildren(FSCollectionFactory.createFSArray(aJCas, childAnnotations));
+
+        if (isCharacterParse) {
+            String charParLabel = labelParts[1];
+            zparTree.setAdditionalCharacterLabel(charParLabel);
+
+            if (childAnnotations.size() == 0) {
+                logger.debug("The current tree has no children but it is a non terminal");
+                logger.debug(parseTree.toString());
+            }
+
+            if (charParLabel.equals("t")) {
+                // The unary full word label.
+                headZparTree = childAnnotations.get(0);
+            } else if (charParLabel.equals("x") || charParLabel.equals("y") || charParLabel.equals("z")) {
+                // Word structure are binarized, so we have exactly two child here.
+                if (charParLabel.equals("x")) {
+                    // This is the even case, we take the head to be the left one, but one should know to extract
+                    // features from all.
+                    headZparTree = childAnnotations.get(0);
+                } else if (charParLabel.equals("y")) {
+                    headZparTree = childAnnotations.get(1);
+                } else {
+                    headZparTree = childAnnotations.get(0);
+                }
+            } else if (charParLabel.equals("b") || charParLabel.equals("i")) {
+                // The character annotation, indicate begin or inside.
+                headZparTree = null;
+                CharacterAnnotation childCharacter = (CharacterAnnotation) childAnnotations.get(0).getHead();
+                if (charParLabel.equals("b")) {
+                    childCharacter.setIsBegin(true);
+                }
+            } else {
+                logger.error(String.format("Encounter unknown character parsing label %s.", charParLabel));
+                headZparTree = null;
+            }
+        }
+
+        if (headZparTree != null) {
+            zparTree.setHead(headZparTree.getHead());
+            zparTree.setHeadTree(headZparTree);
+        } else {
+            zparTree.setHead(characters.get(from));
+        }
+
+        UimaAnnotationUtils.finishAnnotation(zparTree, COMPONENT_ID, 0, aJCas);
+        return zparTree;
+    }
+
+    private void printError() throws IOException {
+        InputStream errorStream = zpar.getErrorStream();
+        if (errorStream.available() > 0) {
+            logger.error(IOUtils.toString(errorStream));
+        }
+    }
+
+    @Override
+    public void collectionProcessComplete() throws AnalysisEngineProcessException {
+        super.collectionProcessComplete();
+        try {
+            printError();
+        } catch (IOException e) {
+            throw new AnalysisEngineProcessException(e);
+        }
+
+        zpar.destroy();
+    }
+}

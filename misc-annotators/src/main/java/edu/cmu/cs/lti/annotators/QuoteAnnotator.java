@@ -47,7 +47,7 @@ public class QuoteAnnotator extends AbstractLoggingAnnotator {
     }
 
     private boolean checkSentenceConstruct(QuotedContent content) {
-        StanfordTreeAnnotation tree = UimaNlpUtils.findLargestContainingTree(content);
+        StanfordTreeAnnotation tree = UimaNlpUtils.findLargestContainingTree(content, StanfordTreeAnnotation.class);
         if (tree.getPennTreeLabel().equals("S") || tree.getPennTreeLabel().equals("ROOT")) {
             return true;
         }

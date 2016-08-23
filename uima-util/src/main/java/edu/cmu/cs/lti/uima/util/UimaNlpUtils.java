@@ -1,16 +1,23 @@
 package edu.cmu.cs.lti.uima.util;
 
 import edu.cmu.cs.lti.script.type.*;
+import edu.cmu.cs.lti.utils.DebugUtils;
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSList;
 import org.apache.uima.jcas.tcas.Annotation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class UimaNlpUtils {
+    private static final Logger logger = LoggerFactory.getLogger(UimaNlpUtils.class);
+
     public static String getLemmatizedAnnotation(Annotation a) {
         StringBuilder builder = new StringBuilder();
         String spliter = "";
@@ -25,7 +32,7 @@ public class UimaNlpUtils {
     public static EntityMention createEntityMention(JCas jcas, int begin, int end, String componentId) {
         EntityMention mention = new EntityMention(jcas, begin, end);
         UimaAnnotationUtils.finishAnnotation(mention, componentId, null, jcas);
-        mention.setHead(findHeadFromAnnotation(mention));
+        mention.setHead(findHeadFromStanfordAnnotation(mention));
         return mention;
     }
 
@@ -37,8 +44,8 @@ public class UimaNlpUtils {
     }
 
 
-    public static StanfordCorenlpToken findFirstToken(Annotation anno) {
-        for (StanfordCorenlpToken token : JCasUtil.selectCovered(StanfordCorenlpToken.class, anno)) {
+    public static <T extends Word> T findFirstToken(Annotation anno, Class<T> clazz) {
+        for (T token : JCasUtil.selectCovered(clazz, anno)) {
             return token;
         }
         return null;
@@ -65,19 +72,49 @@ public class UimaNlpUtils {
     public static StanfordCorenlpToken findHeadFromRange(JCas view, int begin, int end) {
         StanfordTreeAnnotation largestContainingTree = findLargest(JCasUtil.selectCovered(view,
                 StanfordTreeAnnotation.class, begin, end));
-        return findHeadFromTree(largestContainingTree);
+        return findHeadFromTree(largestContainingTree, StanfordCorenlpToken.class);
     }
 
-    public static StanfordCorenlpToken findHeadFromAnnotation(Annotation anno) {
-        StanfordCorenlpToken headWord = findHeadFromTree(findLargestContainingTree(anno));
+    public static CharacterAnnotation findHeadCharacterFromZparAnnotatoin(Annotation anno) {
+        return findHeadFromTree(findLargestContainingTree(anno, ZparTreeAnnotation.class), CharacterAnnotation.class);
+    }
+
+    public static StanfordCorenlpToken findHeadFromStanfordAnnotation(Annotation anno) {
+        StanfordCorenlpToken headWord = findHeadFromTree(findLargestContainingTree(anno,
+                StanfordTreeAnnotation.class), StanfordCorenlpToken.class);
+
         if (headWord == null) {
-            headWord = JCasUtil.selectCovering(StanfordCorenlpToken.class, anno).get(0);
+            headWord = UimaConvenience.selectCoveredFirst(anno, StanfordCorenlpToken.class);
         }
+
+        if (headWord == null) {
+            List<StanfordCorenlpToken> coveringTokens = JCasUtil.selectCovering(StanfordCorenlpToken.class, anno);
+            if (coveringTokens.size() > 0) {
+                headWord = JCasUtil.selectCovering(StanfordCorenlpToken.class, anno).get(0);
+            }
+        }
+
+        if (headWord == null) {
+            List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, anno);
+
+            TObjectIntMap<StanfordCorenlpToken> coveringTokenCount = new TObjectIntHashMap<>();
+
+            for (CharacterAnnotation character : characters) {
+                coveringTokenCount.increment(JCasUtil.selectCovering(StanfordCorenlpToken.class, character).get(0));
+            }
+
+            logger.debug(String.format("Cannot find head word for annotation [%s]-[%d:%d].", anno.getCoveredText(),
+                    anno.getBegin(), anno.getEnd()));
+
+            DebugUtils.pause(logger);
+        }
+
         return headWord;
     }
 
-    public static StanfordTreeAnnotation findLargestContainingTree(Annotation anno) {
-        return findLargest(JCasUtil.selectCovered(StanfordTreeAnnotation.class, anno));
+    public static <T extends ParseTreeAnnotation> T findLargestContainingTree(
+            Annotation anno, Class<T> clazz) {
+        return findLargest(JCasUtil.selectCovered(clazz, anno));
     }
 
     public static List<Word> getDependentWords(Word word) {
@@ -113,12 +150,12 @@ public class UimaNlpUtils {
         return dependentTokens;
     }
 
-    public static StanfordCorenlpToken findHeadFromTree(StanfordTreeAnnotation tree) {
+    public static <T extends Word> T findHeadFromTree(ParseTreeAnnotation tree, Class<T> clazz) {
         if (tree != null) {
             if (tree.getIsLeaf()) {
-                return findFirstToken(tree);
+                return findFirstToken(tree, clazz);
             } else {
-                return tree.getHead();
+                return (T) tree.getHead();
             }
         } else {
             return null;

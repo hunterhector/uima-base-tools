@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>edu.cmu.cs.lti</groupId>
+        <artifactId>uima-tools</artifactId>
+        <version>0.0.1</version>
+    </parent>
+
+    <groupId>edu.cmu.cs.lti</groupId>
+    <artifactId>mate-tools</artifactId>
+    <version>0.0.1</version>
+
+    <repositories>
+        <repository>
+            <id>lib</id>
+            <url>file://${basedir}/lib</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.googlecode.mate-tools</groupId>
+            <artifactId>srl</artifactId>
+            <version>4.31</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.mate-tools</groupId>
+            <artifactId>anna</artifactId>
+            <version>3.5</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.cmu.cs.lti</groupId>
+            <artifactId>uima-base</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>edu.cmu.cs.lti</groupId>
+            <artifactId>uima-util</artifactId>
+        </dependency>
+        <!--The old liblinear package use a different package convention, we need to include them with a different group id to avoid class conflict. -->
+        <dependency>
+            <groupId>de.bwaldvogel</groupId>
+            <artifactId>liblinear_17</artifactId>
+            <version>1.7.1</version>
+        </dependency>
+    </dependencies>
+
+
+</project>

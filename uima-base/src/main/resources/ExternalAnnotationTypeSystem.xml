@@ -42,13 +42,6 @@
             <name>edu.cmu.cs.lti.script.type.FanseToken</name>
             <description/>
             <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
-            <features>
-                <featureDescription>
-                    <name>lexicalSense</name>
-                    <description/>
-                    <rangeTypeName>uima.cas.String</rangeTypeName>
-                </featureDescription>
-            </features>
         </typeDescription>
         <typeDescription>
             <name>edu.cmu.cs.lti.script.type.FanseDependencyRelation</name>
@@ -67,6 +60,15 @@
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
                 </featureDescription>
             </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.lti.script.type.MateToken</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.MateSemanticRelation</name>
+            <description/>
+            <supertypeName>edu.cmu.cs.lti.script.type.SemanticRelation</supertypeName>
         </typeDescription>
         <typeDescription>
             <name>edu.cmu.cs.lti.script.type.SemaforLabel</name>
@@ -146,7 +148,7 @@
             <supertypeName>uima.tcas.Annotation</supertypeName>
         </typeDescription>
         <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.StanfordTreeAnnotation</name>
+            <name>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</name>
             <description/>
             <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
             <features>
@@ -159,7 +161,7 @@
                     <name>children</name>
                     <description/>
                     <rangeTypeName>uima.cas.FSArray</rangeTypeName>
-                    <elementType>edu.cmu.cs.lti.script.type.StanfordTreeAnnotation</elementType>
+                    <elementType>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</elementType>
                 </featureDescription>
                 <featureDescription>
                     <name>isLeaf</name>
@@ -174,12 +176,33 @@
                 <featureDescription>
                     <name>parent</name>
                     <description/>
-                    <rangeTypeName>edu.cmu.cs.lti.script.type.StanfordTreeAnnotation</rangeTypeName>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>headTree</name>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</rangeTypeName>
+                    <description>The head tree among all the children.</description>
                 </featureDescription>
                 <featureDescription>
                     <name>head</name>
                     <description/>
-                    <rangeTypeName>edu.cmu.cs.lti.script.type.StanfordCorenlpToken</rangeTypeName>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.StanfordTreeAnnotation</name>
+            <description/>
+            <supertypeName>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.ZparTreeAnnotation</name>
+            <description/>
+            <supertypeName>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>additionalCharacterLabel</name>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
             </features>
         </typeDescription>
