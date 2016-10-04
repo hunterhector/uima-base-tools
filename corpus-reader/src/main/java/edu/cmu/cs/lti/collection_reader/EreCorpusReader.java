@@ -1,9 +1,15 @@
 package edu.cmu.cs.lti.collection_reader;
 
+import com.google.common.collect.ArrayListMultimap;
+import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
-import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.ForumStructureParser;
 import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
+import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import net.htmlparser.jericho.Attribute;
+import net.htmlparser.jericho.Attributes;
+import net.htmlparser.jericho.Element;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -15,6 +21,7 @@ import org.apache.uima.fit.component.ViewCreatorAnnotator;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.StringArray;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
@@ -47,21 +54,38 @@ public class EreCorpusReader extends AbstractCollectionReader {
     @ConfigurationParameter(name = PARAM_ERE_ANNOTATION_DIR)
     private File ereAnnotationDir;
 
-    public static final String PARAM_SOURCE_EXT = "sourceSuffix";
+    public static final String PARAM_SOURCE_EXT = "sourceExtension";
     @ConfigurationParameter(name = PARAM_SOURCE_EXT)
     private String sourceExt;
 
-    public static final String PARAM_ERE_ANNOTATION_EXT = "ereSourceSuffix";
+    public static final String PARAM_ERE_ANNOTATION_EXT = "ereSourceExtension";
     @ConfigurationParameter(name = PARAM_ERE_ANNOTATION_EXT)
     private String ereExt;
 
-    private List<Pair<File, File>> sourceAndAnnotationFiles;
+    public static final String PARAM_ERE_EVENT_SPLIT_DOC = "ereEventSplitDoc";
+    @ConfigurationParameter(name = PARAM_ERE_EVENT_SPLIT_DOC, defaultValue = "false")
+    private boolean ereEventSplitDoc;
+
+    public static final String PARAM_REMOVE_QUOTES = "removeQuotes";
+    @ConfigurationParameter(name = PARAM_REMOVE_QUOTES)
+    private boolean removeQuotes;
+
+    public static final String PARAM_QUOTED_AREA_FILE = "quotedAreaFile";
+    @ConfigurationParameter(name = PARAM_QUOTED_AREA_FILE, mandatory = false)
+    private File quotedAreaFile;
+
+    private List<Pair<File, List<File>>> sourceAndAnnotationFiles;
+
+    private List<Integer> annotationOffsets;
 
     public static final String COMPONENT_ID = LDCXmlCollectionReader.class.getSimpleName();
 
     private int fileIndex;
 
     private DocumentBuilder documentBuilder;
+    private ArrayListMultimap<String, Span> quotesFromFile;
+
+    private boolean noAnnotation = false;
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -69,17 +93,78 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
         sourceAndAnnotationFiles = new ArrayList<>();
 
-        Collection<File> sourceFiles = FileUtils.listFiles(sourceTextDir, new String[]{sourceExt}, false);
+        if (sourceTextDir != null) {
+            logger.info(String.format("Looking for source files in %s.", sourceTextDir.getAbsolutePath()));
+        }
 
+        if (ereAnnotationDir != null) {
+            logger.info("Looking for ere files in : " + ereAnnotationDir.getAbsolutePath());
+        } else {
+            logger.info("Annotations are not provided.");
+            noAnnotation = true;
+        }
+
+        List<File> sourceFiles = new ArrayList<>(FileUtils.listFiles(sourceTextDir, new String[]{sourceExt}, false));
+        logger.info(String.format("ERE reader found %d source files with extension [%s] from %s", sourceFiles.size(),
+                sourceExt, sourceTextDir));
+
+
+        Collection<File> ereFiles = null;
+        if (!noAnnotation) {
+            ereFiles = FileUtils.listFiles(ereAnnotationDir, new String[]{ereExt}, false);
+            logger.info(String.format("ERE reader found %d [%s] files in %s", ereFiles.size(), ereExt,
+                    ereAnnotationDir));
+        }
+
+        List<String> baseNames = new ArrayList<>();
         for (File sourceFile : sourceFiles) {
-            File ereFile = new File(ereAnnotationDir, sourceFile.getName().replaceAll(sourceExt + "$", ereExt));
+            baseNames.add(sourceFile.getName().replaceAll("." + sourceExt + "$", ""));
+        }
 
-            if (ereFile.exists()) {
-                sourceAndAnnotationFiles.add(Pair.of(sourceFile, ereFile));
-            } else {
-                sourceAndAnnotationFiles.add(Pair.of(sourceFile, null));
+        if (noAnnotation) {
+            for (File sourceFile : sourceFiles) {
+                sourceAndAnnotationFiles.add(Pair.of(sourceFile, new ArrayList<>()));
+            }
+        } else {
+            for (int i = 0; i < sourceFiles.size(); i++) {
+                File sourceFile = sourceFiles.get(i);
+                String baseName = baseNames.get(i);
+
+                boolean found = false;
+
+                List<File> correspondingEreFiles = new ArrayList<>();
+
+                for (File ereFile : ereFiles) {
+                    if (ereFile.getName().startsWith(baseName)) {
+                        found = true;
+                        correspondingEreFiles.add(ereFile);
+                    }
+                }
+
+                if (ereEventSplitDoc) {
+                    // When split doc, the annotations between them are not related.
+                    for (File correspondingEreFile : correspondingEreFiles) {
+                        sourceAndAnnotationFiles.add(Pair.of(sourceFile, Arrays.asList(correspondingEreFile)));
+                    }
+                } else {
+                    // When not splitting, the annotations between them are considered related.
+                    sourceAndAnnotationFiles.add(Pair.of(sourceFile, correspondingEreFiles));
+                }
+
+                if (!found) {
+                    logger.warn("No ere file found for " + sourceFile.getName());
+                }
             }
         }
+
+        if (quotedAreaFile != null) {
+            try {
+                quotesFromFile = getQuotesFromFile();
+            } catch (IOException e) {
+                throw new ResourceInitializationException(e);
+            }
+        }
+
 
         logger.info(String.format("%d files are going to be read.", sourceAndAnnotationFiles.size()));
         fileIndex = 0;
@@ -91,18 +176,38 @@ public class EreCorpusReader extends AbstractCollectionReader {
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         }
+
+//        sourceIterator = sourceAndAnnotationFiles.keySet().iterator();
     }
 
     @Override
     public void getNext(JCas jCas) throws IOException, CollectionException {
-        File sourceFile = sourceAndAnnotationFiles.get(fileIndex).getKey();
-        File ereFile = sourceAndAnnotationFiles.get(fileIndex).getValue();
-        fileIndex++;
+        Pair<File, List<File>> sourceAnnoPair = sourceAndAnnotationFiles.get(fileIndex);
+        File sourceFile = sourceAnnoPair.getKey();
+
+
+        int sourceBeginOffset = 0;
+        String sourceFileStr = FileUtils.readFileToString(sourceFile);
+
+        List<File> ereFiles = sourceAnnoPair.getValue();
+        if (ereEventSplitDoc) {
+            if (ereFiles.size() > 0) {
+                Span cmpSpan = getCmpSpan(sourceFile, ereFiles.get(0));
+                sourceBeginOffset = cmpSpan.getBegin();
+                sourceFileStr = sourceFileStr.substring(cmpSpan.getBegin(), cmpSpan.getEnd());
+            }
+        }
 
         UimaAnnotationUtils.setSourceDocumentInformation(jCas, sourceFile.toURI().toURL().toString(),
-                (int) sourceFile.length(), 0, true);
-        String sourceFileStr = FileUtils.readFileToString(sourceFile);
-        String documentText = new NoiseTextFormatter(sourceFileStr).cleanForum().multiNewLineBreaker("zh").getText();
+                (int) sourceFile.length(), sourceBeginOffset, true);
+
+        String cleanedText = new NoiseTextFormatter(sourceFileStr).cleanAll(language);
+        ArrayListMultimap<String, Element> tagsByName = ForumStructureParser.indexTagByName(sourceFileStr);
+
+        List<Span> quotedSpans = quotedAreaFile == null ? getQuotesFromElement(tagsByName) :
+                quotesFromFile.get(sourceFile.getName());
+
+        String documentText = removeQuotes ? removeQuoteStr(cleanedText, quotedSpans) : cleanedText;
 
         Article article = new Article(jCas);
         UimaAnnotationUtils.finishAnnotation(article, 0, documentText.length(), COMPONENT_ID, 0, jCas);
@@ -119,6 +224,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
             try {
                 JCas inputView = ViewCreatorAnnotator.createViewSafely(jCas, inputViewName);
                 inputView.setDocumentText(sourceFileStr);
+                annotateTagAreas(inputView, tagsByName);
             } catch (AnalysisEngineProcessException e) {
                 throw new CollectionException(e);
             }
@@ -134,25 +240,160 @@ public class EreCorpusReader extends AbstractCollectionReader {
         jCas.setDocumentText(documentText);
         goldView.setDocumentText(documentText);
 
-        if (ereFile != null) {
+        annotateTagAreas(jCas, tagsByName);
+        annotateTagAreas(goldView, tagsByName);
+
+        for (File ereFile : ereFiles) {
             try {
-                annotateGoldStandard(goldView, ereFile);
+                annotateGoldStandard(goldView, ereFile, sourceBeginOffset);
             } catch (SAXException e) {
                 e.printStackTrace();
             }
         }
+
+        fileIndex++;
     }
 
-    private void annotateGoldStandard(JCas goldView, File ereFile) throws IOException, SAXException {
+    private ArrayListMultimap<String, Span> getQuotesFromFile() throws IOException {
+        ArrayListMultimap<String, Span> quotedSpans = ArrayListMultimap.create();
+
+        for (String line : FileUtils.readLines(quotedAreaFile)) {
+            String[] fields = line.split("\t");
+            quotedSpans.put(fields[0], Span.of(Integer.valueOf(fields[1]), Integer.valueOf(fields[2])));
+        }
+
+        return quotedSpans;
+    }
+
+
+    private List<Span> getQuotesFromElement(ArrayListMultimap<String, Element> tagsByName) {
+        List<Span> quotedSpans = new ArrayList<>();
+        for (Element quote : tagsByName.get("quote")) {
+            quotedSpans.add(Span.of(quote.getBegin(), quote.getEnd()));
+        }
+        return quotedSpans;
+    }
+
+    private String removeQuoteStr(String original, List<Span> quotedAreas) {
+        StringBuilder sb = new StringBuilder(original);
+        for (Span quoteArea : quotedAreas) {
+            for (int i = quoteArea.getBegin(); i < quoteArea.getEnd(); i++) {
+                sb.setCharAt(i, ' ');
+            }
+        }
+        return sb.toString();
+    }
+
+    private void annotateTagAreas(JCas aJCas, ArrayListMultimap<String, Element> tagsByName) {
+        for (Map.Entry<String, Element> tagByName : tagsByName.entries()) {
+            Element tag = tagByName.getValue();
+            TaggedArea area = new TaggedArea(aJCas, tag.getBegin(), tag.getEnd());
+            area.setTagName(tagByName.getKey());
+
+            Attributes attributes = tag.getAttributes();
+
+            StringArray attributeNames = new StringArray(aJCas, attributes.size());
+            StringArray attributeValues = new StringArray(aJCas, attributes.size());
+
+            for (int i = 0; i < attributes.size(); i++) {
+                Attribute attribute = attributes.get(i);
+                attributeNames.set(i, attribute.getKey());
+                attributeValues.set(i, attribute.getValue());
+            }
+
+            area.setTagAttributeNames(attributeNames);
+            area.setTagAttributeValues(attributeValues);
+
+            UimaAnnotationUtils.finishAnnotation(area, COMPONENT_ID, 0, aJCas);
+        }
+    }
+
+    private Span getCmpSpan(File sourceFile, File ereFile) {
+        String sourceBasename = sourceFile.getName().replaceAll("." + sourceExt + "$", "");
+        String ereBasename = ereFile.getName().replaceAll("." + ereExt + "$", "");
+
+        String[] offsetStrs = ereBasename.replace(sourceBasename + "_", "").split("-");
+
+        int begin = Integer.parseInt(offsetStrs[0]);
+        int end = Integer.parseInt(offsetStrs[1]);
+
+        return Span.of(begin, end + 1);
+    }
+
+    private void annotateGoldStandard(JCas goldView, File ereFile, int beginOffset) throws IOException, SAXException {
         Document document = documentBuilder.parse(ereFile);
         Map<String, EntityMention> id2EntityMention = new HashMap<>();
-        annotateEntity(goldView, document, id2EntityMention);
-        annotateFillers(goldView, document, id2EntityMention);
+        annotateEntity(goldView, document, id2EntityMention, beginOffset);
+        annotateFillers(goldView, document, id2EntityMention, beginOffset);
         annotateRelations(goldView, document, id2EntityMention);
-        annotateEvents(goldView, document, id2EntityMention);
+        annotateEvents(goldView, document, id2EntityMention, beginOffset);
+        annotateEventHoppers(goldView, document, id2EntityMention, beginOffset);
     }
 
-    private void annotateEvents(JCas view, Document document, Map<String, EntityMention> id2EntityMention) {
+    private void annotateEvents(JCas view, Document document, Map<String, EntityMention> id2EntityMention, int
+            beginOffset) {
+        NodeList hopperNodes = document.getElementsByTagName("event");
+
+        for (int hopperNodeIndex = 0; hopperNodeIndex < hopperNodes.getLength(); hopperNodeIndex++) {
+            Node hopperNode = hopperNodes.item(hopperNodeIndex);
+            String hopperId = getAttribute(hopperNode, "id");
+
+            List<EventMention> mentionCluster = new ArrayList<>();
+            for (Node eventMentionNode : getSubNodes(hopperNode, "event_mention")) {
+                String mentionId = getAttribute(eventMentionNode, "id");
+                String mentionType = getAttribute(eventMentionNode, "type");
+                String mentionSubType = getAttribute(eventMentionNode, "subtype");
+                String mergedType = mentionType + "_" + mentionSubType;
+
+                Node triggerNode = getSubNode(eventMentionNode, "trigger");
+                int triggerStart = Integer.parseInt(getAttribute(triggerNode, "offset")) - beginOffset;
+                int triggerLength = Integer.parseInt(getAttribute(triggerNode, "length"));
+                int triggerEnd = triggerStart + triggerLength;
+
+                if (validateAnnotation(view, triggerStart, triggerEnd, triggerNode.getTextContent())) {
+                    EventMention mention = new EventMention(view, triggerStart, triggerEnd);
+                    mention.setEventType(mergedType);
+                    mention.setRealisType("None");
+
+                    List<Node> argNodes = getSubNodes(getSubNode(eventMentionNode, "args"), "arg");
+                    for (Node argNode : argNodes) {
+//                        String argEntityId = getAttribute(argNode, "entity_id");
+                        String argEntityMentionId = getAttribute(argNode, "entity_mention_id");
+                        String argRole = getAttribute(argNode, "type");
+
+                        EventMentionArgumentLink link = new EventMentionArgumentLink(view);
+                        link.setArgumentRole(argRole);
+                        EntityMention argEntityMention = id2EntityMention.get(argEntityMentionId);
+                        link.setArgument(argEntityMention);
+                        link.setEventMention(mention);
+                        UimaAnnotationUtils.finishTop(link, COMPONENT_ID, 0, view);
+                    }
+
+                    List<Node> placeNodes = getSubNodes(getSubNode(eventMentionNode, "places"), "place");
+                    for (Node placeNode : placeNodes) {
+                        String argEntityMentionId = getAttribute(placeNode, "entity_mention_id");
+                        EventMentionArgumentLink link = new EventMentionArgumentLink(view);
+                        link.setArgumentRole("place");
+                        EntityMention argEntityMention = id2EntityMention.get(argEntityMentionId);
+                        link.setArgument(argEntityMention);
+                        link.setEventMention(mention);
+                        UimaAnnotationUtils.finishTop(link, COMPONENT_ID, 0, view);
+                    }
+
+                    UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, mentionId, view);
+                    mentionCluster.add(mention);
+                }
+            }
+
+            Event event = new Event(view);
+            event.setEventMentions(FSCollectionFactory.createFSArray(view, mentionCluster));
+            UimaAnnotationUtils.finishTop(event, COMPONENT_ID, hopperId, view);
+        }
+    }
+
+
+    private void annotateEventHoppers(JCas view, Document document, Map<String, EntityMention> id2EntityMention, int
+            beginOffset) {
         NodeList hopperNodes = document.getElementsByTagName("hopper");
 
         for (int hopperNodeIndex = 0; hopperNodeIndex < hopperNodes.getLength(); hopperNodeIndex++) {
@@ -168,7 +409,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
                 String realisStatus = getAttribute(eventMentionNode, "realis");
 
                 Node triggerNode = getSubNode(eventMentionNode, "trigger");
-                int triggerStart = Integer.parseInt(getAttribute(triggerNode, "offset"));
+                int triggerStart = Integer.parseInt(getAttribute(triggerNode, "offset")) - beginOffset;
                 int triggerLength = Integer.parseInt(getAttribute(triggerNode, "length"));
                 int triggerEnd = triggerStart + triggerLength;
 
@@ -225,26 +466,34 @@ public class EreCorpusReader extends AbstractCollectionReader {
             Node relationArg1 = getSubNode(relationMentionNode, "rel_arg1");
             Node relationArg2 = getSubNode(relationMentionNode, "rel_arg2");
 
-            String arg1ElementId = getAttribute(relationArg1, "entity_mention_id");
+            if (relationArg1 != null && relationArg2 != null) {
+                String arg1ElementId = getAttribute(relationArg1, "entity_mention_id");
+                String arg2ElementId = getAttribute(relationArg2, "entity_mention_id");
 
+                EntityMentionRelation mentionRelation = new EntityMentionRelation(view);
+                mentionRelation.setHead(id2EntityMention.get(arg1ElementId));
+                mentionRelation.setChild(id2EntityMention.get(arg2ElementId));
+                mentionRelation.setRelationType(mergedType);
+                UimaAnnotationUtils.finishTop(mentionRelation, COMPONENT_ID, relationId, view);
+            }
 
-            String arg2ElementId = getAttribute(relationArg2, "entity_mention_id");
+            // Or spelled as arg. We currently ignore such relations.
+            List<Node> relationsArgs = getSubNodes(relationMentionNode, "rel_arg1");
+            for (Node relationsArg : relationsArgs) {
+                //        <arg type="role" entity_id="ent-12744800" entity_mention_id="m-138">总理</arg>
+            }
 
-            EntityMentionRelation mentionRelation = new EntityMentionRelation(view);
-            mentionRelation.setHead(id2EntityMention.get(arg1ElementId));
-            mentionRelation.setChild(id2EntityMention.get(arg2ElementId));
-            mentionRelation.setRelationType(mergedType);
-            UimaAnnotationUtils.finishTop(mentionRelation, COMPONENT_ID, relationId, view);
         }
     }
 
-    private void annotateFillers(JCas view, Document document, Map<String, EntityMention> id2EntityMention) {
+    private void annotateFillers(JCas view, Document document, Map<String, EntityMention> id2EntityMention, int
+            beginOffset) {
         NodeList fillerNodes = document.getElementsByTagName("filler");
 
         for (int fillerNodeIndex = 0; fillerNodeIndex < fillerNodes.getLength(); fillerNodeIndex++) {
             Node fillerNode = fillerNodes.item(fillerNodeIndex);
             String fillerId = getAttribute(fillerNode, "id");
-            int offset = Integer.parseInt(getAttribute(fillerNode, "offset"));
+            int offset = Integer.parseInt(getAttribute(fillerNode, "offset")) - beginOffset;
             int length = Integer.parseInt(getAttribute(fillerNode, "length"));
             int end = offset + length;
             String type = getAttribute(fillerNode, "type");
@@ -261,7 +510,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
     }
 
     private List<EntityMention> annotateEntity(JCas view, Document document,
-                                               Map<String, EntityMention> id2EntityMention) {
+                                               Map<String, EntityMention> id2EntityMention, int beginOffset) {
         NodeList entityNodes = document.getElementsByTagName("entity");
 
         List<EntityMention> entityMentions = new ArrayList<>();
@@ -274,7 +523,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
             for (Node entityMentionNode : entityMentionNodes) {
                 String entityMentionId = getAttribute(entityMentionNode, "id");
-                int entityMentionStart = Integer.parseInt(getAttribute(entityMentionNode, "offset"));
+                int entityMentionStart = Integer.parseInt(getAttribute(entityMentionNode, "offset")) - beginOffset;
                 int entityMentionLength = Integer.parseInt(getAttribute(entityMentionNode, "length"));
                 int entityMentionEnd = entityMentionStart + entityMentionLength;
 

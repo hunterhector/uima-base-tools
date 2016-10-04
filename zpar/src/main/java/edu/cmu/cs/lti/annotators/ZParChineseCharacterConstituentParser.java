@@ -126,7 +126,7 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
 
         // Zpar will consider each line as an input, and will also try to parse full-width spaces. We here remove them.
         // Note that the regex is whitespace and the full width space.
-        String sentenceText = sentence.getCoveredText().replaceAll("[\\s　]", " ").replaceAll("#",".");
+        String sentenceText = sentence.getCoveredText().replaceAll("[\\s　]", " ").replaceAll("#", ".");
         logger.debug("Processing " + sentenceText);
 
         new DataForwarder(new BufferedReader(new InputStreamReader(IOUtils.toInputStream(
@@ -139,12 +139,15 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
         String line;
         int numParsedChars = 0;
         while ((line = zparOutput.readLine()) != null) {
-            logger.debug("Next line is : " + line);
+            logger.debug("Original parse line is : " + line);
 
             // First we replace brackets to -LRB- and -RRB-.
-            // Punctuations will be ignored by the tree reader.
-            String replacedParse = line.replaceAll("#b\\s\\(", "#b -LRB-").replaceAll("#b\\s\\)", "#b -RRB-")
-                    .replaceAll("#", "ddd");
+            // To detect whether they are parse brackets or not, we use the label before it.
+            // We then repalce # with our own determiner, cuz  punctuations will be ignored by the tree reader.
+            String replacedParse = line.replaceAll("#i\\s\\(", "#i -LRB-").replaceAll("#b\\s\\(", "#b -LRB-")
+                    .replaceAll("#i\\s\\)", "#i -RRB-").replaceAll("#b\\s\\)", "#b -RRB-").replaceAll("#", "ddd");
+
+            logger.debug("Replace parse is : " + replacedParse);
             Tree parseTree = Tree.valueOf(replacedParse);
             numParsedChars += parseTree.getLeaves().size();
 
@@ -152,9 +155,16 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
 
             if (numParsedChars == numCharacter) {
                 break;
-            } else {
-                logger.error(String.format("Number of parsed character [%d] is not the same as number of actual " +
-                        "character [%d].", numParsedChars, numCharacter));
+            }
+        }
+
+        if (numParsedChars != numCharacter) {
+            logger.error(String.format("Number of parsed character [%d] is not the same as number of actual " +
+                    "character [%d].", numParsedChars, numCharacter));
+            logger.error("Original sentence is " + sentenceText);
+            logger.error("Parsed result contains the following: ");
+            for (String parse : parses) {
+                logger.error(parse);
             }
         }
 
@@ -240,11 +250,12 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
                 }
             } else if (charParLabel.equals("b") || charParLabel.equals("i")) {
                 // The character annotation, indicate begin or inside.
-                headZparTree = null;
-                CharacterAnnotation childCharacter = (CharacterAnnotation) childAnnotations.get(0).getHead();
+                headZparTree = childAnnotations.get(0);
+                CharacterAnnotation childCharacter = (CharacterAnnotation) headZparTree.getHead();
                 if (charParLabel.equals("b")) {
                     childCharacter.setIsBegin(true);
                 }
+                childCharacter.setPos(zparTree.getPennTreeLabel());
             } else {
                 logger.error(String.format("Encounter unknown character parsing label %s.", charParLabel));
                 headZparTree = null;

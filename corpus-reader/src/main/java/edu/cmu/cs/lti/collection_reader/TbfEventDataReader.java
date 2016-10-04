@@ -143,6 +143,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
     }
 
     private Map<String, File> getBaseNames(File dir, final String ext) {
+        logger.info("Finding " + ext + " in " + dir);
         File[] fileList = dir.listFiles((dir1, name) -> {
             return name.toLowerCase().endsWith(ext);
         });
@@ -165,8 +166,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
                 (int) currentFile.getValue1().length(), 0, true);
 
         String sourceFileStr = FileUtils.readFileToString(getSourceFile());
-        String documentText = new NoiseTextFormatter(sourceFileStr).cleanForum().cleanNews().multiNewLineBreaker()
-                .getText();
+        String documentText = new NoiseTextFormatter(sourceFileStr).cleanAll();
 
         if (sourceFileStr.length() != documentText.length()) {
             throw new CollectionException(new Exception(String.format(

@@ -1,6 +1,6 @@
 package edu.cmu.cs.lti.pipeline;
 
-import edu.cmu.cs.lti.annotator.StanfordCoreNlpAnnotator;
+import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.PlainTextCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import org.apache.uima.UIMAException;

@@ -33,6 +33,10 @@ public class NoiseTextFormatter {
             "<\\s?/\\s?HEADLINE>"
     };
 
+    private static String[] xmlPattern = {
+        "<\\?xml.*\\?>"
+    };
+
     private static String sentenceEndFixer = "[^\\p{Punct}](\\n)[\\s|\\n]*\\n";
 
     private String text;
@@ -54,6 +58,19 @@ public class NoiseTextFormatter {
     public NoiseTextFormatter cleanNews() {
         cleanTextWithPatterns(newsDiscardPattern);
         return this;
+    }
+
+    public NoiseTextFormatter cleanXMLHeader(){
+        cleanTextWithPatterns(xmlPattern);
+        return this;
+    }
+
+    public String cleanAll(String language){
+        return cleanForum().cleanNews().cleanXMLHeader().multiNewLineBreaker(language).getText();
+    }
+
+    public String cleanAll(){
+        return cleanAll("en");
     }
 
     public String getText() {
@@ -115,12 +132,14 @@ public class NoiseTextFormatter {
 
     public static void main(String[] args) throws BoilerpipeProcessingException, IOException, SAXException,
             TikaException {
-        String noisyText = FileUtils.readFileToString(new File("/Users/zhengzhongliu/Documents/projects/cmu-script/data/mention/LDC/LDC2015E78_DEFT_Rich_ERE_Chinese_and_English_Parallel_Annotation_V2/data/cmn/source/020f7dc5023a3dcdff18cb12b621d2a8.mp.txt"));
+        String noisyText = FileUtils.readFileToString(new File
+                ("../data/project_data/LDC/LDC2015E112_DEFT_Rich_ERE_Chinese_Training_Annotation_R2/data/source" +
+                        "/CMN_DF_000181_20141218_F000000CL.xml"));
 
         String language = "zh";
 
         NoiseTextFormatter formatter = new NoiseTextFormatter(noisyText);
-        String ruleCleaned = formatter.cleanForum().cleanNews().multiNewLineBreaker(language).getText();
+        String ruleCleaned = formatter.cleanAll(language);
 
         System.out.println("=== Rule results ===");
         System.out.println(ruleCleaned);

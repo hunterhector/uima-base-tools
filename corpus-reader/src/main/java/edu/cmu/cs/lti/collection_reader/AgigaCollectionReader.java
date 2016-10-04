@@ -345,7 +345,7 @@ public class AgigaCollectionReader extends AbstractCollectionReader {
             }
 
             if (mention.getHead() == null) {
-                mention.setHead(UimaNlpUtils.findHeadFromAnnotation(mention));
+                mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
             }
         }
 

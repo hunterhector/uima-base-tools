@@ -43,14 +43,18 @@ public class SistaDocumentMaker {
      * @param endOffsets
      * @param dependencies
      */
-    public void addSent(String[] tokens, String[] tags, String[] lemmas, int[] beginOffsets, int[] endOffsets, Tree<String> syntacticTree, DirectedGraph<String> dependencies) {
-        Sentence sent = new Sentence(tokens, beginOffsets, endOffsets, Some.apply(tags), Some.apply(lemmas), null, null, null, Some.apply(syntacticTree), Some.apply(dependencies));
+    public void addSent(String[] tokens, String[] tags, String[] lemmas, int[] beginOffsets, int[] endOffsets,
+                        Tree<String> syntacticTree, DirectedGraph<String> dependencies) {
+        Sentence sent = new Sentence(tokens, beginOffsets, endOffsets, Some.apply(tags), Some.apply(lemmas), null,
+                null, null, Some.apply(syntacticTree), Some.apply(dependencies));
         sents.add(sent);
     }
 
-    public void addSent(String[] tokens, String[] tags, String[] lemmas, int[] beginOffsets, int[] endOffsets, DirectedGraph<String> dependencies) {
+    public void addSent(String[] tokens, String[] tags, String[] lemmas, int[] beginOffsets, int[] endOffsets,
+                        DirectedGraph<String> dependencies) {
         Option<Tree<String>> noneTree = Option.apply(null);
-        Sentence sent = new Sentence(tokens, beginOffsets, endOffsets, Some.apply(tags), Some.apply(lemmas), null, null, null, noneTree, Some.apply(dependencies));
+        Sentence sent = new Sentence(tokens, beginOffsets, endOffsets, Some.apply(tags), Some.apply(lemmas), null,
+                null, null, noneTree, Some.apply(dependencies));
         sents.add(sent);
     }
 
@@ -61,7 +65,8 @@ public class SistaDocumentMaker {
         return doc;
     }
 
-    public static DirectedGraph<String> toSistaDependencies(Table<Integer, Integer, String> allDeps, Set<Integer> roots) {
+    public static DirectedGraph<String> toSistaDependencies(Table<Integer, Integer, String> allDeps, Set<Integer>
+            roots) {
         List<Tuple3<Object, Object, String>> edges = new ArrayList<>();
 
         for (Table.Cell<Integer, Integer, String> cell : allDeps.cellSet()) {
@@ -71,7 +76,8 @@ public class SistaDocumentMaker {
             edges.add(new Tuple3<Object, Object, String>(gov, dep, label));
         }
 
-        return new DirectedGraph<String>(JavaConversions.asScalaBuffer(edges).toList(), JavaConversions.asScalaSet(roots).toSet());
+        return new DirectedGraph<String>(JavaConversions.asScalaBuffer(edges).toList(), JavaConversions.asScalaSet
+                (roots).toSet());
     }
 
     public static Tree<String> toSistaTree(StanfordTreeAnnotation stanfordTree, int position) {
@@ -87,9 +93,10 @@ public class SistaDocumentMaker {
         int firstTokenIdx = firstTokenIndex(stanfordTree);
 
         for (int i = 0; i < stanfordTree.getChildren().size(); i++) {
-            StanfordTreeAnnotation childTree = stanfordTree.getChildren(i);
+            StanfordTreeAnnotation childTree = (StanfordTreeAnnotation) stanfordTree.getChildren(i);
             int childTokenIdx = firstTokenIndex(childTree);
-            children[i] = toSistaTree(stanfordTree.getChildren(i), position + childTokenIdx - firstTokenIdx);
+            children[i] = toSistaTree((StanfordTreeAnnotation) stanfordTree.getChildren(i),
+                    position + childTokenIdx - firstTokenIdx);
         }
 
         int headTokenId = Integer.parseInt(stanfordTree.getHead().getId()); //document wide id
@@ -104,11 +111,11 @@ public class SistaDocumentMaker {
 
         int headTreeIndex = -1;
         int i = 0;
-        for (Tree<String> child: children){
+        for (Tree<String> child : children) {
 //            System.out.println(child.toString());
 //            System.out.println(child.startOffset());
 //            System.out.println(child.endOffset());
-            if (child.startOffset() <= headTokenPosition && child.endOffset() > headTokenPosition){
+            if (child.startOffset() <= headTokenPosition && child.endOffset() > headTokenPosition) {
                 headTreeIndex = i;
                 break;
             }
@@ -124,7 +131,8 @@ public class SistaDocumentMaker {
         return new Tree<>(stanfordTree.getPennTreeLabel(), Some.apply(children), headTreeIndex, start, end);
     }
 
-    private static int firstTokenIndex(StanfordTreeAnnotation stanfordTree){
-        return Integer.parseInt(Iterables.get(JCasUtil.selectCovered(StanfordCorenlpToken.class, stanfordTree), 0).getId());
+    private static int firstTokenIndex(StanfordTreeAnnotation stanfordTree) {
+        return Integer.parseInt(Iterables.get(JCasUtil.selectCovered(StanfordCorenlpToken.class, stanfordTree), 0)
+                .getId());
     }
 }

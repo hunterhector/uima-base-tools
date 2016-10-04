@@ -1,4 +1,4 @@
-package edu.cmu.cs.lti.annotator;
+package edu.cmu.cs.lti.annotators;
 
 import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.model.Span;

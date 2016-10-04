@@ -33,6 +33,24 @@ public class CustomCollectionReaderFactory {
     }
 
     /**
+     * Creates a simple XMI reader with the specified type system.
+     * convention.
+     *
+     * @param typeSystemDescription
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createXmiReader(
+            TypeSystemDescription typeSystemDescription, String inputDirName)
+            throws ResourceInitializationException {
+        // Instantiate a collection reader to get XMI as input.
+        return CollectionReaderFactory.createReaderDescription(
+                XmiCollectionReader.class, typeSystemDescription,
+                XmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
+                XmiCollectionReader.PARAM_FAIL_UNKNOWN, false);
+    }
+
+    /**
      * Creates a simple XMI reader with the specified type system, assuming the directory naming
      * convention.
      *

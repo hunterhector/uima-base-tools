@@ -39,6 +39,29 @@
             <supertypeName>edu.cmu.cs.lti.script.type.Dependency</supertypeName>
         </typeDescription>
         <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.LtpToken</name>
+            <description/>
+            <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.LtpEntityMention</name>
+            <description/>
+            <supertypeName>edu.cmu.cs.lti.script.type.EntityMention</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.LtpDependency</name>
+            <description/>
+            <supertypeName>edu.cmu.cs.lti.script.type.Dependency</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.LtpSemanticRelation</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.SemanticRelation</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.LtpArgument</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.SemanticArgument</supertypeName>
+        </typeDescription>
+        <typeDescription>
             <name>edu.cmu.cs.lti.script.type.FanseToken</name>
             <description/>
             <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
@@ -52,23 +75,23 @@
             <name>edu.cmu.cs.lti.script.type.FanseSemanticRelation</name>
             <description/>
             <supertypeName>edu.cmu.cs.lti.script.type.SemanticRelation</supertypeName>
-            <features>
-                <!--Added for backward compatibility-->
-                <featureDescription>
-                    <name>child</name>
-                    <description/>
-                    <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
-                </featureDescription>
-            </features>
         </typeDescription>
         <typeDescription>
-            <name>edu.cmu.lti.script.type.MateToken</name>
+            <name>edu.cmu.cs.lti.script.type.FanseArgument</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.SemanticArgument</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.MateToken</name>
             <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
         </typeDescription>
         <typeDescription>
             <name>edu.cmu.cs.lti.script.type.MateSemanticRelation</name>
             <description/>
             <supertypeName>edu.cmu.cs.lti.script.type.SemanticRelation</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.MateArgument</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.SemanticArgument</supertypeName>
         </typeDescription>
         <typeDescription>
             <name>edu.cmu.cs.lti.script.type.SemaforLabel</name>

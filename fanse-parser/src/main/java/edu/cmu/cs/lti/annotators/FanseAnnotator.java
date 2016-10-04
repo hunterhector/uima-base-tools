@@ -151,9 +151,7 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                 }
             }
 
-            // now creat semantic edges of these nodes
-            ArrayListMultimap<FanseToken, FanseSemanticRelation> semanticHeadRelationMap = ArrayListMultimap
-                    .create();
+            // now create semantic edges of these nodes
             ArrayListMultimap<FanseToken, FanseSemanticRelation> semanticChildRelationMap = ArrayListMultimap
                     .create();
 
@@ -166,18 +164,28 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                 FanseToken headToken = Fanse2UimaMap.get(arc.getHead());
 
                 if (childToken != null || headToken != null) {
+                    FanseArgument arg = null;
+                    if (childToken != null) {
+                        arg = new FanseArgument(aJCas, childToken.getBegin(), childToken.getEnd());
+                        arg.setHead(childToken);
+                        UimaAnnotationUtils.finishAnnotation(arg, COMPONENT_ID, 0, aJCas);
+                    }
+
+                    List<FanseSemanticRelation> relations = new ArrayList<>();
                     FanseSemanticRelation fArc = new FanseSemanticRelation(aJCas);
                     fArc.setHead(headToken);
-                    fArc.setChildHead(childToken);
+                    fArc.setChild(arg);
                     fArc.setSemanticAnnotation(arc.getSemanticAnnotation());
 
-                    semanticHeadRelationMap.put(childToken, fArc);
                     semanticChildRelationMap.put(headToken, fArc);
                     UimaAnnotationUtils.finishTop(fArc, COMPONENT_ID, 0, aJCas);
+
+                    relations.add(fArc);
+                    headToken.setChildSemanticRelations(FSCollectionFactory.createFSList(aJCas, relations));
                 }
             }
 
-            // associate token annotation with arc
+            // Associate token annotation with arc.
             for (FanseToken fToken : Fanse2UimaMap.values()) {
                 if (dependencyHeadRelationMap.containsKey(fToken)) {
                     fToken.setHeadDependencyRelations(FSCollectionFactory.createFSList(aJCas,
@@ -186,14 +194,6 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                 if (dependencyChildRelationMap.containsKey(fToken)) {
                     fToken.setChildDependencyRelations(FSCollectionFactory.createFSList(aJCas,
                             dependencyChildRelationMap.get(fToken)));
-                }
-                if (semanticHeadRelationMap.containsKey(fToken)) {
-                    fToken.setHeadSemanticRelations(FSCollectionFactory.createFSList(aJCas,
-                            semanticHeadRelationMap.get(fToken)));
-                }
-                if (semanticChildRelationMap.containsKey(fToken)) {
-                    fToken.setChildSemanticRelations(FSCollectionFactory.createFSList(aJCas,
-                            semanticChildRelationMap.get(fToken)));
                 }
             }
         }

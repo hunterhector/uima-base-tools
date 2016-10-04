@@ -104,7 +104,7 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
         String text = FileUtils.file2String(file, encoding);
 
         if (doNoiseFilter) {
-            text = new NoiseTextFormatter(text).cleanForum().cleanNews().multiNewLineBreaker().getText();
+            text = new NoiseTextFormatter(text).cleanAll();
         }
 
         // put document in CAS

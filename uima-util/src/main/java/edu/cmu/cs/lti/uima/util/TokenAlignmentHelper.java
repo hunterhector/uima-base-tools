@@ -26,8 +26,6 @@ public class TokenAlignmentHelper {
 
     private Map<FanseToken, Word> f2w;
 
-//    private Map<SemaforLabel, StanfordCorenlpToken> semafor2Stanford;
-
     private final boolean verbose;
 
     public TokenAlignmentHelper() {
@@ -106,7 +104,6 @@ public class TokenAlignmentHelper {
         return s2f.get(t);
     }
 
-
     public StanfordCorenlpToken getStanfordToken(FanseToken t) {
         return f2s.get(t);
     }
@@ -127,12 +124,12 @@ public class TokenAlignmentHelper {
         return s2w.get(t);
     }
 
-    private <ToType extends ComponentAnnotation, FromType extends ComponentAnnotation> Map<FromType, ToType>
+    public <ToType extends ComponentAnnotation, FromType extends ComponentAnnotation> Map<FromType, ToType>
     getType2TypeMapping(JCas aJCas, Class<FromType> clazzFrom, Class<ToType> clazzTo) {
         return getType2TypeMapping(aJCas, clazzFrom, clazzTo, null);
     }
 
-    private <ToType extends ComponentAnnotation, FromType extends ComponentAnnotation> Map<FromType, ToType>
+    public <ToType extends ComponentAnnotation, FromType extends ComponentAnnotation> Map<FromType, ToType>
     getType2TypeMapping(JCas aJCas, Class<FromType> clazzFrom, Class<ToType> clazzTo, String targetComponentId) {
         Map<ToType, Collection<FromType>> tokenCoveredWord = JCasUtil.indexCovered(aJCas, clazzTo,
                 clazzFrom);

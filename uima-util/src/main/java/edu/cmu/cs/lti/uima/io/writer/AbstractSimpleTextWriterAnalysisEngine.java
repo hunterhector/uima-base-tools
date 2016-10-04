@@ -21,15 +21,11 @@ public abstract class AbstractSimpleTextWriterAnalysisEngine extends AbstractLog
     public static final String PARAM_OUTPUT_PATH = "outputPath";
 
     @ConfigurationParameter(name = PARAM_OUTPUT_PATH, mandatory = true)
-    private String outputPath;
-
     private File outputFile;
-
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
-        outputFile = new File(outputPath);
 
         File parentDir = outputFile.getAbsoluteFile().getParentFile();
         if (!parentDir.exists()) {

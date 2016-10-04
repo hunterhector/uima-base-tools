@@ -1,7 +1,7 @@
 package edu.cmu.cs.lti.uima.util;
 
 import edu.cmu.cs.lti.script.type.*;
-import edu.cmu.cs.lti.utils.DebugUtils;
+import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import org.apache.uima.fit.util.FSCollectionFactory;
@@ -75,7 +75,7 @@ public class UimaNlpUtils {
         return findHeadFromTree(largestContainingTree, StanfordCorenlpToken.class);
     }
 
-    public static CharacterAnnotation findHeadCharacterFromZparAnnotatoin(Annotation anno) {
+    public static CharacterAnnotation findHeadCharacterFromZparAnnotation(Annotation anno) {
         return findHeadFromTree(findLargestContainingTree(anno, ZparTreeAnnotation.class), CharacterAnnotation.class);
     }
 
@@ -103,10 +103,14 @@ public class UimaNlpUtils {
                 coveringTokenCount.increment(JCasUtil.selectCovering(StanfordCorenlpToken.class, character).get(0));
             }
 
-            logger.debug(String.format("Cannot find head word for annotation [%s]-[%d:%d].", anno.getCoveredText(),
-                    anno.getBegin(), anno.getEnd()));
-
-            DebugUtils.pause(logger);
+            int maxCount = 0;
+            for (TObjectIntIterator<StanfordCorenlpToken> iter = coveringTokenCount.iterator(); iter.hasNext(); ) {
+                iter.advance();
+                if (iter.value() > maxCount) {
+                    headWord = iter.key();
+                    maxCount = iter.value();
+                }
+            }
         }
 
         return headWord;

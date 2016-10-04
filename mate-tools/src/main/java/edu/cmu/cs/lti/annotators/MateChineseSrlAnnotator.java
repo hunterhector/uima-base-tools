@@ -1,12 +1,9 @@
 package edu.cmu.cs.lti.annotators;
 
 import com.google.common.collect.ArrayListMultimap;
-import edu.cmu.cs.lti.script.type.Dependency;
-import edu.cmu.cs.lti.script.type.SemanticRelation;
-import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
+import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
-import edu.cmu.lti.script.type.MateToken;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -24,6 +21,7 @@ import se.lth.cs.srl.pipeline.Pipeline;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipFile;
@@ -82,34 +80,33 @@ public class MateChineseSrlAnnotator extends AbstractLoggingAnnotator {
         List<Predicate> predicates = srlSentence.getPredicates();
 
         ArrayListMultimap<MateToken, SemanticRelation> semanticChildRelations = ArrayListMultimap.create();
-        ArrayListMultimap<MateToken, SemanticRelation> semanticHeadRelations = ArrayListMultimap.create();
 
         for (Predicate predicate : predicates) {
             String sense = predicate.getSense();
             MateToken headToken = mateTokens[predicate.getIdx() - 1];
             headToken.setLexicalSense(sense);
 
+
+            List<SemanticRelation> childRelations = new ArrayList<>();
             for (Map.Entry<Word, String> argument : predicate.getArgMap().entrySet()) {
                 MateToken argumentHead = mateTokens[argument.getKey().getIdx() - 1];
+                MateArgument arg = new MateArgument(aJCas, argumentHead.getBegin(), argumentHead.getEnd());
+                arg.setHead(argumentHead);
+                UimaAnnotationUtils.finishAnnotation(arg, COMPONENT_ID, 0, aJCas);
+
                 String argumentType = argument.getValue();
 
                 SemanticRelation relation = new SemanticRelation(aJCas);
                 relation.setHead(headToken);
-                relation.setChildHead(argumentHead);
+                relation.setChild(arg);
                 relation.setPropbankRoleName(argumentType);
+                UimaAnnotationUtils.finishTop(relation, COMPONENT_ID, 0, aJCas);
 
-                semanticHeadRelations.put(argumentHead, relation);
-                semanticChildRelations.put(headToken, relation);
+                childRelations.add(relation);
             }
+
+            headToken.setChildSemanticRelations(FSCollectionFactory.createFSList(aJCas, childRelations));
         }
-
-        semanticChildRelations.asMap().forEach((token, childRelations) -> {
-            token.setChildSemanticRelations(FSCollectionFactory.createFSList(aJCas, childRelations));
-        });
-
-        semanticHeadRelations.asMap().forEach((token, headRelations) -> {
-            token.setHeadSemanticRelations(FSCollectionFactory.createFSList(aJCas, headRelations));
-        });
 
         for (MateToken mateToken : mateTokens) {
             UimaAnnotationUtils.finishAnnotation(mateToken, COMPONENT_ID, String.valueOf(mateToken.getIndex()), aJCas);

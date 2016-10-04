@@ -194,12 +194,12 @@
                     <description/>
                     <rangeTypeName>uima.cas.Boolean</rangeTypeName>
                 </featureDescription>
-                <featureDescription>
-                    <name>headSemanticRelations</name>
-                    <description/>
-                    <rangeTypeName>uima.cas.FSList</rangeTypeName>
-                    <elementType>edu.cmu.cs.lti.script.type.SemanticRelation</elementType>
-                </featureDescription>
+                <!--<featureDescription>-->
+                    <!--<name>headSemanticRelations</name>-->
+                    <!--<description/>-->
+                    <!--<rangeTypeName>uima.cas.FSList</rangeTypeName>-->
+                    <!--<elementType>edu.cmu.cs.lti.script.type.SemanticRelation</elementType>-->
+                <!--</featureDescription>-->
                 <featureDescription>
                     <name>childSemanticRelations</name>
                     <description/>
@@ -988,14 +988,14 @@
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
-                    <name>childSpan</name>
-                    <rangeTypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</rangeTypeName>
+                    <name>child</name>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.SemanticArgument</rangeTypeName>
                 </featureDescription>
-                <featureDescription>
-                    <name>childHead</name>
-                    <description/>
-                    <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
-                </featureDescription>
+                <!--<featureDescription>-->
+                    <!--<name>childHead</name>-->
+                    <!--<description/>-->
+                    <!--<rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>-->
+                <!--</featureDescription>-->
                 <featureDescription>
                     <name>verbNetRoleName</name>
                     <description>The thematic role name in VerbNet</description>
@@ -1028,6 +1028,17 @@
                     <description>The preposition that used to link this argument, for example " put on the clothes",
                         "on" is the preposition to link to the actual argument "clothes".
                     </description>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.SemanticArgument</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>head</name>
+                    <description/>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
                 </featureDescription>
             </features>
@@ -1210,7 +1221,7 @@
                     <rangeTypeName>uima.cas.Double</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
-                    <name>superFrameElementRoleNames</name>
+                    <name>superFrameElementaggRoleNames</name>
                     <description>store the super frame element names based on the frame relation table, current format
                         "frameRelationType#superFrameName#superFEname"
                     </description>
@@ -1228,6 +1239,26 @@
                         "on" is the preposition to link to the actual argument "clothes"
                     </description>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.TaggedArea</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>tagName</name>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>tagAttributeNames</name>
+                    <rangeTypeName>uima.cas.StringArray</rangeTypeName>
+                    <elementType>uima.cas.String</elementType>
+                </featureDescription>
+                <featureDescription>
+                    <name>tagAttributeValues</name>
+                    <rangeTypeName>uima.cas.StringArray</rangeTypeName>
+                    <elementType>uima.cas.String</elementType>
                 </featureDescription>
             </features>
         </typeDescription>

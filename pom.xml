@@ -19,6 +19,7 @@
         <module>misc-annotators</module>
         <module>mate-tools</module>
         <module>zpar</module>
+        <module>ltp-parser</module>
     </modules>
     <build>
         <plugins>
@@ -108,6 +109,11 @@
                 <groupId>edu.cmu.cs.lti</groupId>
                 <artifactId>zl-utils</artifactId>
                 <version>0.0.2</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jsoup</groupId>
+                <artifactId>jsoup</artifactId>
+                <version>1.9.2</version>
             </dependency>
             <dependency>
                 <groupId>edu.cmu.cs.lti</groupId>
@@ -209,6 +215,17 @@
                 <groupId>org.apache.maven</groupId>
                 <artifactId>maven-project</artifactId>
                 <version>2.2.1</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.11</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>net.htmlparser.jericho</groupId>
+                <artifactId>jericho-html</artifactId>
+                <version>3.4</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
