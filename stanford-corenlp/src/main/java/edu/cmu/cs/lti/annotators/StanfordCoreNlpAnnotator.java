@@ -332,7 +332,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
             // The following deals with tree annotation.
             Tree tree = sentAnno.get(TreeAnnotation.class);
-            addPennTreeAnnotation(aJCas, tree, null, null, textOffset);
+            StanfordTreeAnnotation uimaTree = addPennTreeAnnotation(aJCas, tree, null, null, textOffset);
 
             // The following add the collapsed cc processed dependencies of each sentence into CAS annotation.
             SemanticGraph depends = sentAnno.get(CollapsedCCProcessedDependenciesAnnotation.class);
@@ -444,10 +444,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 neEnd = endIndex;
             }
         }
-
-
     }
-
 
     private StanfordTreeAnnotation addPennTreeAnnotation(JCas aJCas, Tree currentNode, Tree parentNode,
                                                          StanfordTreeAnnotation parent, int textOffset) {
@@ -521,17 +518,17 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             return treeAnno;
         } else {
             ArrayList<edu.stanford.nlp.ling.Word> words = currentNode.yieldWords();
-            StanfordTreeAnnotation leafTree = new StanfordTreeAnnotation(aJCas);
+//            StanfordTreeAnnotation leafTree = new StanfordTreeAnnotation(aJCas);
 
             int leafBegin = words.get(0).beginPosition() + textOffset;
             int leafEnd = words.get(words.size() - 1).endPosition() + textOffset;
 
-            leafTree.setBegin(leafBegin);
-            leafTree.setEnd(leafEnd);
-            leafTree.setPennTreeLabel(currentNode.value());
-            leafTree.setIsLeaf(true);
+            treeAnno.setBegin(leafBegin);
+            treeAnno.setEnd(leafEnd);
+            treeAnno.setPennTreeLabel(currentNode.value());
+            treeAnno.setIsLeaf(true);
 
-            List<StanfordCorenlpToken> leafTokens = JCasUtil.selectCovered(StanfordCorenlpToken.class, leafTree);
+            List<StanfordCorenlpToken> leafTokens = JCasUtil.selectCovered(StanfordCorenlpToken.class, treeAnno);
 
             if (leafTokens.size() != 1) {
                 logger.warn(String.format("Incorrect leave span [%d:%d], it contains %d words.", leafBegin, leafEnd,
@@ -542,8 +539,8 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 treeAnno.setHead(leafTokens.get(0));
             }
 
-            UimaAnnotationUtils.finishAnnotation(leafTree, COMPONENT_ID, 0, aJCas);
-            return leafTree;
+            UimaAnnotationUtils.finishAnnotation(treeAnno, COMPONENT_ID, 0, aJCas);
+            return treeAnno;
         }
     }
 
