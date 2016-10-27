@@ -69,11 +69,11 @@ public class UimaNlpUtils {
         return null;
     }
 
-    public static StanfordCorenlpToken findHeadFromRange(JCas view, int begin, int end) {
-        StanfordTreeAnnotation largestContainingTree = findLargest(JCasUtil.selectCovered(view,
-                StanfordTreeAnnotation.class, begin, end));
-        return findHeadFromTree(largestContainingTree, StanfordCorenlpToken.class);
-    }
+//    public static StanfordCorenlpToken findHeadFromRange(JCas view, int begin, int end) {
+//        StanfordTreeAnnotation largestContainingTree = findLargest(JCasUtil.selectCovered(view,
+//                StanfordTreeAnnotation.class, begin, end));
+//        return findHeadFromTree(largestContainingTree, StanfordCorenlpToken.class);
+//    }
 
     public static CharacterAnnotation findHeadCharacterFromZparAnnotation(Annotation anno) {
         return findHeadFromTree(findLargestContainingTree(anno, ZparTreeAnnotation.class), CharacterAnnotation.class);
