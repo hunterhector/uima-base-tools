@@ -5,7 +5,7 @@
     <parent>
         <artifactId>uima-tools</artifactId>
         <groupId>edu.cmu.cs.lti</groupId>
-        <version>0.0.1</version>
+        <version>0.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -18,6 +18,7 @@
     </repositories>
 
     <artifactId>ltp-parser</artifactId>
+    <version>0.0.2</version>
 
     <dependencies>
         <dependency>
@@ -28,7 +29,7 @@
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>uima-util</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.2</version>
         </dependency>
     </dependencies>
 

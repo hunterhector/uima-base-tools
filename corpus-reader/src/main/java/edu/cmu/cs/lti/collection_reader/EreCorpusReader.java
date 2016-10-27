@@ -7,6 +7,7 @@ import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.util.ForumStructureParser;
 import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.util.NuggetFormat;
 import net.htmlparser.jericho.Attribute;
 import net.htmlparser.jericho.Attributes;
 import net.htmlparser.jericho.Element;
@@ -343,7 +344,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
                 String mentionId = getAttribute(eventMentionNode, "id");
                 String mentionType = getAttribute(eventMentionNode, "type");
                 String mentionSubType = getAttribute(eventMentionNode, "subtype");
-                String mergedType = mentionType + "_" + mentionSubType;
+                String mergedType = NuggetFormat.canonicalType(mentionType, mentionSubType);
 
                 Node triggerNode = getSubNode(eventMentionNode, "trigger");
                 int triggerStart = Integer.parseInt(getAttribute(triggerNode, "offset")) - beginOffset;
@@ -405,8 +406,9 @@ public class EreCorpusReader extends AbstractCollectionReader {
                 String mentionId = getAttribute(eventMentionNode, "id");
                 String mentionType = getAttribute(eventMentionNode, "type");
                 String mentionSubType = getAttribute(eventMentionNode, "subtype");
-                String mergedType = mentionType + "_" + mentionSubType;
-                String realisStatus = getAttribute(eventMentionNode, "realis");
+
+                String mergedType = NuggetFormat.canonicalType(mentionType, mentionSubType);
+                String realisStatus = NuggetFormat.canonicalType(getAttribute(eventMentionNode, "realis"));
 
                 Node triggerNode = getSubNode(eventMentionNode, "trigger");
                 int triggerStart = Integer.parseInt(getAttribute(triggerNode, "offset")) - beginOffset;
@@ -426,8 +428,8 @@ public class EreCorpusReader extends AbstractCollectionReader {
                             argEntityMentionId = getAttribute(argNode, "filler_id");
                         }
 
-                        String argRole = getAttribute(argNode, "role");
-                        String realis = getAttribute(argNode, "realis");
+                        String argRole = NuggetFormat.canonicalType(getAttribute(argNode, "role"));
+                        String realis = NuggetFormat.canonicalType(getAttribute(argNode, "realis"));
 
                         EventMentionArgumentLink link = new EventMentionArgumentLink(view);
                         link.setArgumentRole(argRole);
@@ -458,7 +460,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
             String relationType = getAttribute(relationNode, "type");
             String relationSubType = getAttribute(relationNode, "subtype");
 
-            String mergedType = relationType + "_" + relationSubType;
+            String mergedType = NuggetFormat.canonicalType(relationType, relationSubType);
 
             Node relationMentionNode = getSubNode(relationNode, "relation_mention");
 

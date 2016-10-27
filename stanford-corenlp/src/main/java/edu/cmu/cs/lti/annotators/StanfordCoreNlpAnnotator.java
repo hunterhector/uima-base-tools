@@ -133,7 +133,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         addSentenceLevelAnnotation(aJCas, document, textOffset);
 
         // Adding coreference level annotations.
-        addHCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
+        addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
 
         createEntities(aJCas, allMentions);
     }
@@ -155,7 +155,9 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         // Adding coreference level annotations.
 //        addDCoreferenceAnnotation(aJCas, document, spanMentionMap, allMentions);
 
-        addHCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
+//        addHCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
+
+        addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
 
         createEntities(aJCas, allMentions);
     }
@@ -184,6 +186,25 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             if (mention.getHead() == null) {
                 mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
             }
+        }
+    }
+
+    private void addCorefAnnotation(JCas aJCas, Annotation document, Map<Span, StanfordEntityMention>
+            spanMentionMap, List<EntityMention> allMentions){
+        boolean hcorefGraphNull =
+                document.get(edu.stanford.nlp.hcoref.CorefCoreAnnotations.CorefChainAnnotation.class) == null;
+
+        boolean dcorefGraphNull =
+                document.get(CorefCoreAnnotations.CorefChainAnnotation.class) == null;
+
+//        logger.info("Using HCoref, hgraph is null? " +hcorefGraphNull +" dcoref is null? " + dcorefGraphNull);
+
+        if (document.has(edu.stanford.nlp.hcoref.CorefCoreAnnotations.CorefChainAnnotation.class)){
+            addHCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
+        }else if (document.has(CorefCoreAnnotations.CorefChainAnnotation.class)){
+            addDCoreferenceAnnotation(aJCas, document, spanMentionMap, allMentions);
+        }else{
+            logger.error("No coreference annotation chain found, what key is used for Stanford CoreNLP?");
         }
     }
 
@@ -258,12 +279,6 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             spanMentionMap, List<EntityMention> allMentions) {
         // The following set the coreference chain to CAS annotation.
         Map<Integer, CorefChain> graph = document.get(CorefCoreAnnotations.CorefChainAnnotation.class);
-
-        for (Class<?> aClass : document.keySet()) {
-            System.out.println(aClass.getName());
-        }
-
-        System.out.println(graph);
 
         List<List<StanfordCorenlpToken>> sentTokens = new ArrayList<List<StanfordCorenlpToken>>();
 

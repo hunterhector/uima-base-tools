@@ -5,24 +5,24 @@
     <parent>
         <artifactId>uima-tools</artifactId>
         <groupId>edu.cmu.cs.lti</groupId>
-        <version>0.0.1</version>
+        <version>0.0.2</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <name>Stanford NLP Uima Wrapper</name>
 
     <artifactId>stanford-corenlp</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 
     <dependencies>
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>uima-base</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.2</version>
         </dependency>
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>uima-util</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.2</version>
         </dependency>
         <dependency>
             <groupId>org.uimafit</groupId>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>corpus-reader</artifactId>
-            <version>0.0.1</version>
+            <version>0.0.2</version>
         </dependency>
     </dependencies>
 

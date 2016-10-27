@@ -10,6 +10,7 @@ import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
+import edu.cmu.cs.lti.util.NuggetFormat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.uima.UIMAException;
@@ -225,7 +226,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         Article article = new Article(jCas);
         UimaAnnotationUtils.finishAnnotation(article, 0, sourceFileStr.length(), COMPONENT_ID, 0, jCas);
         article.setArticleName(getBaseName());
-        article.setLanguage("en");
+        article.setLanguage(language);
     }
 
     private File getTokenFile() {
@@ -295,8 +296,8 @@ public class TbfEventDataReader extends AbstractCollectionReader {
             } else if (annos.length >= 7) {
                 String eid = annos[2];
                 String tokenIds = annos[3];
-                String eventType = annos[5];
-                String realisType = annos[6];
+                String eventType = NuggetFormat.canonicalType(annos[5]);
+                String realisType = NuggetFormat.canonicalType(annos[6]);
 
                 EventMention mention = new EventMention(goldView);
                 mention.setEventType(eventType);
@@ -311,7 +312,6 @@ public class TbfEventDataReader extends AbstractCollectionReader {
                 numMentionsProcessed++;
             }
         }
-
 
         for (String[] corefAnno : corefAnnos) {
             // The assumption here is that each annotation contains a full cluster, with transitive resolved.

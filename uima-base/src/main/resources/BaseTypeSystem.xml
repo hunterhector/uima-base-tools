@@ -195,10 +195,10 @@
                     <rangeTypeName>uima.cas.Boolean</rangeTypeName>
                 </featureDescription>
                 <!--<featureDescription>-->
-                    <!--<name>headSemanticRelations</name>-->
-                    <!--<description/>-->
-                    <!--<rangeTypeName>uima.cas.FSList</rangeTypeName>-->
-                    <!--<elementType>edu.cmu.cs.lti.script.type.SemanticRelation</elementType>-->
+                <!--<name>headSemanticRelations</name>-->
+                <!--<description/>-->
+                <!--<rangeTypeName>uima.cas.FSList</rangeTypeName>-->
+                <!--<elementType>edu.cmu.cs.lti.script.type.SemanticRelation</elementType>-->
                 <!--</featureDescription>-->
                 <featureDescription>
                     <name>childSemanticRelations</name>
@@ -283,6 +283,11 @@
                     <name>eventType</name>
                     <description/>
                     <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>eventTypeConfidence</name>
+                    <description>Confidence score given by the classifier for the event type.</description>
+                    <rangeTypeName>uima.cas.Double</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
                     <name>epistemicStatus</name>
@@ -392,6 +397,10 @@
                     <name>realisType</name>
                     <description/>
                     <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>realisConfidence</name>
+                    <rangeTypeName>uima.cas.Double</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
                     <name>multiTag</name>
@@ -992,9 +1001,9 @@
                     <rangeTypeName>edu.cmu.cs.lti.script.type.SemanticArgument</rangeTypeName>
                 </featureDescription>
                 <!--<featureDescription>-->
-                    <!--<name>childHead</name>-->
-                    <!--<description/>-->
-                    <!--<rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>-->
+                <!--<name>childHead</name>-->
+                <!--<description/>-->
+                <!--<rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>-->
                 <!--</featureDescription>-->
                 <featureDescription>
                     <name>verbNetRoleName</name>
