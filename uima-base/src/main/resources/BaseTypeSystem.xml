@@ -63,8 +63,33 @@
             </features>
         </typeDescription>
         <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.EventMentionSpanRelation</name>
+            <description>Relation between event mention spans, such as subevent, after. EventMentionRelation are used
+                more on relations between EventMention, which is not unique on a given span. This relation is used
+                instead on Span unique mention. Currently, subevent and after are Span unique.
+            </description>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentTOP</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>relationType</name>
+                    <description/>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>head</name>
+                    <description/>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.EventMentionSpan</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>child</name>
+                    <description/>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.EventMentionSpan</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
             <name>edu.cmu.cs.lti.script.type.EventMentionRelation</name>
-            <description>Relation between event mentions, such as subevent, after. As a convention,
+            <description>Relation between event mentions. As a convention,
                 coreference is normally annotated as a group, instead of relation links.
             </description>
             <supertypeName>edu.cmu.cs.lti.script.type.ComponentTOP</supertypeName>
@@ -261,6 +286,26 @@
                     <name>quantity</name>
                     <description>The associated quantity of this annotation</description>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.NumberAnnotation</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.EventMentionSpan</name>
+            <description>a span-unique event mention representation. An event mention may have multiple types which are
+                sometimes treated as multiple mentions. This is sometimes not convenient for some operations which
+                normally consider the whole span as a whole. This Span representation should be used uniquely for each
+                span, and it can correspond to several EventMention. </description>
+            <supertypeName>edu.cmu.cs.lti.script.type.DiscontinuousComponentAnnotation</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>eventMentions</name>
+                    <rangeTypeName>uima.cas.FSList</rangeTypeName>
+                    <elementType>edu.cmu.cs.lti.script.type.EventMention</elementType>
+                </featureDescription>
+                <featureDescription>
+                    <name>eventRelations</name>
+                    <rangeTypeName>uima.cas.FSList</rangeTypeName>
+                    <elementType>edu.cmu.cs.lti.script.type.EventMentionSpanRelation</elementType>
                 </featureDescription>
             </features>
         </typeDescription>

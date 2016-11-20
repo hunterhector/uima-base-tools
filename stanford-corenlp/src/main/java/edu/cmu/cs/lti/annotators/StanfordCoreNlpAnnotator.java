@@ -34,6 +34,11 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.resource.ResourceInitializationException;
 
+import java.io.IOException;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.*;
 
 //import edu.stanford.nlp.pipeline.HybridCorefAnnotator;
@@ -67,7 +72,9 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
     private AbstractCollinsHeadFinder hf;
 
-//    private HybridCorefAnnotator hcoref;
+    private boolean explicitCorefCall = false;
+
+    private Object hybridCorefAnnotator = null;
 
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
@@ -89,9 +96,52 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
             pipeline = new StanfordCoreNLP(props);
         } else if (language.equals("zh")) {
-            String[] args = new String[]{"-props", "edu/stanford/nlp/hcoref/properties/zh-coref-default.properties"};
+            String prop36Path = "edu/stanford/nlp/hcoref/properties/zh-coref-default.properties";
+            String prop35Path = "edu/stanford/nlp/hcoref/properties/zh-dcoref-default.properties";
+
+            URL zhProp36 = this.getClass().getClassLoader().getResource(prop36Path);
+            URL zhProp35 = this.getClass().getClassLoader().getResource(prop35Path);
+
+            String[] args;
+
+            if (zhProp36 != null) {
+                args = new String[]{"-props", prop36Path};
+                logger.info("Using 3.6.0 style Chinese coreference.");
+            } else if (zhProp35 != null) {
+                args = new String[]{"-props", prop35Path};
+                logger.info("Using 3.5.2 style Chinese coreference.");
+                // If we are using Stanford model 3.5.2, the coreference call is not automatically included in
+                // pipeline, we need to explicitly call HybridCorefAnnotator.
+                explicitCorefCall = true;
+            } else {
+                throw new ResourceInitializationException(new IOException(String.format
+                        ("Cannot find 3.5.2 style path [%s] nor 3.6.0 style path [%s]", prop35Path, prop36Path)));
+            }
+
             Properties props = StringUtils.argsToProperties(args);
+            props.setProperty("segment.verbose", "false");
+            props.setProperty("coref.verbose", "false");
+
             pipeline = new StanfordCoreNLP(props);
+
+            if (explicitCorefCall) {
+                // This means we are under Stanford 3.5.2, since this HybridCorefAnnotator is not available in 3.6.0, to
+                // call it explicitly, we call it by name.
+                logger.info("Explicitly loading HybridCorefAnnotator.");
+                String corefClassName = "edu.stanford.nlp.pipeline.HybridCorefAnnotator";
+                Class<?> clazz = null;
+                try {
+                    clazz = Class.forName(corefClassName);
+                    Constructor<?> ctor = clazz.getConstructor(Properties.class);
+                    hybridCorefAnnotator = ctor.newInstance(props);
+                } catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException |
+                        InvocationTargetException | InstantiationException e) {
+                    logger.error(String.format("Cannot initialize %s from name, maybe the Stanford CoreNLP version is" +
+                            " not supported.", corefClassName));
+                    logger.error("Hybrid coreference annotator is not initialized.");
+                    throw new ResourceInitializationException(e);
+                }
+            }
 
             hf = new ChineseSemanticHeadFinder();
         }
@@ -120,6 +170,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         Annotation document = new Annotation(text);
         logger.info("Annotate document with Chinese CoreNLP.");
         pipeline.annotate(document);
+
         logger.info("Annotation done, applying to JCas.");
 
         // Adding token level annotations.
@@ -133,8 +184,19 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         addSentenceLevelAnnotation(aJCas, document, textOffset);
 
         // Adding coreference level annotations.
+        if (explicitCorefCall) {
+            logger.info("Explicitly annotation hybrid coreference.");
+            try {
+                if (hybridCorefAnnotator != null) {
+                    Method method = hybridCorefAnnotator.getClass().getMethod("annotate", Annotation.class);
+                    method.invoke(hybridCorefAnnotator, document);
+                }
+            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                logger.error("We cannot annotate through hybrid coref annotator here.");
+                e.printStackTrace();
+            }
+        }
         addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-
         createEntities(aJCas, allMentions);
     }
 
@@ -190,7 +252,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     }
 
     private void addCorefAnnotation(JCas aJCas, Annotation document, Map<Span, StanfordEntityMention>
-            spanMentionMap, List<EntityMention> allMentions){
+            spanMentionMap, List<EntityMention> allMentions) {
         boolean hcorefGraphNull =
                 document.get(edu.stanford.nlp.hcoref.CorefCoreAnnotations.CorefChainAnnotation.class) == null;
 
@@ -199,11 +261,11 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
 //        logger.info("Using HCoref, hgraph is null? " +hcorefGraphNull +" dcoref is null? " + dcorefGraphNull);
 
-        if (document.has(edu.stanford.nlp.hcoref.CorefCoreAnnotations.CorefChainAnnotation.class)){
+        if (document.has(edu.stanford.nlp.hcoref.CorefCoreAnnotations.CorefChainAnnotation.class)) {
             addHCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-        }else if (document.has(CorefCoreAnnotations.CorefChainAnnotation.class)){
+        } else if (document.has(CorefCoreAnnotations.CorefChainAnnotation.class)) {
             addDCoreferenceAnnotation(aJCas, document, spanMentionMap, allMentions);
-        }else{
+        } else {
             logger.error("No coreference annotation chain found, what key is used for Stanford CoreNLP?");
         }
     }

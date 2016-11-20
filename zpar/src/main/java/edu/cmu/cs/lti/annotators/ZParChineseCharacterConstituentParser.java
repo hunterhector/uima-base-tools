@@ -12,7 +12,6 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.international.pennchinese.ChineseSemanticHeadFinder;
 import edu.stanford.nlp.util.IntPair;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.NotImplementedException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -40,31 +39,26 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
 
     public static final String PARAM_CHINESE_MODEL = "chineseModel";
 
+    public static final String PARAM_ZPAR_BIN_PATH = "zparBin";
+
     private final String charLabelSep = "ddd";
 
     @ConfigurationParameter(name = PARAM_CHINESE_MODEL)
     private String chineseModelPath;
 
+    @ConfigurationParameter(name = PARAM_ZPAR_BIN_PATH)
+    private String zparBin;
+
     private AbstractCollinsHeadFinder hf;
+
+    private boolean zparInitializationSuccess = false;
 
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
-        String os = System.getProperty("os.name").toLowerCase();
 
-        String zparBinPath;
-
-        if (os.contains("mac")) {
-            zparBinPath = "zpar-07-mac/dist/zpar.zh";
-        } else if (os.contains("nix") || os.contains("nux")) {
-            zparBinPath = "zpar-linux/dist/zpar.zh";
-        } else {
-            throw new NotImplementedException(String.format("Not implemented for OS %s.", os));
-        }
-
-        String zparBin = "../models/zpar/" + zparBinPath;
-        logger.info("ZPar bin is " + zparBin);
+        logger.info("ZPar bin is at " + zparBin);
         logger.info("ZPar model located at " + chineseModelPath);
         boolean setExe = new File(zparBin).setExecutable(true);
 
@@ -87,6 +81,7 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
             while ((s = zparOutput.readLine()) != null) {
                 logger.info(s);
                 if (s.contains("initialized.")) {
+                    zparInitializationSuccess = true;
                     break;
                 }
             }
@@ -105,18 +100,24 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
         // Trying to use the Stanford head finder to find token level heads.
         hf = new ChineseSemanticHeadFinder();
 
-        logger.info("Finish Zpar thread initialization..");
+        if (zparInitializationSuccess) {
+            logger.info("Successfully initialized ZPar thread.");
+        }else{
+            logger.info("Cannot initialize ZPar thread.");
+        }
     }
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         for (StanfordCorenlpSentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
-            try {
-                String parsedSent = getParse(sentence);
-                annotate(aJCas, sentence, parsedSent);
-                logger.debug(parsedSent);
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (zparInitializationSuccess) {
+                try {
+                    String parsedSent = getParse(sentence);
+                    annotate(aJCas, sentence, parsedSent);
+                    logger.debug(parsedSent);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }

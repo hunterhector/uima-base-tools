@@ -2,12 +2,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>fanse-parser</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.5</version>
     <name>Fanse Paser Uima Wrapper</name>
     <parent>
         <artifactId>uima-tools</artifactId>
         <groupId>edu.cmu.cs.lti</groupId>
-        <version>0.0.2</version>
+        <version>0.0.5</version>
     </parent>
 
     <!-- Use local lib directory as a Maven repository -->
