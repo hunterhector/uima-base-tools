@@ -66,6 +66,10 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     @ConfigurationParameter(name = PARAM_LANGUAGE, defaultValue = "en")
     private String language;
 
+    public static final String PARAM_SPLIT_ONLY = "splitOnly";
+    @ConfigurationParameter(name = PARAM_SPLIT_ONLY, defaultValue = "false")
+    private boolean splitOnly;
+
     private StanfordCoreNLP pipeline;
 
     private final static String PARSE_TREE_ROOT_NODE_LABEL = "ROOT";
@@ -84,8 +88,13 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
         if (language.equals("en")) {
             Properties props = new Properties();
-            props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
-            props.setProperty("dcoref.postprocessing", "true");
+            if (splitOnly) {
+                props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
+            } else {
+                props.setProperty("annotators", "tokenize, ssplit, pos, lemma, ner, parse, dcoref");
+                props.setProperty("dcoref.postprocessing", "true");
+            }
+
             if (useSUTime) {
                 props.setProperty("ner.useSUTime", "true");
             } else {
@@ -96,6 +105,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
             pipeline = new StanfordCoreNLP(props);
         } else if (language.equals("zh")) {
+
             String prop36Path = "edu/stanford/nlp/hcoref/properties/zh-coref-default.properties";
             String prop35Path = "edu/stanford/nlp/hcoref/properties/zh-dcoref-default.properties";
 
@@ -119,12 +129,16 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             }
 
             Properties props = StringUtils.argsToProperties(args);
+            if (splitOnly) {
+                props.setProperty("annotators", "segment, ssplit, pos, lemma");
+            }
+
             props.setProperty("segment.verbose", "false");
             props.setProperty("coref.verbose", "false");
 
             pipeline = new StanfordCoreNLP(props);
 
-            if (explicitCorefCall) {
+            if (!splitOnly && explicitCorefCall) {
                 // This means we are under Stanford 3.5.2, since this HybridCorefAnnotator is not available in 3.6.0, to
                 // call it explicitly, we call it by name.
                 logger.info("Explicitly loading HybridCorefAnnotator.");
@@ -183,21 +197,23 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         // Adding sentence level annotations.
         addSentenceLevelAnnotation(aJCas, document, textOffset);
 
-        // Adding coreference level annotations.
-        if (explicitCorefCall) {
-            logger.info("Explicitly annotation hybrid coreference.");
-            try {
-                if (hybridCorefAnnotator != null) {
-                    Method method = hybridCorefAnnotator.getClass().getMethod("annotate", Annotation.class);
-                    method.invoke(hybridCorefAnnotator, document);
+        if (!splitOnly) {
+            // Adding coreference level annotations.
+            if (explicitCorefCall) {
+                logger.info("Explicitly annotation hybrid coreference.");
+                try {
+                    if (hybridCorefAnnotator != null) {
+                        Method method = hybridCorefAnnotator.getClass().getMethod("annotate", Annotation.class);
+                        method.invoke(hybridCorefAnnotator, document);
+                    }
+                } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                    logger.error("We cannot annotate through hybrid coref annotator here.");
+                    e.printStackTrace();
                 }
-            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-                logger.error("We cannot annotate through hybrid coref annotator here.");
-                e.printStackTrace();
             }
+            addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
+            createEntities(aJCas, allMentions);
         }
-        addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-        createEntities(aJCas, allMentions);
     }
 
     private void annotateEnglish(String text, JCas aJCas, int textOffset) {
@@ -407,60 +423,62 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             UimaAnnotationUtils.finishAnnotation(sSent, COMPONENT_ID, sentenceId, aJCas);
             sentenceId++;
 
-            // The following deals with tree annotation.
-            Tree tree = sentAnno.get(TreeAnnotation.class);
-            StanfordTreeAnnotation uimaTree = addPennTreeAnnotation(aJCas, tree, null, null, textOffset);
+            if (!splitOnly) {
+                // The following deals with tree annotation.
+                Tree tree = sentAnno.get(TreeAnnotation.class);
+                StanfordTreeAnnotation uimaTree = addPennTreeAnnotation(aJCas, tree, null, null, textOffset);
 
-            // The following add the collapsed cc processed dependencies of each sentence into CAS annotation.
-            SemanticGraph depends = sentAnno.get(CollapsedCCProcessedDependenciesAnnotation.class);
+                // The following add the collapsed cc processed dependencies of each sentence into CAS annotation.
+                SemanticGraph depends = sentAnno.get(CollapsedCCProcessedDependenciesAnnotation.class);
 
-            List<StanfordCorenlpToken> tokens = JCasUtil.selectCovered(aJCas, StanfordCorenlpToken.class, sSent);
-            Map<IndexedWord, StanfordCorenlpToken> stanford2UimaMap = new HashMap<IndexedWord, StanfordCorenlpToken>();
-            for (IndexedWord stanfordNode : depends.vertexSet()) {
-                int indexBegin = stanfordNode.get(BeginIndexAnnotation.class);
-                int indexEnd = stanfordNode.get(EndIndexAnnotation.class);
-                if (indexBegin + 1 != indexEnd) {
-                    System.err.print("Dependency node is not exactly one token here!");
+                List<StanfordCorenlpToken> tokens = JCasUtil.selectCovered(aJCas, StanfordCorenlpToken.class, sSent);
+                Map<IndexedWord, StanfordCorenlpToken> stanford2UimaMap = new HashMap<>();
+                for (IndexedWord stanfordNode : depends.vertexSet()) {
+                    int indexBegin = stanfordNode.get(BeginIndexAnnotation.class);
+                    int indexEnd = stanfordNode.get(EndIndexAnnotation.class);
+                    if (indexBegin + 1 != indexEnd) {
+                        System.err.print("Dependency node is not exactly one token here!");
+                    }
+
+                    StanfordCorenlpToken sToken = tokens.get(indexBegin);
+                    if (depends.getRoots().contains(stanfordNode)) {
+                        sToken.setIsDependencyRoot(true);
+                    }
+                    stanford2UimaMap.put(stanfordNode, sToken);
                 }
 
-                StanfordCorenlpToken sToken = tokens.get(indexBegin);
-                if (depends.getRoots().contains(stanfordNode)) {
-                    sToken.setIsDependencyRoot(true);
+                ArrayListMultimap<StanfordCorenlpToken, StanfordDependencyRelation> headRelationMap = ArrayListMultimap
+                        .create();
+                ArrayListMultimap<StanfordCorenlpToken, StanfordDependencyRelation> childRelationMap = ArrayListMultimap
+                        .create();
+
+                for (SemanticGraphEdge stanfordEdge : depends.edgeIterable()) {
+                    String edgeType = stanfordEdge.getRelation().toString();
+                    double edgeWeight = stanfordEdge.getWeight(); // weight is usually infinity
+                    StanfordCorenlpToken head = stanford2UimaMap.get(stanfordEdge.getGovernor());
+                    StanfordCorenlpToken child = stanford2UimaMap.get(stanfordEdge.getDependent());
+
+                    StanfordDependencyRelation sr = new StanfordDependencyRelation(aJCas);
+                    sr.setHead(head);
+                    sr.setChild(child);
+                    sr.setWeight(edgeWeight);
+                    sr.setDependencyType(edgeType);
+                    UimaAnnotationUtils.finishTop(sr, COMPONENT_ID, 0, aJCas);
+
+                    headRelationMap.put(child, sr);
+                    childRelationMap.put(head, sr);
                 }
-                stanford2UimaMap.put(stanfordNode, sToken);
-            }
 
-            ArrayListMultimap<StanfordCorenlpToken, StanfordDependencyRelation> headRelationMap = ArrayListMultimap
-                    .create();
-            ArrayListMultimap<StanfordCorenlpToken, StanfordDependencyRelation> childRelationMap = ArrayListMultimap
-                    .create();
-
-            for (SemanticGraphEdge stanfordEdge : depends.edgeIterable()) {
-                String edgeType = stanfordEdge.getRelation().toString();
-                double edgeWeight = stanfordEdge.getWeight(); // weight is usually infinity
-                StanfordCorenlpToken head = stanford2UimaMap.get(stanfordEdge.getGovernor());
-                StanfordCorenlpToken child = stanford2UimaMap.get(stanfordEdge.getDependent());
-
-                StanfordDependencyRelation sr = new StanfordDependencyRelation(aJCas);
-                sr.setHead(head);
-                sr.setChild(child);
-                sr.setWeight(edgeWeight);
-                sr.setDependencyType(edgeType);
-                UimaAnnotationUtils.finishTop(sr, COMPONENT_ID, 0, aJCas);
-
-                headRelationMap.put(child, sr);
-                childRelationMap.put(head, sr);
-            }
-
-            // associate the edges to the nodes
-            for (StanfordCorenlpToken sNode : stanford2UimaMap.values()) {
-                if (headRelationMap.containsKey(sNode)) {
-                    sNode.setHeadDependencyRelations(FSCollectionFactory.createFSList(aJCas, headRelationMap.get
-                            (sNode)));
-                }
-                if (childRelationMap.containsKey(sNode)) {
-                    sNode.setChildDependencyRelations(FSCollectionFactory.createFSList(aJCas, childRelationMap.get
-                            (sNode)));
+                // associate the edges to the nodes
+                for (StanfordCorenlpToken sNode : stanford2UimaMap.values()) {
+                    if (headRelationMap.containsKey(sNode)) {
+                        sNode.setHeadDependencyRelations(FSCollectionFactory.createFSList(aJCas, headRelationMap.get
+                                (sNode)));
+                    }
+                    if (childRelationMap.containsKey(sNode)) {
+                        sNode.setChildDependencyRelations(FSCollectionFactory.createFSList(aJCas, childRelationMap.get
+                                (sNode)));
+                    }
                 }
             }
         }
@@ -591,6 +609,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             treeAnno.setParent(parent);
             treeAnno.setChildren(UimaConvenience.makeFsArray(childrenList, aJCas));
             treeAnno.setIsLeaf(false);
+
             UimaAnnotationUtils.finishAnnotation(treeAnno, COMPONENT_ID, 0, aJCas);
             return treeAnno;
         } else {

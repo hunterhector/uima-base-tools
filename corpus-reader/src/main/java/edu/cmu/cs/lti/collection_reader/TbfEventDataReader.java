@@ -7,9 +7,9 @@ import edu.cmu.cs.lti.script.type.EventMention;
 import edu.cmu.cs.lti.script.type.Word;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
+import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
-import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.util.NuggetFormat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -86,7 +86,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
     @ConfigurationParameter(name = PARAM_SOURCE_TEXT_DIRECTORY)
     File sourceTextDir;
 
-    @ConfigurationParameter(name = PARAM_TOKEN_DIRECTORY)
+    @ConfigurationParameter(name = PARAM_TOKEN_DIRECTORY, mandatory = false)
     File tokenDir;
 
     private static int numMentionsProcessed = 0;
@@ -106,20 +106,29 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         }
 
         logger.info("Looking for data in source text directory : " + sourceTextDir.getPath());
-        logger.info("Looking for data in token text directory : " + tokenDir.getPath());
-
         Map<String, File> sourceBaseNames = getBaseNames(sourceTextDir, sourceExt);
-        Map<String, File> tokenBaseNames = getBaseNames(tokenDir, tokenExt);
+        Map<String, File> tokenBaseNames = null;
+
+        if (tokenDir == null) {
+            logger.info("No tokenization provided.");
+        } else {
+            logger.info("Looking for data in token text directory : " + tokenDir.getPath());
+            tokenBaseNames = getBaseNames(tokenDir, tokenExt);
+        }
 
         fileList = new ArrayList<>();
 
         for (Map.Entry<String, File> sourceBaseNameFile : sourceBaseNames.entrySet()) {
             String baseName = sourceBaseNameFile.getKey();
             File sourceFile = sourceBaseNameFile.getValue();
-            if (tokenBaseNames.containsKey(baseName)) {
-                fileList.add(new Triplet<>(baseName, sourceFile, tokenBaseNames.get(baseName)));
+            if (tokenBaseNames != null) {
+                if (tokenBaseNames.containsKey(baseName)) {
+                    fileList.add(new Triplet<>(baseName, sourceFile, tokenBaseNames.get(baseName)));
+                } else {
+                    System.err.println("token based name not found " + baseName);
+                }
             } else {
-                System.err.println("token based name not found " + baseName);
+                fileList.add(new Triplet<>(baseName, sourceFile, null));
             }
         }
 
@@ -201,7 +210,9 @@ public class TbfEventDataReader extends AbstractCollectionReader {
             tokenId2EventMention = ArrayListMultimap.create();
         }
 
-        annotateTokens(jCas, goldView, tokenId2EventMention);
+        if (tokenDir != null) {
+            annotateTokens(jCas, goldView, tokenId2EventMention);
+        }
 
         Set<EventMention> alreadyFinished = new HashSet<>();
         for (Map.Entry<String, Collection<EventMention>> mentionEntry : tokenId2EventMention.asMap().entrySet()) {
@@ -218,7 +229,8 @@ public class TbfEventDataReader extends AbstractCollectionReader {
                 }
                 if (!alreadyFinished.contains(mention)) {
                     alreadyFinished.add(mention);
-                    UimaAnnotationUtils.finishAnnotation(mention, start, end, COMPONENT_ID, mention.getId(), goldView);
+                    UimaAnnotationUtils.finishAnnotation(mention, start, end, COMPONENT_ID, mention.getId(),
+                            goldView);
                 }
             }
         }
