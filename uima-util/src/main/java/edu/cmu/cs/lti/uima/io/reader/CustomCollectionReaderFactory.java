@@ -274,6 +274,40 @@ public class CustomCollectionReaderFactory {
     /**
      * Create a gzipped XMI reader assuming the directory naming convention.
      *
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createGzippedXmiReader(TypeSystemDescription typeSystemDescription,
+                                                                     String inputDirName)
+            throws ResourceInitializationException {
+        // Instantiate a collection reader to get XMI as input.
+        return CollectionReaderFactory.createReaderDescription(
+                GzippedXmiCollectionReader.class, typeSystemDescription,
+                GzippedXmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
+                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, false);
+    }
+
+    /**
+     * Create a gzipped XMI reader assuming the directory naming convention.
+     *
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createRecursiveGzippedXmiReader(TypeSystemDescription
+                                                                                      typeSystemDescription,
+                                                                              String inputDirName)
+            throws ResourceInitializationException {
+        // Instantiate a collection reader to get XMI as input.
+        return CollectionReaderFactory.createReaderDescription(
+                GzippedXmiCollectionReader.class, typeSystemDescription,
+                GzippedXmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
+                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, false,
+                GzippedXmiCollectionReader.PARAM_RECURSIVE, true);
+    }
+
+    /**
+     * Create a gzipped XMI reader assuming the directory naming convention.
+     *
      * @param failOnUnkown
      * @return
      * @throws ResourceInitializationException
