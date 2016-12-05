@@ -4,6 +4,7 @@ import edu.cmu.cs.lti.model.*;
 import org.javatuples.Pair;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,6 +47,8 @@ public class BratFormat {
             String[] spanTexts = spanStr.split(" ");
             spans.add(Span.of(Integer.parseInt(spanTexts[0]), Integer.parseInt(spanTexts[1])));
         }
+
+        Collections.sort(spans);
         return Pair.with(spans, type);
     }
 
