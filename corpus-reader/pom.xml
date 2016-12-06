@@ -60,7 +60,7 @@
         <dependency>
             <groupId>edu.jhu.agiga</groupId>
             <artifactId>agiga</artifactId>
-            <version>1.4</version>
+            <version>1.5-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.javatuples</groupId>
@@ -75,6 +75,12 @@
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>zl-utils</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.ximpleware</groupId>
+            <artifactId>vtd-xml</artifactId>
+            <version>2.11</version>
+        </dependency>
+
     </dependencies>
 
 </project>

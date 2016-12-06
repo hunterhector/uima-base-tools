@@ -108,7 +108,6 @@ public class AgigaCollectionReader extends AbstractCollectionReader {
         treeId = 0;
         uimafyAnnotations(jcas, currentDoc);
         UimaAnnotationUtils.setSourceDocumentInformation(jcas, currentFile.toURI().toURL().toString(), (int) currentFile.length(), fileOffset, !reader.hasNext());
-
     }
 
 
@@ -378,6 +377,8 @@ public class AgigaCollectionReader extends AbstractCollectionReader {
         UimaAnnotationUtils.finishAnnotation(article, 0, offset, COMPONENT_ID, null, jcas);
         article.setArticleName(doc.getDocId());
         article.setLanguage("en");
+        article.setHeadLine(doc.getHeadline());
+        article.setArticleDate(doc.getDateline());
     }
 
     @Override
