@@ -32,18 +32,9 @@ public class AgigaHeadLineMatcher {
         prefs.setAll(false);
         prefs.setHeadline(true);
 
-
         if (!(inputDir.exists() && inputDir.isDirectory())) {
             throw new FileNotFoundException(inputDir.getAbsolutePath());
         }
-
-//        gzFileList = inputDir.listFiles(new FilenameFilter() {
-//            @Override
-//            public boolean accept(File dir, String name) {
-//                return name.toLowerCase().endsWith(".gz");
-//            }
-//        });
-
 
         String[] exts = new String[1];
         exts[0] = "xml.gz";
@@ -51,6 +42,9 @@ public class AgigaHeadLineMatcher {
         gzFileList = new ArrayList<>(FileUtils.listFiles(inputDir, exts, true));
 
         File outputDir = outputFile.getParentFile();
+
+        logger.info(outputDir.getPath());
+
         if (!outputDir.isDirectory()) {
             outputDir.mkdirs();
         }
@@ -66,6 +60,8 @@ public class AgigaHeadLineMatcher {
                 logger.info("Processing done.");
             }
         }
+
+        output.close();
     }
 
     private void readOneGzFile(File file) throws IOException {
@@ -73,10 +69,17 @@ public class AgigaHeadLineMatcher {
         for (AgigaDocument doc : dReader) {
             doc.getDocId();
             if (doc.getHeadline() != null) {
-                String headline = parsedSentenceToText(doc.getHeadline());
-                if (headline != null) {
-                    output.write(String.format("%s\t%s\n", doc.getDocId(), headline));
+                StringBuilder sb = new StringBuilder();
+
+                String sep = "";
+                for (String line : doc.getHeadline().split("\n")) {
+                    String headline = parsedSentenceToText(line);
+                    sb.append(sep);
+                    sb.append(headline);
+                    sep = "\\\\n";
                 }
+
+                output.write(String.format("%s\t%s\n", doc.getDocId(), sb.toString()));
             }
         }
     }
@@ -95,7 +98,11 @@ public class AgigaHeadLineMatcher {
     }
 
     public static void main(String[] argv) throws IOException {
+
         AgigaHeadLineMatcher matcher = new AgigaHeadLineMatcher(new File(argv[0]), new File(argv[1]));
+
+//        System.out.println(matcher.parsedSentenceToText("( (NP (NNP DEALS) (CC AND) (NNPS DISCOUNTS)))"));
+
         matcher.run();
 
         System.out.println("All processing done.");

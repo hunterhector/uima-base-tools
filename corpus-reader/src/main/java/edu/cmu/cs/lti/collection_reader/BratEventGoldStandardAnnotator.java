@@ -1,11 +1,7 @@
 package edu.cmu.cs.lti.collection_reader;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
-import edu.cmu.cs.lti.model.BratAnnotations;
-import edu.cmu.cs.lti.model.BratAttribute;
-import edu.cmu.cs.lti.model.BratRelation;
-import edu.cmu.cs.lti.model.Span;
+import edu.cmu.cs.lti.model.*;
 import edu.cmu.cs.lti.script.type.Event;
 import edu.cmu.cs.lti.script.type.EventMention;
 import edu.cmu.cs.lti.script.type.EventMentionRelation;
@@ -142,26 +138,26 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         BratAnnotations annotations = BratFormat.parseBratAnnotations(rawAnnotations);
 
         try {
-            ArrayListMultimap<String, Span> textBoundId2Spans =
-                    usePredefinedTokens ? getTokenBasedSpans(tokenDocument, annotations) : getRegularSpans(annotations);
+            Map<String, MultiSpan> textBoundId2Spans =
+                    usePredefinedTokens ? getTokenBasedSpans(tokenDocument, annotations) : getSpans(annotations);
             annotateGoldStandard(goldView, annotations, textBoundId2Spans);
         } catch (IOException e) {
             throw new AnalysisEngineProcessException(e);
         }
     }
 
-    private ArrayListMultimap<String, Span> getRegularSpans(BratAnnotations annotations) {
-        ArrayListMultimap<String, Span> textBoundId2Spans = ArrayListMultimap.create();
+    private Map<String, MultiSpan> getSpans(BratAnnotations annotations) {
+        Map<String, MultiSpan> textBoundId2Spans = new HashMap<>();
 
-        for (Map.Entry<String, Pair<List<Span>, String>> textBoundById : annotations
+        for (Map.Entry<String, Pair<MultiSpan, String>> textBoundById : annotations
                 .getTextBoundId2SpanAndType().entrySet()) {
             String annoId = textBoundById.getKey();
-            textBoundId2Spans.putAll(annoId, textBoundById.getValue().getValue0());
+            textBoundId2Spans.put(annoId, textBoundById.getValue().getValue0());
         }
         return textBoundId2Spans;
     }
 
-    private ArrayListMultimap<String, Span> getTokenBasedSpans(File tokenDocument, BratAnnotations annotations)
+    private Map<String, MultiSpan> getTokenBasedSpans(File tokenDocument, BratAnnotations annotations)
             throws IOException {
         List<Span> tokenOffsets = new ArrayList<>();
         for (String line : Iterables.skip(FileUtils.readLines(tokenDocument, encoding), 1)) {
@@ -171,19 +167,22 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             tokenOffsets.add(Span.of(tokenBegin, tokenEnd + 1));
         }
 
-        ArrayListMultimap<String, Span> textBoundId2Spans = ArrayListMultimap.create();
+        Map<String, MultiSpan> textBoundId2Spans = new HashMap<>();
+
         for (Span tokenSpan : tokenOffsets) {
-            for (Map.Entry<String, Pair<List<Span>, String>> textBoundById : annotations
+            for (Map.Entry<String, Pair<MultiSpan, String>> textBoundById : annotations
                     .getTextBoundId2SpanAndType().entrySet()) {
                 String annoId = textBoundById.getKey();
-                // It should be implicitly ensured here that the number of tokenSpan is the same as textBoundSpan.
-                textBoundById.getValue().getValue0().stream()
-                        .filter(textBoundSpan -> textBoundSpan.covers(tokenSpan) || tokenSpan.covers(textBoundSpan))
-                        .forEach(textBoundSpan -> {
-                            // It should be implicitly ensured here that the number of tokenSpan is the same as
-                            // textBoundSpan.
-                            textBoundId2Spans.put(annoId, tokenSpan);
-                        });
+
+                List<Span> convertedSpans = new ArrayList<>();
+
+                for (Span span : textBoundById.getValue().getValue0()) {
+                    if (span.covers(tokenSpan) || tokenSpan.covers(span)){
+                        convertedSpans.add(tokenSpan);
+                    }
+                }
+
+                textBoundId2Spans.put(annoId, new MultiSpan(convertedSpans));
             }
         }
 
@@ -200,15 +199,15 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     }
 
     private Map<String, EventMention> annotateMention(JCas aJCas, BratAnnotations annotations,
-                                                      ArrayListMultimap<String, Span> textBoundId2Spans) {
+                                                      Map<String, MultiSpan> textBoundId2Spans) {
         Map<String, EventMention> id2Mentions = new HashMap<>();
         for (int i = 0; i < annotations.getEventIds().size(); i++) {
             String eventId = annotations.getEventIds().get(i);
-            String eventTextBoundId = annotations.getEventTextBounds().get(i);
-            Pair<List<Span>, String> eventInfo = annotations.getTextBoundId2SpanAndType().get(eventTextBoundId);
+            String eventTextBoundId = annotations.getEventTextBoundIds().get(i);
+            Pair<MultiSpan, String> eventInfo = annotations.getTextBoundId2SpanAndType().get(eventTextBoundId);
             EventMention eventMention = new EventMention(aJCas);
             eventMention.setEventType(eventInfo.getValue1());
-            List<Span> spans = textBoundId2Spans.get(eventTextBoundId);
+            MultiSpan spans = textBoundId2Spans.get(eventTextBoundId);
 
             eventMention.setRegions(new FSArray(aJCas, spans.size()));
 
@@ -352,7 +351,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     }
 
     public void annotateGoldStandard(JCas aJCas, BratAnnotations annotations,
-                                     ArrayListMultimap<String, Span> textBoundId2Spans) {
+                                     Map<String, MultiSpan> textBoundId2Spans) {
         Map<String, EventMention> id2Mentions = annotateMention(aJCas, annotations, textBoundId2Spans);
         annotateSpanRelations(aJCas, annotations.getRelations(), id2Mentions);
         annotateCoref(aJCas, annotations.getRelations(), id2Mentions);

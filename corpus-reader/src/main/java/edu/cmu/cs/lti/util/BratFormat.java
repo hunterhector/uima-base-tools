@@ -15,6 +15,7 @@ import java.util.List;
  * @author Zhengzhong Liu
  */
 public class BratFormat {
+
     public static BratAnnotations parseBratAnnotations(List<String> bratAnnotations){
         BratAnnotations bratAnno = new BratAnnotations();
 
@@ -37,7 +38,7 @@ public class BratFormat {
         return bratAnno;
     }
 
-    private static Pair<List<Span>, String> getSpanAndType(String spanText) {
+    private static Pair<MultiSpan, String> getSpanAndType(String spanText) {
         String[] typeAndSpan = spanText.split(" ", 2);
         String type = typeAndSpan[0];
         String[] spanStrs = typeAndSpan[1].split(";");
@@ -49,7 +50,7 @@ public class BratFormat {
         }
 
         Collections.sort(spans);
-        return Pair.with(spans, type);
+        return Pair.with(new MultiSpan(spans), type);
     }
 
 

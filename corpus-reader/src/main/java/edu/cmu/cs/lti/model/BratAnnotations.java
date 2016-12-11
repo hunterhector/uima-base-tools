@@ -16,38 +16,42 @@ import java.util.Map;
  * @author Zhengzhong Liu
  */
 public class BratAnnotations {
-    private Map<String, Pair<List<Span>, String>> textBoundId2SpanAndType;
+    private Map<String, Pair<MultiSpan, String>> textBoundId2SpanAndType;
     private List<String> eventIds;
-    private List<String> eventTextBounds;
+    private List<String> eventTextBoundIds;
     private ArrayListMultimap<String, BratAttribute> id2Attribute;
     private List<BratRelation> relations;
+
+    private ArrayListMultimap<String, String> textBoundId2EventId;
 
     public BratAnnotations() {
         textBoundId2SpanAndType = new HashMap<>();
         id2Attribute = ArrayListMultimap.create();
         eventIds = new ArrayList<>();
-        eventTextBounds = new ArrayList<>();
+        eventTextBoundIds = new ArrayList<>();
         relations = new ArrayList<>();
+        textBoundId2EventId = ArrayListMultimap.create();
     }
 
-    public void addTextBound(String id, Pair<List<Span>, String> spanAndType){
+    public void addTextBound(String id, Pair<MultiSpan, String> spanAndType) {
         textBoundId2SpanAndType.put(id, spanAndType);
     }
 
-    public void addEventMention(String eventId, String textBoundId){
+    public void addEventMention(String eventId, String textBoundId) {
         eventIds.add(eventId);
-        eventTextBounds.add(textBoundId);
+        eventTextBoundIds.add(textBoundId);
+        textBoundId2EventId.put(textBoundId, eventId);
     }
 
-    public void addAttribute(BratAttribute attribute){
+    public void addAttribute(BratAttribute attribute) {
         id2Attribute.put(attribute.attributeHost, attribute);
     }
 
-    public void addRelation(BratRelation relation){
+    public void addRelation(BratRelation relation) {
         relations.add(relation);
     }
 
-    public Map<String, Pair<List<Span>, String>> getTextBoundId2SpanAndType() {
+    public Map<String, Pair<MultiSpan, String>> getTextBoundId2SpanAndType() {
         return textBoundId2SpanAndType;
     }
 
@@ -55,8 +59,8 @@ public class BratAnnotations {
         return eventIds;
     }
 
-    public List<String> getEventTextBounds() {
-        return eventTextBounds;
+    public List<String> getEventTextBoundIds() {
+        return eventTextBoundIds;
     }
 
     public ArrayListMultimap<String, BratAttribute> getId2Attribute() {
@@ -65,5 +69,9 @@ public class BratAnnotations {
 
     public List<BratRelation> getRelations() {
         return relations;
+    }
+
+    public List<String> getEventIds(String textBoundId) {
+        return textBoundId2EventId.get(textBoundId);
     }
 }

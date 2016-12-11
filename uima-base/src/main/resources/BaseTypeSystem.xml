@@ -124,7 +124,7 @@
             <features>
                 <featureDescription>
                     <name>sourceMentionRelation</name>
-                    <description>An entity relation can come from a mention relation.</description>
+                    <description>An event relation can come from a mention relation.</description>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.EventMentionRelation</rangeTypeName>
                 </featureDescription>
             </features>
@@ -253,10 +253,10 @@
         </typeDescription>
         <typeDescription>
             <name>edu.cmu.cs.lti.script.type.CharacterAnnotation</name>
-            <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
             <description>Represent a single character. We make it inherent a Word type, so that we can attach linguistic
                 properties such as dependency, pos, semantic relations to it.
             </description>
+            <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
             <features>
                 <featureDescription>
                     <name>isBegin</name>
@@ -307,7 +307,14 @@
                     <elementType>edu.cmu.cs.lti.script.type.EventMention</elementType>
                 </featureDescription>
                 <featureDescription>
-                    <name>eventRelations</name>
+                    <name>headEventRelations</name>
+                    <description/>
+                    <rangeTypeName>uima.cas.FSList</rangeTypeName>
+                    <elementType>edu.cmu.cs.lti.script.type.EventMentionSpanRelation</elementType>
+                </featureDescription>
+                <featureDescription>
+                    <name>childEventRelations</name>
+                    <description/>
                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
                     <elementType>edu.cmu.cs.lti.script.type.EventMentionSpanRelation</elementType>
                 </featureDescription>
