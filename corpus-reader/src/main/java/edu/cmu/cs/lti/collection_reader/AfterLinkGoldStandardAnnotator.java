@@ -6,7 +6,6 @@ import edu.cmu.cs.lti.model.BratRelation;
 import edu.cmu.cs.lti.model.MultiSpan;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.Article;
-import edu.cmu.cs.lti.script.type.EventMention;
 import edu.cmu.cs.lti.script.type.EventMentionSpan;
 import edu.cmu.cs.lti.script.type.EventMentionSpanRelation;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
@@ -63,64 +62,34 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
 
         // Here we get the event id to EventMentionSpan mapping. Note that multiple id can map to the same
         // EventMentionSpan.
-        Map<String, EventMentionSpan> id2MentionSpans = annotateMentionSpan(goldView, annotations);
-
+        Map<String, EventMentionSpan> id2MentionSpans = getEmsById(goldView, annotations);
         annotateSpanRelations(goldView, annotations.getRelations(), id2MentionSpans);
     }
 
-    private Map<String, EventMentionSpan> annotateMentionSpan(JCas aJCas, BratAnnotations annotations) {
-
+    private Map<String, EventMentionSpan> getEmsById(JCas aJCas, BratAnnotations annotations) {
         Map<String, EventMentionSpan> id2MentionSpans = new HashMap<>();
+        Map<Span, EventMentionSpan> emsBySpan = new HashMap<>();
 
-        Map<MultiSpan, EventMentionSpan> annotatedSpans = new HashMap<>();
+        for (EventMentionSpan eventMentionSpan : JCasUtil.select(aJCas, EventMentionSpan.class)) {
+            emsBySpan.put(Span.of(eventMentionSpan.getBegin(), eventMentionSpan.getEnd()), eventMentionSpan);
+        }
 
         for (Map.Entry<String, Pair<MultiSpan, String>> textBoundById : annotations
                 .getTextBoundId2SpanAndType().entrySet()) {
             MultiSpan textSpan = textBoundById.getValue().getValue0();
-
-            EventMentionSpan eventMentionSpan;
-            if (annotatedSpans.containsKey(textSpan)) {
-                eventMentionSpan = annotatedSpans.get(textSpan);
-            } else {
-                Span range = getRange(textSpan);
-                eventMentionSpan = new EventMentionSpan(aJCas, range.getBegin(), range.getEnd());
-                List<EventMention> mentions = JCasUtil.selectCovered(aJCas, EventMention.class,
-                        range.getBegin(), range.getEnd());
-                eventMentionSpan.setEventMentions(FSCollectionFactory.createFSList(aJCas, mentions));
-                UimaAnnotationUtils.finishAnnotation(eventMentionSpan, COMPONENT_ID, 0, aJCas);
-            }
-
+            Span range = textSpan.getRange();
+            EventMentionSpan eventMentionSpan = emsBySpan.get(range);
             String textBoundId = textBoundById.getKey();
 
             List<String> eventIds = annotations.getEventIds(textBoundId);
 
-//            logger.info("Creating event mention span for " + eventId);
-
             for (String eventId : eventIds) {
                 id2MentionSpans.put(eventId, eventMentionSpan);
             }
-
-            annotatedSpans.put(textSpan, eventMentionSpan);
         }
 
         return id2MentionSpans;
     }
-
-    private Span getRange(MultiSpan mentionSpan) {
-        int earliest = Integer.MAX_VALUE;
-        int latest = 0;
-        for (Span span : mentionSpan) {
-            if (span.getBegin() < earliest) {
-                earliest = span.getBegin();
-            }
-            if (span.getEnd() > latest) {
-                latest = span.getEnd();
-            }
-        }
-
-        return Span.of(earliest, latest);
-    }
-
 
     private void annotateSpanRelations(JCas aJCas, List<BratRelation> relations,
                                        Map<String, EventMentionSpan> id2Mentions) {

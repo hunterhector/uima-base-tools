@@ -1,15 +1,16 @@
 package edu.cmu.cs.lti.collection_reader;
 
 import com.google.common.collect.ArrayListMultimap;
+import edu.cmu.cs.lti.model.MultiSpan;
+import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.Article;
+import edu.cmu.cs.lti.script.type.ComponentAnnotation;
 import edu.cmu.cs.lti.script.type.Event;
 import edu.cmu.cs.lti.script.type.EventMention;
-import edu.cmu.cs.lti.script.type.Word;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
-import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.util.NuggetFormat;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -27,6 +28,8 @@ import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.FSArray;
+import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.Progress;
@@ -45,6 +48,7 @@ import java.util.*;
  * Date: 1/21/15
  * Time: 11:40 PM
  */
+
 public class TbfEventDataReader extends AbstractCollectionReader {
     public static final String PARAM_SOURCE_TEXT_DIRECTORY = "SourceTextDirectory";
 
@@ -77,7 +81,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
     @ConfigurationParameter(name = PARAM_GOLD_STANDARD_FILE, mandatory = false)
     private File annotationFile = null;
 
-    @ConfigurationParameter(name = PARAM_TOKEN_EXT)
+    @ConfigurationParameter(name = PARAM_TOKEN_EXT, mandatory = false)
     String tokenExt;
 
     @ConfigurationParameter(name = PARAM_SOURCE_EXT)
@@ -90,6 +94,8 @@ public class TbfEventDataReader extends AbstractCollectionReader {
     File tokenDir;
 
     private static int numMentionsProcessed = 0;
+
+    private boolean useToken;
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
@@ -111,9 +117,11 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
         if (tokenDir == null) {
             logger.info("No tokenization provided.");
+            useToken = false;
         } else {
             logger.info("Looking for data in token text directory : " + tokenDir.getPath());
             tokenBaseNames = getBaseNames(tokenDir, tokenExt);
+            useToken = true;
         }
 
         fileList = new ArrayList<>();
@@ -203,35 +211,11 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         jCas.setDocumentText(documentText);
         goldView.setDocumentText(documentText);
 
-        ArrayListMultimap<String, EventMention> tokenId2EventMention;
+        ArrayListMultimap<EventMention, String> mention2TokenId;
         if (hasGoldStandard) {
-            tokenId2EventMention = annotateGoldStandard(goldView, getBaseName());
-        } else {
-            tokenId2EventMention = ArrayListMultimap.create();
-        }
-
-        if (tokenDir != null) {
-            annotateTokens(jCas, goldView, tokenId2EventMention);
-        }
-
-        Set<EventMention> alreadyFinished = new HashSet<>();
-        for (Map.Entry<String, Collection<EventMention>> mentionEntry : tokenId2EventMention.asMap().entrySet()) {
-            for (EventMention mention : mentionEntry.getValue()) {
-                int start = -1;
-                int end = -1;
-                for (Word word : FSCollectionFactory.create(mention.getMentionTokens(), Word.class)) {
-                    if (start == -1 || word.getBegin() < start) {
-                        start = word.getBegin();
-                    }
-                    if (end == -1 || word.getEnd() > end) {
-                        end = word.getEnd();
-                    }
-                }
-                if (!alreadyFinished.contains(mention)) {
-                    alreadyFinished.add(mention);
-                    UimaAnnotationUtils.finishAnnotation(mention, start, end, COMPONENT_ID, mention.getId(),
-                            goldView);
-                }
+            mention2TokenId = annotateGoldStandard(goldView, getBaseName());
+            if (useToken) {
+                annotateTokens(goldView, mention2TokenId);
             }
         }
 
@@ -253,39 +237,120 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         return currentFile.getValue0();
     }
 
-    private void annotateTokens(JCas aJCas, JCas goldView, ArrayListMultimap<String, EventMention>
-            tokenId2EventMention) throws IOException {
+
+    private List<Span> getRegionsFromTokens(ArrayList<String> sortedTids, Map<String, Span> tokenSpans) {
+        List<Span> regions = new ArrayList<>();
+
+        int lastTid = -2;
+        int begin = -1;
+        int end = -1;
+        for (String sortedTid : sortedTids) {
+            int tid = extractInt(sortedTid);
+            Span tokenSpan = tokenSpans.get(sortedTid);
+
+            if (begin == -1) {
+                // Reading the first token.
+                begin = tokenSpan.getBegin();
+                end = tokenSpan.getEnd();
+            } else {
+                // Reading following tokens.
+
+                if (tid - lastTid == 1) {
+                    // This token is just after previous one, extending the region.
+                    end = tokenSpan.getEnd();
+                } else {
+                    // This token is not after previous one, adding a new region.
+                    regions.add(Span.of(begin, end));
+                    begin = tokenSpan.getBegin();
+                    end = tokenSpan.getEnd();
+                }
+            }
+            lastTid = tid;
+        }
+
+        // Adding the last region.
+        if (begin != -1) {
+            regions.add(Span.of(begin, end));
+        }
+
+        return regions;
+    }
+
+    private int extractInt(String s) {
+        String num = s.replaceAll("\\D", "");
+        // return 0 if no digits found
+        return num.isEmpty() ? 0 : Integer.parseInt(num);
+    }
+
+    private void annotateTokens(JCas goldView, ArrayListMultimap<EventMention, String> mention2TokenIds)
+            throws IOException {
         File tokenFile = getTokenFile();
 
+        Map<String, Span> tokenSpans = readTokenFile(tokenFile);
+
+        for (Map.Entry<EventMention, Collection<String>> mention2Tids : mention2TokenIds.asMap().entrySet()) {
+            EventMention mention = mention2Tids.getKey();
+
+            ArrayList<String> sortedTids = new ArrayList<>(mention2Tids.getValue());
+
+            sortedTids.sort(Comparator.comparingInt(this::extractInt));
+
+            List<Span> regionSpans = getRegionsFromTokens(sortedTids, tokenSpans);
+
+            FSArray mentionRegions = new FSArray(goldView, regionSpans.size());
+            mention.setRegions(mentionRegions);
+
+            int begin = -1;
+            int end = -1;
+
+            for (int i = 0; i < regionSpans.size(); i++) {
+                Span regionSpan = regionSpans.get(i);
+                ComponentAnnotation region = new ComponentAnnotation(goldView,
+                        regionSpan.getBegin(), regionSpan.getEnd());
+
+                if (begin == -1 || region.getBegin() < begin) {
+                    begin = region.getBegin();
+                }
+
+                if (end == -1 || region.getEnd() > end) {
+                    end = region.getEnd();
+                }
+
+                region.addToIndexes();
+                mention.setRegions(i, region);
+            }
+
+            UimaAnnotationUtils.finishAnnotation(mention, begin, end, COMPONENT_ID, 0, goldView);
+        }
+    }
+
+    private Map<String, Span> readTokenFile(File tokenFile) throws IOException {
         int lineNum = 0;
+
+        Map<String, Span> tokenSpans = new HashMap<>();
 
         for (String line : FileUtils.readLines(tokenFile)) {
             if (lineNum != 0) {
                 String[] parts = line.split("\t");
                 if (parts.length == 4) {
                     String tId = parts[0];
-//                    String tokenStr = parts[1];
                     int tokenBegin = Integer.parseInt(parts[2]);
                     int tokenEnd = Integer.parseInt(parts[3]);
 
-                    Word word = new Word(aJCas, tokenBegin, tokenEnd);
-                    UimaAnnotationUtils.finishAnnotation(word, COMPONENT_ID, tId, aJCas);
-
-                    if (tokenId2EventMention.containsKey(tId)) {
-                        for (EventMention tokenMention : tokenId2EventMention.get(tId)) {
-                            tokenMention.setMentionTokens(UimaConvenience.appendFSList(goldView, tokenMention
-                                    .getMentionTokens(), word, Word.class));
-                        }
-                    }
+                    tokenSpans.put(tId, Span.of(tokenBegin, tokenEnd));
                 }
             }
             lineNum++;
         }
+
+        return tokenSpans;
     }
 
-    private ArrayListMultimap<String, EventMention> annotateGoldStandard(JCas goldView, String baseName) throws
+    private ArrayListMultimap<EventMention, String> annotateGoldStandard(JCas goldView, String baseName) throws
             IOException {
-        ArrayListMultimap<String, EventMention> tokenId2EventMention = ArrayListMultimap.create();
+//        ArrayListMultimap<String, EventMention> tokenId2EventMention = ArrayListMultimap.create();
+
+        ArrayListMultimap<EventMention, String> mention2TokenIds = ArrayListMultimap.create();
 
         List<String[]> corefAnnos = new ArrayList<>();
         Map<String, EventMention> id2Mentions = new HashMap<>();
@@ -307,7 +372,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
                 }
             } else if (annos.length >= 7) {
                 String eid = annos[2];
-                String tokenIds = annos[3];
+                String spanField = annos[3];
                 String eventType = NuggetFormat.canonicalType(annos[5]);
                 String realisType = NuggetFormat.canonicalType(annos[6]);
 
@@ -318,8 +383,24 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
                 id2Mentions.put(eid, mention);
 
-                for (String tid : tokenIds.split(",")) {
-                    tokenId2EventMention.put(tid, mention);
+                if (useToken) {
+                    for (String tid : spanField.split(",")) {
+                        mention2TokenIds.put(mention, tid);
+                    }
+                } else {
+                    MultiSpan multiSpan = getCharacterSpans(spanField);
+
+                    mention.setRegions(new FSArray(goldView, multiSpan.size()));
+                    for (int i = 0; i < multiSpan.size(); i++) {
+                        Span s = multiSpan.get(i);
+                        Annotation region = new Annotation(goldView, s.getBegin(), s.getEnd());
+                        mention.setRegions(i, region);
+                        region.addToIndexes();
+                    }
+
+                    Span range = multiSpan.getRange();
+                    UimaAnnotationUtils.finishAnnotation(mention, range.getBegin(), range.getEnd(), COMPONENT_ID,
+                            0, goldView);
                 }
                 numMentionsProcessed++;
             }
@@ -340,7 +421,20 @@ public class TbfEventDataReader extends AbstractCollectionReader {
             event.setEventMentions(FSCollectionFactory.createFSArray(goldView, corefMentions));
             UimaAnnotationUtils.finishTop(event, COMPONENT_ID, 0, goldView);
         }
-        return tokenId2EventMention;
+
+        return mention2TokenIds;
+    }
+
+    private MultiSpan getCharacterSpans(String spanField) {
+        List<Span> spans = new ArrayList<>();
+        for (String span : spanField.split(";")) {
+            String[] charSpan = span.split(",");
+            if (charSpan.length == 2) {
+                spans.add(Span.of(Integer.parseInt(charSpan[0]), Integer.parseInt(charSpan[1])));
+            }
+        }
+
+        return new MultiSpan(spans);
     }
 
     @Override

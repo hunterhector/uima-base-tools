@@ -298,7 +298,8 @@
             <description>a span-unique event mention representation. An event mention may have multiple types which are
                 sometimes treated as multiple mentions. This is sometimes not convenient for some operations which
                 normally consider the whole span as a whole. This Span representation should be used uniquely for each
-                span, and it can correspond to several EventMention. </description>
+                span, and it can correspond to several EventMention.
+            </description>
             <supertypeName>edu.cmu.cs.lti.script.type.DiscontinuousComponentAnnotation</supertypeName>
             <features>
                 <featureDescription>
@@ -317,6 +318,27 @@
                     <description/>
                     <rangeTypeName>uima.cas.FSList</rangeTypeName>
                     <elementType>edu.cmu.cs.lti.script.type.EventMentionSpanRelation</elementType>
+                </featureDescription>
+                <featureDescription>
+                    <name>headWord</name>
+                    <description/>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>eventType</name>
+                    <description>The event type for an EventMentionSpan is tricky, because it can corresponds to
+                        multiple event mentions. However, here we use the concatenated version to denote the type for
+                        the full span.
+                    </description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>realisType</name>
+                    <description>The event type for an EventMentionSpan is tricky, because it can corresponds to
+                        multiple event mentions. However, here we use the concatenated version to denote the type for
+                        the full span.
+                    </description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
             </features>
         </typeDescription>

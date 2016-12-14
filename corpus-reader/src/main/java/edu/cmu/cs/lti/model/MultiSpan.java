@@ -14,7 +14,7 @@ import java.util.*;
  *
  * @author Zhengzhong Liu
  */
-public class MultiSpan implements Comparable<MultiSpan>, Iterable<Span>{
+public class MultiSpan implements Comparable<MultiSpan>, Iterable<Span> {
     private List<Span> spans;
 
     public MultiSpan(List<Span> spans) {
@@ -56,11 +56,15 @@ public class MultiSpan implements Comparable<MultiSpan>, Iterable<Span>{
         return spans.spliterator();
     }
 
-    public int size(){
+    public int size() {
         return spans.size();
     }
 
-    public Span get(int i){
+    public Span get(int i) {
         return spans.get(i);
+    }
+
+    public Span getRange() {
+        return Span.of(spans.get(0).getBegin(), spans.get(spans.size() - 1).getEnd());
     }
 }

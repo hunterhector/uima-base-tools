@@ -38,7 +38,7 @@ public class UimaAnnotationUtils {
         anno.setEnd(end);
         anno.setComponentId(componentId);
         anno.setId(Integer.toString(id));
-        anno.addToIndexes();
+        anno.addToIndexes(aJCas);
     }
 
     public static void finishAnnotation(ComponentAnnotation anno, String componentId, int id,
