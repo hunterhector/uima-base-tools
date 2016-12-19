@@ -10,6 +10,7 @@ import edu.cmu.cs.lti.script.type.EventMentionSpan;
 import edu.cmu.cs.lti.script.type.EventMentionSpanRelation;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.util.BratFormat;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -42,8 +43,12 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
 
     private String afterLinkName = "After";
 
+    private int numOmittedMentions = 0;
+
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
+//        UimaConvenience.printProcessLog(aJCas, logger);
+
         JCas goldView = JCasUtil.getView(aJCas, goldStandardViewName, false);
 
         String articleName = JCasUtil.selectSingle(aJCas, Article.class).getArticleName();
@@ -62,26 +67,46 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
 
         // Here we get the event id to EventMentionSpan mapping. Note that multiple id can map to the same
         // EventMentionSpan.
-        Map<String, EventMentionSpan> id2MentionSpans = getEmsById(goldView, annotations);
+        Set<String> omittedMentions = new HashSet<>();
+        Map<String, EventMentionSpan> id2MentionSpans = getEmsById(goldView, annotations, omittedMentions);
+
         annotateSpanRelations(goldView, annotations.getRelations(), id2MentionSpans);
     }
 
-    private Map<String, EventMentionSpan> getEmsById(JCas aJCas, BratAnnotations annotations) {
+    private Map<String, EventMentionSpan> getEmsById(JCas aJCas, BratAnnotations annotations,
+                                                     Set<String> omittedMentions) {
         Map<String, EventMentionSpan> id2MentionSpans = new HashMap<>();
         Map<Span, EventMentionSpan> emsBySpan = new HashMap<>();
 
         for (EventMentionSpan eventMentionSpan : JCasUtil.select(aJCas, EventMentionSpan.class)) {
-            emsBySpan.put(Span.of(eventMentionSpan.getBegin(), eventMentionSpan.getEnd()), eventMentionSpan);
+            Span spanKey = Span.of(eventMentionSpan.getBegin(), eventMentionSpan.getEnd());
+            emsBySpan.put(spanKey, eventMentionSpan);
         }
 
-        for (Map.Entry<String, Pair<MultiSpan, String>> textBoundById : annotations
-                .getTextBoundId2SpanAndType().entrySet()) {
-            MultiSpan textSpan = textBoundById.getValue().getValue0();
+        for (Map.Entry<String, BratAnnotations.TextBound> textBoundById : annotations
+                .getTid2TextBound().entrySet()) {
+            BratAnnotations.TextBound textBound = textBoundById.getValue();
+            MultiSpan textSpan = textBound.spans;
+
             Span range = textSpan.getRange();
             EventMentionSpan eventMentionSpan = emsBySpan.get(range);
             String textBoundId = textBoundById.getKey();
 
             List<String> eventIds = annotations.getEventIds(textBoundId);
+
+            if (eventMentionSpan == null) {
+                boolean omitOnPurpose = checkOmittedAnnotation(aJCas, textBound);
+                if (!omitOnPurpose) {
+                    logger.warn(String.format("The event mention is not omitted on purpose: [Doc]: %s, [Mention " +
+                            "text]: %s, [Range]: %s.", UimaConvenience.getDocId(aJCas), textBound.text, textBound
+                            .spans));
+                }
+
+                omittedMentions.addAll(eventIds);
+
+                numOmittedMentions++;
+                continue;
+            }
 
             for (String eventId : eventIds) {
                 id2MentionSpans.put(eventId, eventMentionSpan);
@@ -89,6 +114,21 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
         }
 
         return id2MentionSpans;
+    }
+
+    private boolean checkOmittedAnnotation(JCas aJCas, BratAnnotations.TextBound textBound) {
+        String text = textBound.text;
+        String fullText = aJCas.getDocumentText();
+        StringBuilder sb = new StringBuilder();
+
+        String sep = "";
+        for (Span span : textBound.spans) {
+            sb.append(sep);
+            sb.append(fullText.substring(span.getBegin(), span.getEnd()));
+            sep = " ";
+        }
+
+        return !sb.toString().equals(text);
     }
 
     private void annotateSpanRelations(JCas aJCas, List<BratRelation> relations,
@@ -99,17 +139,12 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
             String e1 = relation.arg1Id;
             String e2 = relation.arg2Id;
 
+            if (id2Mentions.containsKey(e1) && id2Mentions.containsKey(e2)){
+                continue;
+            }
+
             EventMentionSpan mentionSpan1 = id2Mentions.get(e1);
             EventMentionSpan mentionSpan2 = id2Mentions.get(e2);
-
-            if (mentionSpan1 == null) {
-                logger.error("Cannot find span for event id " + e1);
-            }
-
-            if (mentionSpan2 == null) {
-                logger.error("Cannot find span for event id " + e2);
-            }
-
 
             String relationName = relation.relationName;
 
@@ -148,5 +183,11 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
                         childRelation.getValue()));
             }
         }
+    }
+
+    @Override
+    public void collectionProcessComplete() throws AnalysisEngineProcessException {
+        super.collectionProcessComplete();
+        logger.info(String.format("Number of omitted mentions : %d.", numOmittedMentions));
     }
 }

@@ -31,7 +31,6 @@ import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
-import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -149,10 +148,9 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     private Map<String, MultiSpan> getSpans(BratAnnotations annotations) {
         Map<String, MultiSpan> textBoundId2Spans = new HashMap<>();
 
-        for (Map.Entry<String, Pair<MultiSpan, String>> textBoundById : annotations
-                .getTextBoundId2SpanAndType().entrySet()) {
+        for (Map.Entry<String, BratAnnotations.TextBound> textBoundById : annotations.getTid2TextBound().entrySet()) {
             String annoId = textBoundById.getKey();
-            textBoundId2Spans.put(annoId, textBoundById.getValue().getValue0());
+            textBoundId2Spans.put(annoId, textBoundById.getValue().spans);
         }
         return textBoundId2Spans;
     }
@@ -170,13 +168,13 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         Map<String, MultiSpan> textBoundId2Spans = new HashMap<>();
 
         for (Span tokenSpan : tokenOffsets) {
-            for (Map.Entry<String, Pair<MultiSpan, String>> textBoundById : annotations
-                    .getTextBoundId2SpanAndType().entrySet()) {
+            for (Map.Entry<String, BratAnnotations.TextBound> textBoundById : annotations
+                    .getTid2TextBound().entrySet()) {
                 String annoId = textBoundById.getKey();
 
                 List<Span> convertedSpans = new ArrayList<>();
 
-                for (Span span : textBoundById.getValue().getValue0()) {
+                for (Span span : textBoundById.getValue().spans) {
                     if (span.covers(tokenSpan) || tokenSpan.covers(span)){
                         convertedSpans.add(tokenSpan);
                     }
@@ -204,9 +202,9 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         for (int i = 0; i < annotations.getEventIds().size(); i++) {
             String eventId = annotations.getEventIds().get(i);
             String eventTextBoundId = annotations.getEventTextBoundIds().get(i);
-            Pair<MultiSpan, String> eventInfo = annotations.getTextBoundId2SpanAndType().get(eventTextBoundId);
+            BratAnnotations.TextBound eventInfo = annotations.getTid2TextBound().get(eventTextBoundId);
             EventMention eventMention = new EventMention(aJCas);
-            eventMention.setEventType(eventInfo.getValue1());
+            eventMention.setEventType(eventInfo.type);
             MultiSpan spans = textBoundId2Spans.get(eventTextBoundId);
 
             eventMention.setRegions(new FSArray(aJCas, spans.size()));

@@ -1,7 +1,6 @@
 package edu.cmu.cs.lti.model;
 
 import com.google.common.collect.ArrayListMultimap;
-import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +15,7 @@ import java.util.Map;
  * @author Zhengzhong Liu
  */
 public class BratAnnotations {
-    private Map<String, Pair<MultiSpan, String>> textBoundId2SpanAndType;
+    private Map<String, TextBound> tid2TextBound;
     private List<String> eventIds;
     private List<String> eventTextBoundIds;
     private ArrayListMultimap<String, BratAttribute> id2Attribute;
@@ -25,7 +24,7 @@ public class BratAnnotations {
     private ArrayListMultimap<String, String> textBoundId2EventId;
 
     public BratAnnotations() {
-        textBoundId2SpanAndType = new HashMap<>();
+        tid2TextBound = new HashMap<>();
         id2Attribute = ArrayListMultimap.create();
         eventIds = new ArrayList<>();
         eventTextBoundIds = new ArrayList<>();
@@ -33,8 +32,20 @@ public class BratAnnotations {
         textBoundId2EventId = ArrayListMultimap.create();
     }
 
-    public void addTextBound(String id, Pair<MultiSpan, String> spanAndType) {
-        textBoundId2SpanAndType.put(id, spanAndType);
+    public static class TextBound{
+        public final MultiSpan spans;
+        public final String type;
+        public final String text;
+
+        public TextBound(MultiSpan spans, String type, String text){
+            this.spans = spans;
+            this.type = type;
+            this.text = text;
+        }
+    }
+
+    public void addTextBound(String id, TextBound textBound) {
+        tid2TextBound.put(id, textBound);
     }
 
     public void addEventMention(String eventId, String textBoundId) {
@@ -51,8 +62,8 @@ public class BratAnnotations {
         relations.add(relation);
     }
 
-    public Map<String, Pair<MultiSpan, String>> getTextBoundId2SpanAndType() {
-        return textBoundId2SpanAndType;
+    public Map<String, TextBound> getTid2TextBound() {
+        return tid2TextBound;
     }
 
     public List<String> getEventIds() {

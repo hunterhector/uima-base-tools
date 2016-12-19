@@ -7,6 +7,7 @@ import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.util.ForumStructureParser;
 import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.util.NuggetFormat;
 import net.htmlparser.jericho.Attribute;
 import net.htmlparser.jericho.Attributes;
@@ -238,6 +239,9 @@ public class EreCorpusReader extends AbstractCollectionReader {
             throw new CollectionException(e);
         }
 
+        UimaAnnotationUtils.setSourceDocumentInformation(goldView, sourceFile.toURI().toURL().toString(),
+                (int) sourceFile.length(), sourceBeginOffset, true);
+
         jCas.setDocumentText(documentText);
         goldView.setDocumentText(documentText);
 
@@ -331,6 +335,13 @@ public class EreCorpusReader extends AbstractCollectionReader {
         annotateEventHoppers(goldView, document, id2EntityMention, beginOffset);
     }
 
+    /**
+     * Older ERE annotation call the node Event.
+     * @param view
+     * @param document
+     * @param id2EntityMention
+     * @param beginOffset
+     */
     private void annotateEvents(JCas view, Document document, Map<String, EntityMention> id2EntityMention, int
             beginOffset) {
         NodeList hopperNodes = document.getElementsByTagName("event");
@@ -392,7 +403,13 @@ public class EreCorpusReader extends AbstractCollectionReader {
         }
     }
 
-
+    /**
+     * Later ERE annotation call the node Hoppers instead of Events.
+     * @param view
+     * @param document
+     * @param id2EntityMention
+     * @param beginOffset
+     */
     private void annotateEventHoppers(JCas view, Document document, Map<String, EntityMention> id2EntityMention, int
             beginOffset) {
         NodeList hopperNodes = document.getElementsByTagName("hopper");
@@ -442,6 +459,9 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
                     UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, mentionId, view);
                     mentionCluster.add(mention);
+                }else{
+                    logger.warn(String.format("Omit event mention [%s], range [%d-%d], at doc [%s]",
+                            triggerNode.getTextContent(), triggerStart, triggerEnd, UimaConvenience.getDocId(view)));
                 }
             }
 
@@ -586,9 +606,11 @@ public class EreCorpusReader extends AbstractCollectionReader {
     }
 
     private boolean validateAnnotation(JCas view, int start, int end, String expectedText) {
-        if (view.getDocumentText().substring(start, end).equals(expectedText)) {
+        String originString = view.getDocumentText().substring(start, end).replaceAll("\\n", " ");
+        if (originString.equals(expectedText)) {
             return true;
         } else {
+            logger.warn(String.format("Original string [%s] is not equal to expected [%s].", originString, expectedText));
             return false;
         }
     }

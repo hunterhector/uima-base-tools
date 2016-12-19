@@ -1,7 +1,6 @@
 package edu.cmu.cs.lti.util;
 
 import edu.cmu.cs.lti.model.*;
-import org.javatuples.Pair;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,15 +14,14 @@ import java.util.List;
  * @author Zhengzhong Liu
  */
 public class BratFormat {
-
-    public static BratAnnotations parseBratAnnotations(List<String> bratAnnotations){
+    public static BratAnnotations parseBratAnnotations(List<String> bratAnnotations) {
         BratAnnotations bratAnno = new BratAnnotations();
 
         for (String line : bratAnnotations) {
             String[] parts = line.trim().split("\t");
             String annoId = parts[0];
             if (annoId.startsWith(BratConstants.textBoundPrefix)) {
-                bratAnno.addTextBound(annoId, getSpanAndType(parts[1]));
+                bratAnno.addTextBound(annoId, getTextBound(parts));
             } else if (annoId.startsWith(BratConstants.eventPrefix)) {
                 bratAnno.addEventMention(annoId, parts[1].split(":")[1]);
             } else if (annoId.startsWith(BratConstants.attributePrefix)) {
@@ -38,8 +36,8 @@ public class BratFormat {
         return bratAnno;
     }
 
-    private static Pair<MultiSpan, String> getSpanAndType(String spanText) {
-        String[] typeAndSpan = spanText.split(" ", 2);
+    private static BratAnnotations.TextBound getTextBound(String[] parts) {
+        String[] typeAndSpan = parts[1].split(" ", 2);
         String type = typeAndSpan[0];
         String[] spanStrs = typeAndSpan[1].split(";");
 
@@ -50,8 +48,7 @@ public class BratFormat {
         }
 
         Collections.sort(spans);
-        return Pair.with(new MultiSpan(spans), type);
+
+        return new BratAnnotations.TextBound(new MultiSpan(spans), type, parts[2]);
     }
-
-
 }

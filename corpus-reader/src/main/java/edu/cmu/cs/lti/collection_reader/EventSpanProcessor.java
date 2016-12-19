@@ -7,10 +7,12 @@ import edu.cmu.cs.lti.script.type.EventMentionSpan;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.MentionTypeUtils;
+import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.ResourceInitializationException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -26,9 +28,18 @@ import java.util.Map;
  */
 public class EventSpanProcessor extends AbstractLoggingAnnotator {
     @Override
+    public void initialize(UimaContext aContext) throws ResourceInitializationException {
+        super.initialize(aContext);
+        logger.info("Adding event mention span process.");
+    }
+
+    @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         JCas goldView = JCasUtil.getView(aJCas, goldStandardViewName, false);
+        addToView(goldView);
+    }
 
+    private void addToView(JCas aJCas){
         ArrayListMultimap<Span, EventMention> allSpan2Mentions = ArrayListMultimap.create();
 
         for (EventMention eventMention : JCasUtil.select(aJCas, EventMention.class)) {
@@ -37,7 +48,7 @@ public class EventSpanProcessor extends AbstractLoggingAnnotator {
 
         for (Map.Entry<Span, Collection<EventMention>> span2Mentions : allSpan2Mentions.asMap().entrySet()) {
             Span span = span2Mentions.getKey();
-            EventMentionSpan ems = new EventMentionSpan(goldView, span.getBegin(), span.getEnd());
+            EventMentionSpan ems = new EventMentionSpan(aJCas, span.getBegin(), span.getEnd());
             ems.setEventMentions(FSCollectionFactory.createFSList(aJCas, span2Mentions.getValue()));
 
             List<String> types = new ArrayList<>();
@@ -49,7 +60,6 @@ public class EventSpanProcessor extends AbstractLoggingAnnotator {
             }
 
             ems.setEventType(MentionTypeUtils.joinMultipleTypes(types));
-
             UimaAnnotationUtils.finishAnnotation(ems, COMPONENT_ID, 0, aJCas);
         }
     }

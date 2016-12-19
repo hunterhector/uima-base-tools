@@ -18,7 +18,7 @@ public class MultiSpan implements Comparable<MultiSpan>, Iterable<Span> {
     private List<Span> spans;
 
     public MultiSpan(List<Span> spans) {
-        Collections.sort(spans);
+        spans.sort(Comparator.reverseOrder());
         this.spans = new ArrayList<>();
         this.spans.addAll(spans);
     }
