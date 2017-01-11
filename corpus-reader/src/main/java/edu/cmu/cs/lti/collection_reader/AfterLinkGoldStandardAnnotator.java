@@ -139,7 +139,7 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
             String e1 = relation.arg1Id;
             String e2 = relation.arg2Id;
 
-            if (id2Mentions.containsKey(e1) && id2Mentions.containsKey(e2)){
+            if (!(id2Mentions.containsKey(e1) && id2Mentions.containsKey(e2))) {
                 continue;
             }
 

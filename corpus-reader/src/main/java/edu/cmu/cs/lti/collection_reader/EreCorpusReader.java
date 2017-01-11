@@ -399,6 +399,9 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
             Event event = new Event(view);
             event.setEventMentions(FSCollectionFactory.createFSArray(view, mentionCluster));
+            for (EventMention eventMention : mentionCluster) {
+                eventMention.setReferringEvent(event);
+            }
             UimaAnnotationUtils.finishTop(event, COMPONENT_ID, hopperId, view);
         }
     }

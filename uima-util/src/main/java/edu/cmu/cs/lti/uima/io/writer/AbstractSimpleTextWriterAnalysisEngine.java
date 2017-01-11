@@ -4,7 +4,9 @@ import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.cas.CAS;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
@@ -28,6 +30,11 @@ public abstract class AbstractSimpleTextWriterAnalysisEngine extends AbstractLog
     @ConfigurationParameter(name = PARAM_NEW_FILE_AFTER_N, defaultValue = "-1")
     private int newFileAfterN;
 
+    public static final String PARAM_TARGET_VIEW_NAME = "targetViewName";
+
+    @ConfigurationParameter(name = PARAM_TARGET_VIEW_NAME, defaultValue = CAS.NAME_DEFAULT_SOFA)
+    private String targetViewName;
+
     private int count = 0;
 
     private File currentOutputFile;
@@ -50,7 +57,7 @@ public abstract class AbstractSimpleTextWriterAnalysisEngine extends AbstractLog
         }
     }
 
-    private void updateCurrentOutputFile(){
+    private void updateCurrentOutputFile() {
         if (newFileAfterN > 0) {
             currentOutputFile = new File(baseOutputFile.getAbsolutePath() + "_" + (count / newFileAfterN));
         } else {
@@ -62,7 +69,9 @@ public abstract class AbstractSimpleTextWriterAnalysisEngine extends AbstractLog
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         updateCurrentOutputFile();
 
-        String text = getTextToPrint(aJCas);
+        JCas targetView = JCasUtil.getView(aJCas, targetViewName, aJCas);
+
+        String text = getTextToPrint(targetView);
         if (text != null) {
             try {
                 FileUtils.write(currentOutputFile, text, true);
@@ -80,5 +89,9 @@ public abstract class AbstractSimpleTextWriterAnalysisEngine extends AbstractLog
 
     protected int getCount() {
         return count;
+    }
+
+    protected String getOutputPath() {
+        return baseOutputFile.getAbsolutePath();
     }
 }
