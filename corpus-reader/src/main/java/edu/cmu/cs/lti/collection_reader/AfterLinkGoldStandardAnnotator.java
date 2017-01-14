@@ -13,11 +13,13 @@ import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.util.BratFormat;
 import org.apache.commons.io.FileUtils;
+import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.ResourceInitializationException;
 import org.javatuples.Pair;
 
 import java.io.File;
@@ -44,6 +46,12 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
     private String afterLinkName = "After";
 
     private int numOmittedMentions = 0;
+
+    @Override
+    public void initialize(UimaContext aContext) throws ResourceInitializationException {
+        super.initialize(aContext);
+        logger.info("Annotating AFTER links.");
+    }
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {

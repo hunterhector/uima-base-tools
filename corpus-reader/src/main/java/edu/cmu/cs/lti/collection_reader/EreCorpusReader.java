@@ -80,8 +80,6 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
     private List<Integer> annotationOffsets;
 
-    public static final String COMPONENT_ID = LDCXmlCollectionReader.class.getSimpleName();
-
     private int fileIndex;
 
     private DocumentBuilder documentBuilder;
@@ -331,6 +329,8 @@ public class EreCorpusReader extends AbstractCollectionReader {
         annotateEntity(goldView, document, id2EntityMention, beginOffset);
         annotateFillers(goldView, document, id2EntityMention, beginOffset);
         annotateRelations(goldView, document, id2EntityMention);
+
+        // The following two are all coreference clusters, really based on what the annotation system is.
         annotateEvents(goldView, document, id2EntityMention, beginOffset);
         annotateEventHoppers(goldView, document, id2EntityMention, beginOffset);
     }
@@ -470,6 +470,10 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
             Event event = new Event(view);
             event.setEventMentions(FSCollectionFactory.createFSArray(view, mentionCluster));
+            for (EventMention eventMention : mentionCluster) {
+                eventMention.setReferringEvent(event);
+            }
+
             UimaAnnotationUtils.finishTop(event, COMPONENT_ID, hopperId, view);
         }
     }
