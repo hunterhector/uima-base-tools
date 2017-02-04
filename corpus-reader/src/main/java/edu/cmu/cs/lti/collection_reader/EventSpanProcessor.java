@@ -7,6 +7,7 @@ import edu.cmu.cs.lti.script.type.EventMentionSpan;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.MentionTypeUtils;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.util.FSCollectionFactory;
@@ -40,6 +41,10 @@ public class EventSpanProcessor extends AbstractLoggingAnnotator {
     }
 
     private void addToView(JCas aJCas){
+        for (EventMentionSpan eventMentionSpan : UimaConvenience.getAnnotationList(aJCas, EventMentionSpan.class)) {
+            eventMentionSpan.removeFromIndexes();
+        }
+
         ArrayListMultimap<Span, EventMention> allSpan2Mentions = ArrayListMultimap.create();
 
         for (EventMention eventMention : JCasUtil.select(aJCas, EventMention.class)) {

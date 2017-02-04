@@ -20,6 +20,7 @@
         <module>mate-tools</module>
         <module>zpar</module>
         <module>ltp-parser</module>
+        <module>caevo</module>
     </modules>
     <build>
         <plugins>

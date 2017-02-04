@@ -1,14 +1,16 @@
 package edu.cmu.cs.lti.collection_reader;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import edu.cmu.cs.lti.model.BratAnnotations;
 import edu.cmu.cs.lti.model.BratRelation;
 import edu.cmu.cs.lti.model.MultiSpan;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.Article;
-import edu.cmu.cs.lti.script.type.EventMentionSpan;
-import edu.cmu.cs.lti.script.type.EventMentionSpanRelation;
+import edu.cmu.cs.lti.script.type.EventMention;
+import edu.cmu.cs.lti.script.type.EventMentionRelation;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
+import edu.cmu.cs.lti.uima.util.MentionTypeUtils;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.util.BratFormat;
@@ -20,7 +22,6 @@ import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.javatuples.Pair;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +38,6 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
     private String annFileNameSuffix;
 
     public static final String PARAM_ANNOTATION_DIR = "annotationDirectory";
-
     @ConfigurationParameter(name = PARAM_ANNOTATION_DIR)
     private File annotationDir;
 
@@ -55,8 +55,6 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-//        UimaConvenience.printProcessLog(aJCas, logger);
-
         JCas goldView = JCasUtil.getView(aJCas, goldStandardViewName, false);
 
         String articleName = JCasUtil.selectSingle(aJCas, Article.class).getArticleName();
@@ -75,21 +73,16 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
 
         // Here we get the event id to EventMentionSpan mapping. Note that multiple id can map to the same
         // EventMentionSpan.
-        Set<String> omittedMentions = new HashSet<>();
-        Map<String, EventMentionSpan> id2MentionSpans = getEmsById(goldView, annotations, omittedMentions);
+        Map<String, EventMention> id2MentionSpans = indexMentionsById(goldView, annotations);
 
-        annotateSpanRelations(goldView, annotations.getRelations(), id2MentionSpans);
+        annotateMentionRelations(goldView, annotations.getRelations(), id2MentionSpans);
     }
 
-    private Map<String, EventMentionSpan> getEmsById(JCas aJCas, BratAnnotations annotations,
-                                                     Set<String> omittedMentions) {
-        Map<String, EventMentionSpan> id2MentionSpans = new HashMap<>();
-        Map<Span, EventMentionSpan> emsBySpan = new HashMap<>();
+    private Map<String, EventMention> indexMentionsById(JCas aJCas, BratAnnotations annotations) {
+        Map<String, EventMention> id2Mention = new HashMap<>();
 
-        for (EventMentionSpan eventMentionSpan : JCasUtil.select(aJCas, EventMentionSpan.class)) {
-            Span spanKey = Span.of(eventMentionSpan.getBegin(), eventMentionSpan.getEnd());
-            emsBySpan.put(spanKey, eventMentionSpan);
-        }
+        Multimap<Span, String> range2EventIds = ArrayListMultimap.create();
+        Map<String, String> eid2Type = new HashMap<>();
 
         for (Map.Entry<String, BratAnnotations.TextBound> textBoundById : annotations
                 .getTid2TextBound().entrySet()) {
@@ -97,31 +90,54 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
             MultiSpan textSpan = textBound.spans;
 
             Span range = textSpan.getRange();
-            EventMentionSpan eventMentionSpan = emsBySpan.get(range);
-            String textBoundId = textBoundById.getKey();
 
-            List<String> eventIds = annotations.getEventIds(textBoundId);
+            List<String> eventIds = annotations.getEventIds(textBoundById.getKey());
 
-            if (eventMentionSpan == null) {
-                boolean omitOnPurpose = checkOmittedAnnotation(aJCas, textBound);
-                if (!omitOnPurpose) {
-                    logger.warn(String.format("The event mention is not omitted on purpose: [Doc]: %s, [Mention " +
-                            "text]: %s, [Range]: %s.", UimaConvenience.getDocId(aJCas), textBound.text, textBound
-                            .spans));
+            String type = textBound.type;
+
+            if (checkOmittedAnnotation(aJCas, textBound)) {
+                numOmittedMentions += 1;
+            } else {
+                for (String eventId : eventIds) {
+                    range2EventIds.put(range, eventId);
+                    eid2Type.put(eventId, type);
+//                    logger.info(String.format("Event id %s have type %s.", eventId, type));
                 }
-
-                omittedMentions.addAll(eventIds);
-
-                numOmittedMentions++;
-                continue;
-            }
-
-            for (String eventId : eventIds) {
-                id2MentionSpans.put(eventId, eventMentionSpan);
             }
         }
 
-        return id2MentionSpans;
+        for (Map.Entry<Span, Collection<String>> range2Ids : range2EventIds.asMap().entrySet()) {
+            Span range = range2Ids.getKey();
+
+            List<String> eids = new ArrayList<>(range2Ids.getValue());
+            Set<String> usedIds = new HashSet<>();
+
+            for (EventMention mention : JCasUtil.selectCovered(aJCas, EventMention.class,
+                    range.getBegin(), range.getEnd())) {
+                String mentionType = MentionTypeUtils.canonicalize(mention.getEventType());
+
+                for (String eid : eids) {
+                    String type = MentionTypeUtils.canonicalize(eid2Type.get(eid));
+
+                    if (mentionType.equals(type) && !usedIds.contains(eid)) {
+//                        logger.info(String.format("Mention %s is mapped to %s.", mention.getCoveredText(), eid));
+                        id2Mention.put(eid, mention);
+                        usedIds.add(eid);
+                    }
+                }
+            }
+
+            if (usedIds.size() != eids.size()) {
+                logger.error("Document is " + UimaConvenience.getShortDocumentName(aJCas));
+                logger.error(String.format("The range is %s", range));
+                logger.error("Used Ids are: " + usedIds);
+                logger.error("Annotated Ids are: " + eids);
+
+                throw new RuntimeException("Not all ids in this span is mapped to the annotated mentions.");
+            }
+        }
+
+        return id2Mention;
     }
 
     private boolean checkOmittedAnnotation(JCas aJCas, BratAnnotations.TextBound textBound) {
@@ -139,53 +155,62 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
         return !sb.toString().equals(text);
     }
 
-    private void annotateSpanRelations(JCas aJCas, List<BratRelation> relations,
-                                       Map<String, EventMentionSpan> id2Mentions) {
-        Set<Pair<EventMentionSpan, EventMentionSpan>> recordedRelations = new HashSet<>();
+    private void annotateMentionRelations(JCas aJCas, List<BratRelation> relations,
+                                          Map<String, EventMention> id2Mentions) {
+        for (EventMentionRelation relation : UimaConvenience.getAnnotationList(aJCas, EventMentionRelation.class)) {
+            relation.removeFromIndexes();
+        }
+
+        Map<String, String> annotatedRelation = new HashMap<>();
 
         for (BratRelation relation : relations) {
             String e1 = relation.arg1Id;
             String e2 = relation.arg2Id;
 
-            if (!(id2Mentions.containsKey(e1) && id2Mentions.containsKey(e2))) {
+            if (!id2Mentions.containsKey(e1) || !id2Mentions.containsKey(e2)) {
                 continue;
             }
 
-            EventMentionSpan mentionSpan1 = id2Mentions.get(e1);
-            EventMentionSpan mentionSpan2 = id2Mentions.get(e2);
+            EventMention mention1 = id2Mentions.get(e1);
+            EventMention mention2 = id2Mentions.get(e2);
 
             String relationName = relation.relationName;
 
-            Pair<EventMentionSpan, EventMentionSpan> mentionPair = Pair.with(mentionSpan1, mentionSpan2);
-            if (recordedRelations.contains(mentionPair)) {
-                continue;
-            } else {
-                recordedRelations.add(mentionPair);
+            String relationPair = e1 + "_" + e2;
+            if (annotatedRelation.containsKey(relationPair)) {
+                String oldType = annotatedRelation.get(relationPair);
+                if (oldType.equals(afterLinkName) && relationName.equals(subeventLinkName)) {
+                    // We don't allow subevent links to overwrite after links.
+                    continue;
+                } else if (oldType.equals(relationName)) {
+                    // If the relation is totally same, we don't annotate one more time.
+                    continue;
+                }
             }
 
-            ArrayListMultimap<EventMentionSpan, EventMentionSpanRelation> headRelations = ArrayListMultimap.create();
-            ArrayListMultimap<EventMentionSpan, EventMentionSpanRelation> childRelations = ArrayListMultimap.create();
+            annotatedRelation.put(relationPair, relationName);
+
+            ArrayListMultimap<EventMention, EventMentionRelation> headRelations = ArrayListMultimap.create();
+            ArrayListMultimap<EventMention, EventMentionRelation> childRelations = ArrayListMultimap.create();
 
             if (relationName.equals(subeventLinkName) || relationName.equals(afterLinkName)) {
-                EventMentionSpanRelation eventMentionRelation = new EventMentionSpanRelation(aJCas);
+                EventMentionRelation eventMentionRelation = new EventMentionRelation(aJCas);
                 eventMentionRelation.setRelationType(relationName);
-                eventMentionRelation.setHead(mentionSpan1);
-                eventMentionRelation.setChild(mentionSpan2);
+                eventMentionRelation.setHead(mention1);
+                eventMentionRelation.setChild(mention2);
                 UimaAnnotationUtils.finishTop(eventMentionRelation, COMPONENT_ID, 0, aJCas);
 
-                headRelations.put(mentionSpan2, eventMentionRelation);
-                childRelations.put(mentionSpan1, eventMentionRelation);
+                headRelations.put(mention2, eventMentionRelation);
+                childRelations.put(mention1, eventMentionRelation);
             }
 
-            for (Map.Entry<EventMentionSpan, Collection<EventMentionSpanRelation>> headRelation :
+            for (Map.Entry<EventMention, Collection<EventMentionRelation>> headRelation :
                     headRelations.asMap().entrySet()) {
-//                logger.info(headRelation.getKey().getCoveredText());
-//                logger.info(String.valueOf(headRelation.getValue()));
                 headRelation.getKey().setHeadEventRelations(FSCollectionFactory.createFSList(aJCas,
                         headRelation.getValue()));
             }
 
-            for (Map.Entry<EventMentionSpan, Collection<EventMentionSpanRelation>> childRelation :
+            for (Map.Entry<EventMention, Collection<EventMentionRelation>> childRelation :
                     childRelations.asMap().entrySet()) {
                 childRelation.getKey().setChildEventRelations(FSCollectionFactory.createFSList(aJCas,
                         childRelation.getValue()));

@@ -49,12 +49,7 @@ public class DiscourseParserRunner {
 
         String paramBaseOutputDirName = "discourse_parsed";
 
-        Integer outputStepNum = null;
-        if (args.length >= 4) {
-            outputStepNum = Integer.parseInt(args[3]);
-        }
-
-        String paramTypeSystemDescriptor = "TypeSystem";
+        String paramTypeSystemDescriptor = "TaskEventMentionDetectionTypeSystem";
 
         // Instantiate the analysis engine.
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
@@ -69,7 +64,7 @@ public class DiscourseParserRunner {
                 DiscourseParserAnnotator.class, typeSystemDescription);
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
-                parentInput, paramBaseOutputDirName, outputStepNum);
+                parentInput, paramBaseOutputDirName);
 
         SimplePipeline.runPipeline(reader, discourseParser, writer);
     }

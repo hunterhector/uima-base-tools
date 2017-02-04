@@ -631,14 +631,4 @@ public class EreCorpusReader extends AbstractCollectionReader {
     public Progress[] getProgress() {
         return new Progress[]{new ProgressImpl(fileIndex, sourceAndAnnotationFiles.size(), Progress.ENTITIES)};
     }
-
-//    public static void main(String[] argv) {
-//        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(EreCorpusReader.class,
-//                typeSystemDescription,
-//                EreCorpusReader.PARAM_ERE_ANNOTATION_DIR, annotationDir,
-//                EreCorpusReader.PARAM_SOURCE_TEXT_DIR, sourceDir,
-//                EreCorpusReader.PARAM_ERE_ANNOTATION_EXT, "rich_ere.xml",
-//                EreCorpusReader.PARAM_SOURCE_EXT, "mp.txt",
-//                EreCorpusReader.PARAM_LANGUAGE, "zh");
-//    }
 }

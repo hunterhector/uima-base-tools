@@ -72,6 +72,7 @@ public class MentionTypeUtils {
             return typeSplitCache.get(joinedType);
         } else {
             String[] t = joinedType.split(TYPE_NAME_JOINER);
+            Arrays.sort(t);
             typeSplitCache.put(joinedType, t);
             return t;
         }
