@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.annotators;
 
+import com.google.common.collect.SetMultimap;
 import edu.cmu.cs.lti.ling.WordNetSearcher;
 import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
 import edu.cmu.cs.lti.script.type.WordNetBasedEntity;
@@ -11,9 +12,9 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.javatuples.Pair;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -86,8 +87,10 @@ public class WordNetBasedEntityAnnotator extends AbstractLoggingAnnotator {
             }
 
             // In cases where the original token is not a noun.
-            for (Pair<String, String> der : wns.getDerivations(token.getLemma().toLowerCase(), token.getPos())) {
-                if (der.getValue1().equals("noun") && isOfNounType(der.getValue0(), "pathological_state")) {
+            SetMultimap<String, String> derivations = wns.getDerivations(token.getLemma().toLowerCase(),
+                    token.getPos());
+            for (Map.Entry<String, String> der : derivations.entries()) {
+                if (der.getKey().equals("noun") && isOfNounType(der.getValue(), "pathological_state")) {
                     WordNetBasedEntity pathology = new WordNetBasedEntity(aJCas);
                     UimaAnnotationUtils.finishAnnotation(pathology, token.getBegin(), token.getEnd(), COMPONENT_ID,
                             0, aJCas);
