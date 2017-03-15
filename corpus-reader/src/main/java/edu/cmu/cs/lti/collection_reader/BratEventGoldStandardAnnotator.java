@@ -59,13 +59,13 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     @ConfigurationParameter(name = PARAM_ANNOTATION_DIR)
     private File annotationDir;
 
-    @ConfigurationParameter(name = PARAM_TOKENIZATION_MAP_DIR, defaultValue = ".txt.tab")
+    @ConfigurationParameter(name = PARAM_TOKENIZATION_MAP_DIR, mandatory = false)
     private File tokenizationDir;
 
     @ConfigurationParameter(name = PARAM_ANNOTATION_FILE_NAME_SUFFIX, defaultValue = ".tkn.ann")
     private String annotationFileNameSuffix;
 
-    @ConfigurationParameter(name = PARAM_TOKEN_OFFSET_SUFFIX, mandatory = false)
+    @ConfigurationParameter(name = PARAM_TOKEN_OFFSET_SUFFIX, defaultValue = ".txt.tab")
     private String tokenOffsetSuffix;
 
     @ConfigurationParameter(name = PARAM_TEXT_FILE_SUFFIX, defaultValue = ".tkn.txt")
@@ -105,14 +105,15 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         } else {
             logger.info("Will use token based span.");
             usePredefinedTokens = true;
+            File[] offsetDocuments = edu.cmu.cs.lti.utils.FileUtils.getFilesWithSuffix(tokenizationDir,
+                    tokenOffsetSuffix);
+            offsetsByName = trimAsDocId(offsetDocuments, tokenOffsetSuffix);
         }
 
         File[] annotationDocuments = edu.cmu.cs.lti.utils.FileUtils.getFilesWithSuffix(annotationDir,
                 annotationFileNameSuffix);
-        File[] offsetDocuments = edu.cmu.cs.lti.utils.FileUtils.getFilesWithSuffix(tokenizationDir, tokenOffsetSuffix);
 
         annotationsByName = trimAsDocId(annotationDocuments, annotationFileNameSuffix);
-        offsetsByName = trimAsDocId(offsetDocuments, tokenOffsetSuffix);
     }
 
     @Override
@@ -125,9 +126,8 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         String plainDocId = StringUtils.removeEnd(UimaConvenience.getDocId(aJCas), textFileNameSuffix);
 
         File annotationDocument = annotationsByName.get(plainDocId);
-        File tokenDocument = offsetsByName.get(plainDocId);
 
-        List<String> rawAnnotations = null;
+        List<String> rawAnnotations;
         try {
             rawAnnotations = FileUtils.readLines(annotationDocument, encoding);
         } catch (IOException e) {
@@ -137,8 +137,13 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         BratAnnotations annotations = BratFormat.parseBratAnnotations(rawAnnotations);
 
         try {
-            Map<String, MultiSpan> textBoundId2Spans =
-                    usePredefinedTokens ? getTokenBasedSpans(tokenDocument, annotations) : getSpans(annotations);
+            Map<String, MultiSpan> textBoundId2Spans;
+            if (usePredefinedTokens) {
+                File tokenDocument = offsetsByName.get(plainDocId);
+                textBoundId2Spans = getTokenBasedSpans(tokenDocument, annotations);
+            } else {
+                textBoundId2Spans = getSpans(annotations);
+            }
             annotateGoldStandard(goldView, annotations, textBoundId2Spans);
         } catch (IOException e) {
             throw new AnalysisEngineProcessException(e);
@@ -175,7 +180,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
                 List<Span> convertedSpans = new ArrayList<>();
 
                 for (Span span : textBoundById.getValue().spans) {
-                    if (span.covers(tokenSpan) || tokenSpan.covers(span)){
+                    if (span.covers(tokenSpan) || tokenSpan.covers(span)) {
                         convertedSpans.add(tokenSpan);
                     }
                 }
@@ -344,8 +349,6 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
                     return event.getEventMentions().size() > 1 ? 1 : 0;
                 }
         ).sum();
-
-        logger.info(String.format("Contains %d non-singleton clusters", numNonSingleton));
     }
 
     public void annotateGoldStandard(JCas aJCas, BratAnnotations annotations,
