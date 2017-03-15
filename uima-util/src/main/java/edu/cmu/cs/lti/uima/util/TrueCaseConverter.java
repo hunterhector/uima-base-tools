@@ -21,9 +21,9 @@ public class TrueCaseConverter {
     public TrueCaseConverter() {
         Properties props = new Properties();
         props.setProperty("annotators", "tokenize, ssplit, pos, lemma , truecase");
+        props.setProperty("truecase.model", "edu/stanford/nlp/models/truecase/truecasing.fast.qn.ser.gz");
         pipeline = new StanfordCoreNLP(props);
     }
-
 
     public void convert(String rawText) {
         Annotation document = new Annotation(rawText);
