@@ -7,8 +7,8 @@ import edu.arizona.sista.processors.Sentence;
 import edu.arizona.sista.processors.corenlp.CoreNLPDocument;
 import edu.arizona.sista.struct.DirectedGraph;
 import edu.arizona.sista.struct.Tree;
+import edu.cmu.cs.lti.script.type.ParseTreeAnnotation;
 import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
-import edu.cmu.cs.lti.script.type.StanfordTreeAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
 import org.apache.uima.fit.util.JCasUtil;
 import scala.Option;
@@ -74,7 +74,7 @@ public class SistaDocumentMaker {
         return new DirectedGraph<String>(JavaConversions.asScalaBuffer(edges).toList(), JavaConversions.asScalaSet(roots).toSet());
     }
 
-    public static Tree<String> toSistaTree(StanfordTreeAnnotation stanfordTree, int position) {
+    public static Tree<String> toSistaTree(ParseTreeAnnotation stanfordTree, int position) {
         if (stanfordTree.getIsLeaf()) {
             Option<Tree<String>[]> noneChildren = Option.apply(null);
             Tree<String> tree = new Tree<>(stanfordTree.getPennTreeLabel(), noneChildren, 0, position, position + 1);
@@ -87,7 +87,7 @@ public class SistaDocumentMaker {
         int firstTokenIdx = firstTokenIndex(stanfordTree);
 
         for (int i = 0; i < stanfordTree.getChildren().size(); i++) {
-            StanfordTreeAnnotation childTree = stanfordTree.getChildren(i);
+            ParseTreeAnnotation childTree = stanfordTree.getChildren(i);
             int childTokenIdx = firstTokenIndex(childTree);
             children[i] = toSistaTree(stanfordTree.getChildren(i), position + childTokenIdx - firstTokenIdx);
         }
@@ -124,7 +124,7 @@ public class SistaDocumentMaker {
         return new Tree<>(stanfordTree.getPennTreeLabel(), Some.apply(children), headTreeIndex, start, end);
     }
 
-    private static int firstTokenIndex(StanfordTreeAnnotation stanfordTree){
+    private static int firstTokenIndex(ParseTreeAnnotation stanfordTree){
         return Integer.parseInt(Iterables.get(JCasUtil.selectCovered(StanfordCorenlpToken.class, stanfordTree), 0).getId());
     }
 }

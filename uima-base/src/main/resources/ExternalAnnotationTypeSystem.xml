@@ -139,7 +139,7 @@
             <supertypeName>uima.tcas.Annotation</supertypeName>
         </typeDescription>
         <typeDescription>
-            <name>edu.cmu.cs.lti.script.type.StanfordTreeAnnotation</name>
+            <name>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</name>
             <description/>
             <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
             <features>
@@ -152,7 +152,7 @@
                     <name>children</name>
                     <description/>
                     <rangeTypeName>uima.cas.FSArray</rangeTypeName>
-                    <elementType>edu.cmu.cs.lti.script.type.StanfordTreeAnnotation</elementType>
+                    <elementType>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</elementType>
                 </featureDescription>
                 <featureDescription>
                     <name>isLeaf</name>
@@ -167,14 +167,24 @@
                 <featureDescription>
                     <name>parent</name>
                     <description/>
-                    <rangeTypeName>edu.cmu.cs.lti.script.type.StanfordTreeAnnotation</rangeTypeName>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>headTree</name>
+                    <description>The head tree among all the children.</description>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
                     <name>head</name>
                     <description/>
-                    <rangeTypeName>edu.cmu.cs.lti.script.type.StanfordCorenlpToken</rangeTypeName>
+                    <rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>
                 </featureDescription>
             </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.StanfordTreeAnnotation</name>
+            <description/>
+            <supertypeName>edu.cmu.cs.lti.script.type.ParseTreeAnnotation</supertypeName>
         </typeDescription>
         <typeDescription>
             <name>edu.cmu.cs.lti.script.type.OpennlpChunk</name>

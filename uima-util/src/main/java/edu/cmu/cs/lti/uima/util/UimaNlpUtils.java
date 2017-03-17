@@ -81,7 +81,7 @@ public class UimaNlpUtils {
             if (tree.getIsLeaf()) {
                 return findFirstToken(tree);
             } else {
-                return tree.getHead();
+                return (StanfordCorenlpToken) tree.getHead();
             }
         } else {
             return null;
