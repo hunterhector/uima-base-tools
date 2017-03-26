@@ -81,9 +81,6 @@ public class TbfEventDataReader extends AbstractCollectionReader {
     @ConfigurationParameter(name = PARAM_GOLD_STANDARD_FILE, mandatory = false)
     private File annotationFile = null;
 
-    @ConfigurationParameter(name = PARAM_TOKEN_EXT, mandatory = false)
-    String tokenExt;
-
     @ConfigurationParameter(name = PARAM_SOURCE_EXT)
     String sourceExt;
 
@@ -92,6 +89,10 @@ public class TbfEventDataReader extends AbstractCollectionReader {
 
     @ConfigurationParameter(name = PARAM_TOKEN_DIRECTORY, mandatory = false)
     File tokenDir;
+
+    @ConfigurationParameter(name = PARAM_TOKEN_EXT, mandatory = false)
+    String tokenExt;
+
 
     private static int numMentionsProcessed = 0;
 
