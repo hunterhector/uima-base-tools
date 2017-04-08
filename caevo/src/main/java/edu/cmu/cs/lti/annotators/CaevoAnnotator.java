@@ -5,14 +5,17 @@ import caevo.Main.DatasetType;
 import caevo.sieves.Sieve;
 import caevo.tlink.TLink;
 import caevo.util.*;
+import com.google.common.io.Files;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
+import edu.cmu.cs.lti.utils.DebugUtils;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
 import edu.stanford.nlp.trees.GrammaticalStructureFactory;
 import edu.stanford.nlp.trees.PennTreebankLanguagePack;
 import edu.stanford.nlp.trees.TreebankLanguagePack;
+import org.apache.commons.io.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -37,7 +40,7 @@ import java.util.*;
 import static caevo.Main.serializedGrammar;
 
 /**
- * Created with IntelliJ IDEA.l
+ * Mainly modify from the Caevo's Main class to create an annotator here.
  * Date: 1/26/17
  * Time: 2:38 PM
  *
@@ -45,20 +48,22 @@ import static caevo.Main.serializedGrammar;
  */
 public class CaevoAnnotator extends AbstractLoggingAnnotator {
     public static final String PARAM_RAW_TEXT_DIR = "rawTextDir";
-
     @ConfigurationParameter(name = PARAM_RAW_TEXT_DIR)
     private File rawTextDir;
 
+    public static final String PARAM_CAEVO_IO_DIR = "caevoIoDir";
+    @ConfigurationParameter(name = PARAM_CAEVO_IO_DIR)
+    private File caevoIoDir;
+
+    // Classpath to the caeveo resources.
     public static final String CAEVO_RESOURCE_DIR = "caevo_resources";
 
     private File caevoDir;
-    private String infopath;
     private boolean debug;
     private boolean useClosure;
     private boolean force24hrDCT;
     private String dctHeuristic;
     private Closure closure;
-    private WordNet wordnet;
     private String[] sieveClasses;
     private Main.DatasetType dataset = Main.DatasetType.ALL;
     private LexicalizedParser parser;
@@ -67,9 +72,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
     private TimexClassifier timexClassifier;
     private TextEventClassifier eventClassifier;
 
-    private String outpath = "sieve-output.xml";
-
-    SieveDocuments thedocsUnchanged; // for evaluating if TLinks are in the input
+    private File tempProcessDir;
 
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
@@ -83,11 +86,9 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         }
 
         File propertyFile = new File(caevoDir, "default.properties");
-        File sievesFile = new File(caevoDir, "cleartk.sieves");
 
         try {
             CaevoProperties.load(propertyFile.getPath());
-            infopath = CaevoProperties.getString("Main.info", null);
             // Overwrite these globals if they are in the properties file.
             debug = CaevoProperties.getBoolean("Main.debug", debug);
             useClosure = CaevoProperties.getBoolean("Main.closure", useClosure);
@@ -95,7 +96,6 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
                     .toUpperCase());
             force24hrDCT = CaevoProperties.getBoolean("Main.force24hrdct", force24hrDCT);
             dctHeuristic = CaevoProperties.getString("Main.dctHeuristic", dctHeuristic);
-
         } catch (IOException e) {
             throw new ResourceInitializationException(e);
         }
@@ -104,13 +104,13 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         try {
             closure = new Closure();
         } catch (IOException ex) {
-            System.out.println("ERROR: couldn't load Closure utility.");
+            logger.info("ERROR: couldn't load Closure utility.");
             ex.printStackTrace();
             System.exit(1);
         }
 
         // Load WordNet for any and all sieves.
-        wordnet = new WordNet();
+        Main.wordnet = new WordNet();
 
         // Load the sieve list.
         sieveClasses = loadSieveList();
@@ -119,13 +119,28 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
 
         TreebankLanguagePack tlp = new PennTreebankLanguagePack();
         gsf = tlp.grammaticalStructureFactory();
+
+        tempProcessDir = Files.createTempDir();
+
+        logger.info(String.format("Dataset: %s; Debug: %s; Closure: %s", dataset, debug, closure));
+    }
+
+    @Override
+    public void collectionProcessComplete() throws AnalysisEngineProcessException {
+        super.collectionProcessComplete();
+
+        // Remove the cleaned directory.
+        try {
+            FileUtils.deleteDirectory(tempProcessDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private String[] loadSieveList() {
-        String filename = System.getProperty("sieves");
-        if (filename == null) filename = "default.sieves";
+        String filename = new File(caevoDir, "default.sieves").getPath();
 
-        System.out.println("Reading sieve list from: " + filename);
+        logger.info("Reading sieve list from: " + filename);
 
         List<String> sieveNames = new ArrayList<>();
         try {
@@ -142,7 +157,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
             }
             reader.close();
         } catch (Exception ex) {
-            System.out.println("ERROR: no sieve list found");
+            logger.info("ERROR: no sieve list found");
             ex.printStackTrace();
             System.exit(1);
         }
@@ -151,7 +166,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         return sieveNames.toArray(arr);
     }
 
-    public void markupAll(SieveDocuments docs) {
+    public File markupAll(SieveDocuments docs) {
         markupEvents(docs);
         markupTimexes(docs);
         // Try to determine DCT based on relevant property settings
@@ -161,14 +176,14 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
                 DCTHeursitics.setFirstDateAsDCT(doc);  // only if there isn't already a DCT specified!
             }
         }
-        runSieves(docs);
+        return runSieves(docs);
     }
 
     private Sieve[] createAllSieves(String[] stringClasses) {
         Sieve sieves[] = new Sieve[stringClasses.length];
         for (int xx = 0; xx < stringClasses.length; xx++) {
             sieves[xx] = createSieveInstance(stringClasses[xx]);
-            System.out.println("Added sieve: " + stringClasses[xx]);
+            logger.info("Added sieve: " + stringClasses[xx]);
         }
         return sieves;
     }
@@ -184,17 +199,9 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
             Class<?> c = Class.forName("caevo.sieves." + sieveClass);
             Sieve sieve = (Sieve) c.newInstance();
             return sieve;
-        } catch (InstantiationException e) {
-            System.out.println("ERROR: couldn't load sieve: " + sieveClass);
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            System.out.println("ERROR: couldn't load sieve: " + sieveClass);
-            e.printStackTrace();
-        } catch (IllegalArgumentException e) {
-            System.out.println("ERROR: couldn't load sieve: " + sieveClass);
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            System.out.println("ERROR: couldn't load sieve: " + sieveClass);
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException | IllegalArgumentException
+                e) {
+            logger.info("ERROR: couldn't load sieve: " + sieveClass);
             e.printStackTrace();
         }
         return null;
@@ -230,11 +237,10 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         }
     }
 
-
     /**
      * Run the sieve pipeline on the given documents.
      */
-    public void runSieves(SieveDocuments thedocs) {
+    public File runSieves(SieveDocuments thedocs) {
         // Remove all TLinks because we will add our own.
         thedocs.removeAllTLinks();
 
@@ -258,26 +264,26 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
 
         // Do each file independently.
         for (SieveDocument doc : docs.getDocuments()) {
-            System.out.println("Processing " + doc.getDocname() + "...");
-//			System.out.println("Number of gold links: " + thedocsUnchanged.getDocument(doc.getDocname()).getTlinks()
+            logger.info("Processing " + doc.getDocname() + "...");
+//			logger.info("Number of gold links: " + thedocsUnchanged.getDocument(doc.getDocname()).getTlinks()
 // .size());
 
             // Loop over the sieves in order.
             for (int xx = 0; xx < sieves.length; xx++) {
                 Sieve sieve = sieves[xx];
                 if (sieve == null) continue;
-                System.out.println("\tSieve " + sieve.getClass().toString());
+                logger.info("\tSieve " + sieve.getClass().toString());
 
                 // Run this sieve
                 List<TLink> newLinks = sieve.annotate(doc, currentTLinks);
-                if (debug) System.out.println("\t\t" + newLinks.size() + " new links.");
-//				if( debug ) System.out.println("\t\t" + newLinks);
+                if (debug) logger.info("\t\t" + newLinks.size() + " new links.");
+//				if( debug ) logger.info("\t\t" + newLinks);
                 stats[xx].addProposedCount(newLinks.size());
 
                 // Verify the links as non-conflicting.
                 int numRemoved = removeConflicts(currentTLinksHash, newLinks);
-                if (debug) System.out.println("\t\tRemoved " + numRemoved + " proposed links.");
-//				if( debug ) System.out.println("\t\t" + newLinks);
+                if (debug) logger.info("\t\tRemoved " + numRemoved + " proposed links.");
+//				if( debug ) logger.info("\t\t" + newLinks);
                 stats[xx].addRemovedCount(numRemoved);
 
                 if (newLinks.size() > 0) {
@@ -288,35 +294,33 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
                     // Run Closure
                     if (useClosure) {
                         List<TLink> closedLinks = closureExpand(sieveClasses[xx], currentTLinks, currentTLinksHash);
-                        if (debug) System.out.println("\t\tClosure produced " + closedLinks.size() + " links.");
-                        //					if( debug ) System.out.println("\t\tclosed=" + closedLinks);
+                        if (debug) logger.info("\t\tClosure produced " + closedLinks.size() + " links.");
+                        //					if( debug ) logger.info("\t\tclosed=" + closedLinks);
                         stats[xx].addClosureCount(closedLinks.size());
                     }
                 }
-                if (debug) System.out.println("\t\tDoc now has " + currentTLinks.size() + " links.");
+                if (debug) logger.info("\t\tDoc now has " + currentTLinks.size() + " links.");
             }
 
             // Add links to InfoFile.
             doc.addTlinks(currentTLinks);
-//			if( debug ) System.out.println("Adding links: " + currentTLinks);
+//			if( debug ) logger.info("Adding links: " + currentTLinks);
             currentTLinks.clear();
             currentTLinksHash.clear();
         }
 
-        System.out.println("Writing output: " + outpath);
-        docs.writeToXML(new File(outpath));
+        File outputFile = new File(tempProcessDir, "sieve-output.xml");
+        logger.info("Writing output: " + outputFile);
+        docs.writeToXML(outputFile);
 
-        // Evaluate it if the input file had tlinks in it.
-        if (thedocsUnchanged != null)
-            Evaluate.evaluate(thedocsUnchanged, docs, sieveClasses, sieveNameToStats);
+        return outputFile;
     }
-
 
     private void addProposedToCurrentList(String sieveName, List<TLink> proposed, List<TLink> current, Map<String,
             TLink> currentHash) {
         for (TLink newlink : proposed) {
             if (currentHash.containsKey(newlink.getId1() + newlink.getId2())) {
-                System.out.println("MAIN WARNING: overwriting " + currentHash.get(newlink.getId1() + newlink.getId2()
+                logger.info("MAIN WARNING: overwriting " + currentHash.get(newlink.getId1() + newlink.getId2()
                 ) + " with " + newlink);
             }
             current.add(newlink);
@@ -353,7 +357,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
 
         // Remove duplicates.
         int duplicates = removeDuplicatesAndInvalids(proposedLinks);
-        if (debug && duplicates > 0) System.out.println("\t\tRemoved " + duplicates + " duplicate proposed links.");
+        if (debug && duplicates > 0) logger.info("\t\tRemoved " + duplicates + " duplicate proposed links.");
 
         for (TLink proposed : proposedLinks) {
             // Look for a current link that conflicts with this proposed link.
@@ -388,12 +392,12 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
             if (proposed.getId1() == null || proposed.getId2() == null ||
                     proposed.getId1().length() == 0 || proposed.getId2().length() == 0) {
                 removals.add(proposed);
-                System.out.println("WARNING (proposed an invalid link): " + proposed);
+                logger.info("WARNING (proposed an invalid link): " + proposed);
             }
             // Remove any proposed links that are duplicates of already proposed links.
             else if (seenNew.contains(proposed.getId1() + proposed.getId2())) {
                 removals.add(proposed);
-                System.out.println("WARNING (proposed the same link twice): " + proposed);
+                logger.info("WARNING (proposed the same link twice): " + proposed);
             }
             // Normal link. Keep it.
             else {
@@ -413,7 +417,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
      */
     public void markupEvents(SieveDocuments info) {
         if (eventClassifier == null) {
-            eventClassifier = new TextEventClassifier(info, wordnet);
+            eventClassifier = new TextEventClassifier(info, Main.wordnet);
             eventClassifier.loadClassifiers();
         }
         eventClassifier.extractEvents();
@@ -432,21 +436,29 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         File rawInput = new File(rawTextDir, UimaConvenience.getDocId(aJCas));
 
+        rawTextDir.mkdirs();
+
+        try {
+            FileUtils.write(rawInput, aJCas.getDocumentText());
+        } catch (IOException e) {
+            throw new AnalysisEngineProcessException(e);
+        }
+
         SieveDocuments docs = new SieveDocuments();
         SieveDocument doc = Tempeval3Parser.rawTextFileToParsed(rawInput.getPath(), parser, gsf);
-
         docs.addDocument(doc);
 
-        TextEventClassifier eventClassifier = new TextEventClassifier(docs, wordnet);
-        eventClassifier.loadClassifiers();
+        File sieveOutputFile = markupAll(docs);
+        parseResultXML(sieveOutputFile);
+        DebugUtils.pause();
+    }
 
-        eventClassifier.extractEvents();
+    private void parseResultXML(File sieveOutputFile) {
 
-        markupAll(docs);
     }
 
     public static void main(String[] args) throws IOException, UIMAException {
-        if (args.length < 2) {
+        if (args.length < 3) {
             System.out.println("Please provide parent, base input directory");
             System.exit(1);
         }
@@ -455,6 +467,8 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
 
         // Parameters for the writer
         String baseInput = args[1]; //"01_event_tuples"
+
+        String tempTextDir = args[2];
 
         String paramBaseOutputDirName = "caevo_parsed";
 
@@ -470,12 +484,12 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
                 typeSystemDescription, parentInput, baseInput);
 
         AnalysisEngineDescription annotator = AnalysisEngineFactory.createEngineDescription(
-                CaevoAnnotator.class, typeSystemDescription);
+                CaevoAnnotator.class, typeSystemDescription,
+                CaevoAnnotator.PARAM_RAW_TEXT_DIR, tempTextDir);
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
                 parentInput, paramBaseOutputDirName);
 
         SimplePipeline.runPipeline(reader, annotator, writer);
-
     }
 }

@@ -96,22 +96,51 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
             List<String> words = new ArrayList<>();
             List<String> posTags = new ArrayList<>();
 
+            boolean validSegmentation = segmentSentence(sentence, words);
+            Postagger.postag(words, posTags);
+            List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
+
+            if (validSegmentation) {
 //            logger.info("Annotating tokens.");
-            List<LtpToken> tokens = annotateTokens(aJCas, sentence, words, posTags);
+                List<LtpToken> tokens = annotateTokens(aJCas, characters, words, posTags);
 
 //            logger.info("Annotating NER.");
-            List<String> ners = annotateNer(aJCas, tokens, words, posTags);
+                List<String> ners = annotateNer(aJCas, tokens, words, posTags);
 
 //            logger.info("Parsing.");
-            List<Integer> heads = new ArrayList<>();
-            List<String> depRels = new ArrayList<>();
-            annotateDep(aJCas, tokens, heads, depRels);
+                List<Integer> heads = new ArrayList<>();
+                List<String> depRels = new ArrayList<>();
+                annotateDep(aJCas, tokens, heads, depRels);
 
 //            logger.info("Annotating srl");
-            annotateSrl(aJCas, tokens, words, posTags, ners, heads, depRels);
-
+                annotateSrl(aJCas, tokens, words, posTags, ners, heads, depRels);
 //            DebugUtils.pause();
+
+            }else{
+                logger.warn("Skipping adding annotation to this sentence.");
+            }
         }
+    }
+
+    private boolean segmentSentence(StanfordCorenlpSentence sentence, List<String> words) {
+        String sourceSent = sentence.getCoveredText().replaceAll("\\s", "").replaceAll("\\n", "").replaceAll("\\r", "");
+//        logger.info("Annotating " + sourceSent);
+        List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
+
+        // Do segmentation first.
+        int size = Segmentor.segment(sourceSent, words);
+
+        int totalLength = 0;
+        for (String word : words) {
+            totalLength += word.length();
+        }
+
+        if (totalLength != characters.size()) {
+            logger.warn(String.format("Segmented words' total character length : %d is not the same as the " +
+                    "original character length : %d", totalLength, characters.size()));
+            return false;
+        }
+        return true;
     }
 
     private void annotateSrl(JCas aJCas, List<LtpToken> tokens, List<String> words, List<String> posttags,
@@ -243,30 +272,31 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
         return ners;
     }
 
-    private List<LtpToken> annotateTokens(JCas aJCas, StanfordCorenlpSentence sentence, List<String> words, List<String>
-            posTags) {
+    private List<LtpToken> annotateTokens(JCas aJCas, List<CharacterAnnotation> characters, List<String> words,
+                                          List<String> posTags) {
         List<LtpToken> tokens = new ArrayList<>();
 
-        String sourceSent = sentence.getCoveredText().replaceAll("\\s", "").replaceAll("\\n", "").replaceAll("\\r", "");
-        int size = Segmentor.segment(sourceSent, words);
-//        logger.info("Annotating " + sourceSent);
-
-        Postagger.postag(words, posTags);
-
-        List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
-
-        int totalLength = 0;
-        for (String word : words) {
-            totalLength += word.length();
-        }
-
-        if (totalLength != characters.size()) {
-            logger.error(String.format("Segmented words' total character length : %d is not the same as the " +
-                    "original character length : %d", totalLength, characters.size()));
-        }
+//        String sourceSent = sentence.getCoveredText().replaceAll("\\s", "").replaceAll("\\n", "").replaceAll("\\r",
+// "");
+//        int size = Segmentor.segment(sourceSent, words);
+////        logger.info("Annotating " + sourceSent);
+//
+//        Postagger.postag(words, posTags);
+//
+//        List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
+//
+//        int totalLength = 0;
+//        for (String word : words) {
+//            totalLength += word.length();
+//        }
+//
+//        if (totalLength != characters.size()) {
+//            logger.error(String.format("Segmented words' total character length : %d is not the same as the " +
+//                    "original character length : %d", totalLength, characters.size()));
+//        }
 
         int currentLength = 0;
-        for (int i = 0; i < size; i++) {
+        for (int i = 0; i < words.size(); i++) {
             String word = words.get(i);
             int wordEnd = currentLength + word.length() - 1;
             int begin = characters.get(currentLength).getBegin();

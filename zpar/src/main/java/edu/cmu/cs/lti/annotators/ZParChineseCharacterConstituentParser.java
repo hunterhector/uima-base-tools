@@ -6,6 +6,7 @@ import edu.cmu.cs.lti.script.type.StanfordCorenlpSentence;
 import edu.cmu.cs.lti.script.type.ZparTreeAnnotation;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.utils.DataForwarder;
 import edu.stanford.nlp.trees.AbstractCollinsHeadFinder;
 import edu.stanford.nlp.trees.Tree;
@@ -102,15 +103,16 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
 
         if (zparInitializationSuccess) {
             logger.info("Successfully initialized ZPar thread.");
-        }else{
+        } else {
             logger.info("Cannot initialize ZPar thread.");
         }
     }
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-        for (StanfordCorenlpSentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
-            if (zparInitializationSuccess) {
+        UimaConvenience.printProcessLog(aJCas, logger);
+        if (zparInitializationSuccess) {
+            for (StanfordCorenlpSentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
                 try {
                     String parsedSent = getParse(sentence);
                     annotate(aJCas, sentence, parsedSent);
@@ -139,7 +141,10 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
 
         String line;
         int numParsedChars = 0;
-        while ((line = zparOutput.readLine()) != null) {
+
+        // Timeout the zpar parsing after 100 seconds.
+        long startTime = System.currentTimeMillis();
+        while ((line = zparOutput.readLine()) != null || (System.currentTimeMillis() - startTime) < 100000) {
             logger.debug("Original parse line is : " + line);
 
             // First we replace brackets to -LRB- and -RRB-.
@@ -154,16 +159,20 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
 
             parses.add(replacedParse);
 
-            if (numParsedChars == numCharacter) {
+            logger.debug(String.format("Number of input character : %d, number of parsed character: %d.",
+                    numCharacter, numParsedChars));
+
+            if (numParsedChars >= numCharacter) {
+                // Sometimes the Zpar parser will have more characters that needed.
                 break;
             }
         }
 
         if (numParsedChars != numCharacter) {
-            logger.error(String.format("Number of parsed character [%d] is not the same as number of actual " +
+            logger.warn(String.format("Number of parsed character [%d] is not the same as number of actual " +
                     "character [%d].", numParsedChars, numCharacter));
-            logger.error("Original sentence is " + sentenceText);
-            logger.error("Parsed result contains the following: ");
+            logger.warn("Original sentence is " + sentenceText);
+            logger.warn("Parsed result contains the following: ");
             for (String parse : parses) {
                 logger.error(parse);
             }
@@ -182,9 +191,16 @@ public class ZParChineseCharacterConstituentParser extends AbstractLoggingAnnota
         Tree parseTree = Tree.valueOf(parse);
         parseTree.setSpans();
 
-        logger.debug("Going to annotate the parse into the sentence.");
-        annotateParse(aJCas, null, parseTree, characters);
-        logger.debug("Done.");
+        int numTreeLeaves = parseTree.getLeaves().size();
+
+        if (characters.size() == numTreeLeaves) {
+            logger.debug("Going to annotate the parse into the sentence.");
+            annotateParse(aJCas, null, parseTree, characters);
+            logger.debug("Done.");
+        } else {
+            logger.warn(String.format("Unequal parse leaves (%d) vs. sentence length (%d), not adding to JCas.",
+                    numTreeLeaves, characters.size()));
+        }
     }
 
     private ZparTreeAnnotation annotateParse(JCas aJCas, ZparTreeAnnotation parent, Tree parseTree,

@@ -4,6 +4,7 @@ import edu.cmu.cs.lti.uima.util.CasSerialization;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.collection.CollectionException;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
@@ -18,8 +19,11 @@ import java.util.List;
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
  */
 public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader {
-
     public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
+
+    public static final String PARAM_BASE_NAME_FILE_FILTER = "BaseNameFileFilter";
+    @ConfigurationParameter(name = PARAM_BASE_NAME_FILE_FILTER, mandatory = false)
+    File baseNameFileFilter;
 
     private String inputViewName;
 

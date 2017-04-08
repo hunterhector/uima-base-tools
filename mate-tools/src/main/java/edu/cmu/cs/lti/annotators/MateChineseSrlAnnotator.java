@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -57,6 +58,8 @@ public class MateChineseSrlAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
+        UimaConvenience.printProcessLog(aJCas, logger);
+
         for (edu.cmu.cs.lti.script.type.Sentence sentence : JCasUtil.select(aJCas, edu.cmu.cs.lti.script.type
                 .Sentence.class)) {
             Sentence srlSentence = createSentence(sentence);
