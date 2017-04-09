@@ -5,3 +5,8 @@ target/
 .metadata
 metadata
 /data
+
+# Intellij
+.idea/
+*.iml
+*.iws
