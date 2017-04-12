@@ -25,8 +25,6 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
 
     public static final String PARAM_ADDITIONAL_VIEWS = "targetViewNames";
 
-    private String className = this.getClass().getName();
-
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @ConfigurationParameter(name = PARAM_KEEP_QUIET, mandatory = false)

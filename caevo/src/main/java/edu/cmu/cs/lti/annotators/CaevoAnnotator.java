@@ -450,6 +450,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
 
         File sieveOutputFile = markupAll(docs);
         parseResultXML(sieveOutputFile);
+
         DebugUtils.pause();
     }
 
