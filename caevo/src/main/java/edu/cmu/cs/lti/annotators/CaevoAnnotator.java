@@ -6,12 +6,24 @@ import caevo.sieves.Sieve;
 import caevo.tlink.TLink;
 import caevo.util.*;
 import com.google.common.io.Files;
+import edu.cmu.cs.lti.caevo.GoldStandardEventClassifier;
+import edu.cmu.cs.lti.model.Span;
+import edu.cmu.cs.lti.model.UimaConst;
+import edu.cmu.cs.lti.script.timeml.Event;
+import edu.cmu.cs.lti.script.type.EventMention;
+import edu.cmu.cs.lti.script.type.EventMentionRelation;
+import edu.cmu.cs.lti.script.type.StanfordCorenlpSentence;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
+import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
-import edu.cmu.cs.lti.utils.DebugUtils;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.ling.HasWord;
 import edu.stanford.nlp.parser.lexparser.LexicalizedParser;
+import edu.stanford.nlp.process.DocumentPreprocessor;
+import edu.stanford.nlp.process.PTBTokenizer;
+import edu.stanford.nlp.process.TokenizerFactory;
 import edu.stanford.nlp.trees.GrammaticalStructureFactory;
 import edu.stanford.nlp.trees.PennTreebankLanguagePack;
 import edu.stanford.nlp.trees.TreebankLanguagePack;
@@ -20,19 +32,25 @@ import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.cas.CAS;
 import org.apache.uima.collection.CollectionReaderDescription;
-import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
+import org.uimafit.util.JCasUtil;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
@@ -47,14 +65,6 @@ import static caevo.Main.serializedGrammar;
  * @author Zhengzhong Liu
  */
 public class CaevoAnnotator extends AbstractLoggingAnnotator {
-    public static final String PARAM_RAW_TEXT_DIR = "rawTextDir";
-    @ConfigurationParameter(name = PARAM_RAW_TEXT_DIR)
-    private File rawTextDir;
-
-    public static final String PARAM_CAEVO_IO_DIR = "caevoIoDir";
-    @ConfigurationParameter(name = PARAM_CAEVO_IO_DIR)
-    private File caevoIoDir;
-
     // Classpath to the caeveo resources.
     public static final String CAEVO_RESOURCE_DIR = "caevo_resources";
 
@@ -71,6 +81,8 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
 
     private TimexClassifier timexClassifier;
     private TextEventClassifier eventClassifier;
+
+    private GoldStandardEventClassifier goldEventClassifier;
 
     private File tempProcessDir;
 
@@ -166,17 +178,68 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         return sieveNames.toArray(arr);
     }
 
-    public File markupAll(SieveDocuments docs) {
-        markupEvents(docs);
+    private Span getSpan(JCas aJCas, SieveDocument doc, int sentenceId, int tokenId) {
+        ArrayList<StanfordCorenlpSentence> sentences = new ArrayList<>(JCasUtil.select(aJCas,
+                StanfordCorenlpSentence.class));
+        StanfordCorenlpSentence sent = sentences.get(sentenceId);
+        CoreLabel token = doc.getSentences().get(sentenceId).tokens().get(tokenId);
+        return Span.of(sent.getBegin() + token.beginPosition(), sent.getBegin() + token.endPosition());
+    }
+
+    private void markupAll(JCas aJCas) throws IOException, SAXException, ParserConfigurationException {
+        SieveDocuments docs = new SieveDocuments();
+        SieveDocument doc = rawTextToParsed(aJCas, UimaConvenience.getDocId(aJCas), parser, gsf);
+        docs.addDocument(doc);
+
+        Map<String, EventMention> eidMapping = markupEvents(docs, aJCas);
+
+        int sindex = 0;
+        for (List<TextEvent> textEvents : doc.getEventsBySentence()) {
+            for (TextEvent textEvent : textEvents) {
+                Span eventSpan = getSpan(aJCas, doc, sindex, textEvent.getIndex());
+                Event timemlEvent = new Event(aJCas, eventSpan.getBegin(), eventSpan.getEnd());
+                timemlEvent.setAspect(textEvent.getAspect().name());
+                timemlEvent.setModality(textEvent.getModality());
+                timemlEvent.setPolarity(textEvent.getPolarity().name());
+                timemlEvent.setTense(textEvent.getTense().name());
+                timemlEvent.setEventInstanceId(textEvent.getEiid());
+                UimaAnnotationUtils.finishAnnotation(timemlEvent, COMPONENT_ID, 0, aJCas);
+            }
+            sindex++;
+        }
+
         markupTimexes(docs);
         // Try to determine DCT based on relevant property settings
         // TODO: use reflection method parallel to how sieves are chosen to choose the right DCTHeuristic method
-        if (dctHeuristic == "setFirstDateAsDCT") {
-            for (SieveDocument doc : docs.getDocuments()) {
-                DCTHeursitics.setFirstDateAsDCT(doc);  // only if there isn't already a DCT specified!
+        if (Objects.equals(dctHeuristic, "setFirstDateAsDCT")) {
+            DCTHeursitics.setFirstDateAsDCT(doc);  // only if there isn't already a DCT specified!
+        }
+
+        runSieves(docs);
+
+        for (TLink tLink : doc.getTlinks()) {
+            String fromEiid = tLink.getId1();
+            String toEiid = tLink.getId2();
+            String relation = tLink.getRelation().name();
+
+            if (!relation.equals("VAGUE")) {
+                if (eidMapping.containsKey(fromEiid) && eidMapping.containsKey(toEiid)) {
+                    EventMention fromEvent = eidMapping.get(fromEiid);
+                    EventMention toEvent = eidMapping.get(toEiid);
+//                    logger.info(String.format("%s --%s--> %s", fromEvent.getCoveredText(), relation,
+//                            toEvent.getCoveredText()));
+
+                    EventMentionRelation emr = new EventMentionRelation(aJCas);
+                    emr.setHead(fromEvent);
+                    emr.setChild(toEvent);
+                    emr.setRelationType("TIMEML_" + relation);
+                    UimaAnnotationUtils.finishTop(emr, COMPONENT_ID, 0, aJCas);
+                }
             }
         }
-        return runSieves(docs);
+
+        logger.info(String.format("Number of events found: %d, mapped to KBP events: %d",
+                doc.getEvents().size(), eidMapping.size()));
     }
 
     private Sieve[] createAllSieves(String[] stringClasses) {
@@ -240,7 +303,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
     /**
      * Run the sieve pipeline on the given documents.
      */
-    public File runSieves(SieveDocuments thedocs) {
+    public void runSieves(SieveDocuments thedocs) {
         // Remove all TLinks because we will add our own.
         thedocs.removeAllTLinks();
 
@@ -309,11 +372,11 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
             currentTLinksHash.clear();
         }
 
-        File outputFile = new File(tempProcessDir, "sieve-output.xml");
-        logger.info("Writing output: " + outputFile);
-        docs.writeToXML(outputFile);
-
-        return outputFile;
+//        File outputFile = new File(tempProcessDir, "sieve-output.xml");
+//        logger.info("Writing output: " + outputFile);
+//        docs.writeToXML(outputFile);
+//
+//        return outputFile;
     }
 
     private void addProposedToCurrentList(String sieveName, List<TLink> proposed, List<TLink> current, Map<String,
@@ -415,12 +478,23 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
     /**
      * Assumes the SieveDocuments has its text parsed.
      */
-    public void markupEvents(SieveDocuments info) {
+    private Map<String, EventMention> markupEvents(SieveDocuments info, JCas aJCas) {
         if (eventClassifier == null) {
             eventClassifier = new TextEventClassifier(info, Main.wordnet);
             eventClassifier.loadClassifiers();
         }
-        eventClassifier.extractEvents();
+        eventClassifier.extractEvents(info);
+
+        if (goldEventClassifier == null) {
+            goldEventClassifier = new GoldStandardEventClassifier(Main.wordnet);
+            goldEventClassifier.loadClassifiers();
+        }
+
+        Map<String, EventMention> eidMapping = new HashMap<>();
+
+        goldEventClassifier.extractEvents(aJCas, info, eidMapping);
+
+        return eidMapping;
     }
 
     /**
@@ -434,28 +508,92 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-        File rawInput = new File(rawTextDir, UimaConvenience.getDocId(aJCas));
-
-        rawTextDir.mkdirs();
-
+        UimaConvenience.printProcessLog(aJCas);
         try {
-            FileUtils.write(rawInput, aJCas.getDocumentText());
-        } catch (IOException e) {
+            markupAll(aJCas);
+        } catch (IOException | ParserConfigurationException | SAXException e) {
             throw new AnalysisEngineProcessException(e);
         }
-
-        SieveDocuments docs = new SieveDocuments();
-        SieveDocument doc = Tempeval3Parser.rawTextFileToParsed(rawInput.getPath(), parser, gsf);
-        docs.addDocument(doc);
-
-        File sieveOutputFile = markupAll(docs);
-        parseResultXML(sieveOutputFile);
-
-        DebugUtils.pause();
     }
 
-    private void parseResultXML(File sieveOutputFile) {
+    private SieveDocument rawTextToParsed(JCas aJCas, String filename, LexicalizedParser parser,
+                                          GrammaticalStructureFactory gsf) {
+        List<List<HasWord>> sentencesNormInvertible = new ArrayList<>();
+        sentencesNormInvertible.addAll(convertSentence(aJCas));
 
+        SieveDocument sdoc = new SieveDocument(filename);
+
+        int sid = 0;
+        for (List<HasWord> sent : sentencesNormInvertible) {
+            Pair<String, String> parseDep = Tempeval3Parser.parseDep(sent, parser, gsf);
+            List<CoreLabel> cls = new ArrayList<CoreLabel>();
+            for (HasWord word : sent) cls.add((CoreLabel) word);
+            sdoc.addSentence(Tempeval3Parser.buildString(sent, 0, sent.size()), cls, parseDep.first(),
+                    parseDep.second(), null, null);
+            sid++;
+        }
+
+        return sdoc;
+    }
+
+    private List<List<HasWord>> convertSentence(JCas aJCas) {
+        List<List<HasWord>> sentences = new ArrayList<List<HasWord>>();
+
+        for (StanfordCorenlpSentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
+            List<HasWord> convertedSent = tokenize(sentence.getCoveredText());
+            sentences.add(convertedSent);
+        }
+        return sentences;
+    }
+
+    public static List<HasWord> tokenize(String str) {
+        List<HasWord> tokens = new ArrayList<>();
+
+        StringReader reader = new StringReader(str);
+        DocumentPreprocessor dp = new DocumentPreprocessor(reader);
+        TokenizerFactory<? extends HasWord> factory = null;
+
+        factory = PTBTokenizer.factory(true, true);
+
+        String options = "invertible=true";
+
+        factory.setOptions(options);
+        dp.setTokenizerFactory(factory);
+
+        for (List<HasWord> sent : dp) {
+            tokens.addAll(sent);
+        }
+        return tokens;
+    }
+
+    private void parseResultXML(JCas aJCas, File sieveOutputFile, Map<String, EventMention> eidMapping) throws
+            ParserConfigurationException, IOException, SAXException {
+        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+        Document doc = dBuilder.parse(sieveOutputFile);
+
+        NodeList events = doc.getElementsByTagName("event");
+
+
+        NodeList tlinks = doc.getElementsByTagName("tlink");
+
+        logger.info("Number of tlinks " + tlinks.getLength());
+
+
+        for (int i = 0; i < tlinks.getLength(); i++) {
+            Node link = tlinks.item(i);
+            NamedNodeMap attributes = link.getAttributes();
+            String eiid1 = attributes.getNamedItem("event1").getNodeValue();
+            String eiid2 = attributes.getNamedItem("event2").getNodeValue();
+            String relation = attributes.getNamedItem("relation").getNodeValue();
+
+            if (!relation.equals("VAGUE")) {
+                if (eidMapping.containsKey(eiid1) && eidMapping.containsKey(eiid2)) {
+                    EventMention fromEvent = eidMapping.get(eiid1);
+                    EventMention toEvent = eidMapping.get(eiid2);
+                }
+            }
+        }
     }
 
     public static void main(String[] args) throws IOException, UIMAException {
@@ -484,13 +622,23 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createXmiReader(
                 typeSystemDescription, parentInput, baseInput);
 
-        AnalysisEngineDescription annotator = AnalysisEngineFactory.createEngineDescription(
-                CaevoAnnotator.class, typeSystemDescription,
-                CaevoAnnotator.PARAM_RAW_TEXT_DIR, tempTextDir);
+        AnalysisEngineDescription goldAnnotator = AnalysisEngineFactory.createEngineDescription(
+                GoldStandardEventMentionAnnotator.class, typeSystemDescription,
+                GoldStandardEventMentionAnnotator.PARAM_TARGET_VIEWS,
+                new String[]{CAS.NAME_DEFAULT_SOFA, UimaConst.inputViewName},
+                GoldStandardEventMentionAnnotator.PARAM_COPY_MENTION_TYPE, true,
+                GoldStandardEventMentionAnnotator.PARAM_COPY_REALIS, true,
+                GoldStandardEventMentionAnnotator.PARAM_COPY_CLUSTER, true,
+                GoldStandardEventMentionAnnotator.PARAM_COPY_RELATIONS, true
+        );
+
+        AnalysisEngineDescription caevo = AnalysisEngineFactory.createEngineDescription(
+                CaevoAnnotator.class, typeSystemDescription
+        );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
                 parentInput, paramBaseOutputDirName);
 
-        SimplePipeline.runPipeline(reader, annotator, writer);
+        SimplePipeline.runPipeline(reader, goldAnnotator, caevo, writer);
     }
 }
