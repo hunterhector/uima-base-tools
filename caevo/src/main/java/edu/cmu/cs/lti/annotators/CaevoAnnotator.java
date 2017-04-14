@@ -41,14 +41,8 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 import org.uimafit.util.JCasUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.net.URISyntaxException;
@@ -191,6 +185,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         SieveDocument doc = rawTextToParsed(aJCas, UimaConvenience.getDocId(aJCas), parser, gsf);
         docs.addDocument(doc);
 
+        logger.info("Marking events.");
         Map<String, EventMention> eidMapping = markupEvents(docs, aJCas);
 
         int sindex = 0;
@@ -208,6 +203,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
             sindex++;
         }
 
+        logger.info("Marking TimeEx");
         markupTimexes(docs);
         // Try to determine DCT based on relevant property settings
         // TODO: use reflection method parallel to how sieves are chosen to choose the right DCTHeuristic method
@@ -215,6 +211,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
             DCTHeursitics.setFirstDateAsDCT(doc);  // only if there isn't already a DCT specified!
         }
 
+        logger.info("Running Sieves.");
         runSieves(docs);
 
         for (TLink tLink : doc.getTlinks()) {
@@ -483,6 +480,8 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
             eventClassifier = new TextEventClassifier(info, Main.wordnet);
             eventClassifier.loadClassifiers();
         }
+
+        // Add timeout here.
         eventClassifier.extractEvents(info);
 
         if (goldEventClassifier == null) {
@@ -566,48 +565,15 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         return tokens;
     }
 
-    private void parseResultXML(JCas aJCas, File sieveOutputFile, Map<String, EventMention> eidMapping) throws
-            ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(sieveOutputFile);
-
-        NodeList events = doc.getElementsByTagName("event");
-
-
-        NodeList tlinks = doc.getElementsByTagName("tlink");
-
-        logger.info("Number of tlinks " + tlinks.getLength());
-
-
-        for (int i = 0; i < tlinks.getLength(); i++) {
-            Node link = tlinks.item(i);
-            NamedNodeMap attributes = link.getAttributes();
-            String eiid1 = attributes.getNamedItem("event1").getNodeValue();
-            String eiid2 = attributes.getNamedItem("event2").getNodeValue();
-            String relation = attributes.getNamedItem("relation").getNodeValue();
-
-            if (!relation.equals("VAGUE")) {
-                if (eidMapping.containsKey(eiid1) && eidMapping.containsKey(eiid2)) {
-                    EventMention fromEvent = eidMapping.get(eiid1);
-                    EventMention toEvent = eidMapping.get(eiid2);
-                }
-            }
-        }
-    }
-
     public static void main(String[] args) throws IOException, UIMAException {
-        if (args.length < 3) {
+        if (args.length < 2) {
             System.out.println("Please provide parent, base input directory");
             System.exit(1);
         }
 
         String parentInput = args[0]; //"data";
 
-        // Parameters for the writer
         String baseInput = args[1]; //"01_event_tuples"
-
-        String tempTextDir = args[2];
 
         String paramBaseOutputDirName = "caevo_parsed";
 

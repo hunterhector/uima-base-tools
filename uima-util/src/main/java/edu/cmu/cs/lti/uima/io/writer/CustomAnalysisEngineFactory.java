@@ -9,11 +9,19 @@ import org.apache.uima.resource.metadata.TypeSystemDescription;
 import java.util.Set;
 
 public class CustomAnalysisEngineFactory {
+    public static TypeSystemDescription typeSystemDescription;
+
+    public static void setTypeSystem(TypeSystemDescription typeSystem) {
+        typeSystemDescription = typeSystem;
+    }
+
     public static void setTypeSystem(AnalysisEngineDescription coreferenceEngine,
                                      TypeSystemDescription typeSystem) {
         AnalysisEngineMetaData metatData = coreferenceEngine.getAnalysisEngineMetaData();
         metatData.setTypeSystem(typeSystem);
         coreferenceEngine.setMetaData(metatData);
+
+        typeSystemDescription = typeSystem;
     }
 
     /**

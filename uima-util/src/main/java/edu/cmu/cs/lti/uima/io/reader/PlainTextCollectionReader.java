@@ -1,9 +1,13 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
+import com.google.common.collect.ArrayListMultimap;
+import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
+import edu.cmu.cs.lti.uima.util.ForumStructureParser;
 import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import net.htmlparser.jericho.Element;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
@@ -22,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A collection reader for plain text documents.
@@ -43,10 +48,14 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
     private String inputDirPath;
 
     @ConfigurationParameter(name = PARAM_TEXT_SUFFIX, mandatory = false)
-    String[] suffix;
+    private String[] suffix;
 
-    @ConfigurationParameter(name = PARAM_DO_NOISE_FILTER, defaultValue = "false")
-    boolean doNoiseFilter;
+    @ConfigurationParameter(name = PARAM_DO_NOISE_FILTER, defaultValue = "true")
+    private boolean doNoiseFilter;
+
+    public static final String PARAM_REMOVE_QUOTES = "removeQuotes";
+    @ConfigurationParameter(name = PARAM_REMOVE_QUOTES)
+    private boolean removeQuotes;
 
     private ArrayList<File> textFiles;
 
@@ -100,24 +109,31 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
         }
 
         // open input stream to file
-        File file = (File) textFiles.get(currentDocIndex++);
-        String text = FileUtils.file2String(file, encoding);
+        File file = textFiles.get(currentDocIndex++);
+        String originalText = FileUtils.file2String(file, encoding);
 
-        if (doNoiseFilter) {
-            text = new NoiseTextFormatter(text).cleanAll();
-        }
+        String cleanedText = doNoiseFilter ? new NoiseTextFormatter(originalText).cleanAll() : originalText;
+
+        ArrayListMultimap<String, Element> tagsByName = ForumStructureParser.indexTagByName(originalText);
+
+        List<Span> quotedSpans = ForumStructureParser.getQuotesFromElement(tagsByName);
+
+//        logger.info(String.format("%d quoted spans are removed from the data.", quotedSpans.size()));
+
+        String documentText = removeQuotes ? ForumStructureParser.removeQuoteStr(cleanedText, quotedSpans) :
+                cleanedText;
 
         // put document in CAS
         if (inputView != null) {
             // This view is intended to be used in order to put an original document text to a view other
             // than the default view.
-            inputView.setDocumentText(text);
+            inputView.setDocumentText(originalText);
         }
 
-        aJCas.setDocumentText(text);
+        aJCas.setDocumentText(documentText);
 
         Article article = new Article(aJCas);
-        UimaAnnotationUtils.finishAnnotation(article, 0, text.length(), COMPONENT_ID, 0, aJCas);
+        UimaAnnotationUtils.finishAnnotation(article, 0, documentText.length(), COMPONENT_ID, 0, aJCas);
         article.setArticleName(FilenameUtils.getBaseName(file.getName()));
         article.setLanguage("en");
 
