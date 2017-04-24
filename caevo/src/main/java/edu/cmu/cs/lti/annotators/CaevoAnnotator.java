@@ -10,9 +10,11 @@ import edu.cmu.cs.lti.caevo.GoldStandardEventClassifier;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.model.UimaConst;
 import edu.cmu.cs.lti.script.timeml.Event;
+import edu.cmu.cs.lti.script.timeml.MentionLink;
+import edu.cmu.cs.lti.script.timeml.TemporalLink;
 import edu.cmu.cs.lti.script.type.EventMention;
-import edu.cmu.cs.lti.script.type.EventMentionRelation;
 import edu.cmu.cs.lti.script.type.StanfordCorenlpSentence;
+import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
@@ -45,7 +47,6 @@ import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 
@@ -62,7 +63,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
     // Classpath to the caeveo resources.
     public static final String CAEVO_RESOURCE_DIR = "caevo_resources";
 
-    private File caevoDir;
+    //    private File caevoDir;
     private boolean debug;
     private boolean useClosure;
     private boolean force24hrDCT;
@@ -83,15 +84,28 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
-        URL caevoResourceUrl = this.getClass().getClassLoader().getResource(CAEVO_RESOURCE_DIR);
 
+        URL propertyUrl = this.getClass().getClassLoader().getResource(CAEVO_RESOURCE_DIR + "/default.properties");
+
+        URL sieveUrl = this.getClass().getClassLoader().getResource(CAEVO_RESOURCE_DIR + "/default.sieves");
+
+//        try {
+//        URL caevoResourceUrl = this.getClass().getClassLoader().getResource(CAEVO_RESOURCE_DIR);
+//            logger.info("Loading CAEVO resources from : " + caevoResourceUrl);
+//            caevoDir = new File(caevoResourceUrl.toURI());
+//        } catch (URISyntaxException e) {
+//            throw new ResourceInitializationException(e);
+//        }
+
+        File propertyFile = null;
+        File sieveFile = null;
         try {
-            caevoDir = new File(caevoResourceUrl.toURI());
-        } catch (URISyntaxException e) {
+            logger.info("Loading CAEVO with property URL is : " + propertyUrl);
+            propertyFile = resourceAsFile(propertyUrl);
+            sieveFile = resourceAsFile(sieveUrl);
+        } catch (IOException e) {
             throw new ResourceInitializationException(e);
         }
-
-        File propertyFile = new File(caevoDir, "default.properties");
 
         try {
             CaevoProperties.load(propertyFile.getPath());
@@ -119,7 +133,7 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         Main.wordnet = new WordNet();
 
         // Load the sieve list.
-        sieveClasses = loadSieveList();
+        sieveClasses = loadSieveList(sieveFile);
 
         parser = Ling.createParser(serializedGrammar);
 
@@ -129,6 +143,21 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         tempProcessDir = Files.createTempDir();
 
         logger.info(String.format("Dataset: %s; Debug: %s; Closure: %s", dataset, debug, closure));
+    }
+
+    private File resourceAsFile(URL resourceUrl) throws IOException {
+        InputStream input = resourceUrl.openStream();
+        File file = File.createTempFile("tempfile", ".tmp");
+        OutputStream out = new FileOutputStream(file);
+        int read;
+        byte[] bytes = new byte[1024];
+
+        while ((read = input.read(bytes)) != -1) {
+            out.write(bytes, 0, read);
+        }
+        file.deleteOnExit();
+
+        return file;
     }
 
     @Override
@@ -143,14 +172,13 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         }
     }
 
-    private String[] loadSieveList() {
-        String filename = new File(caevoDir, "default.sieves").getPath();
-
-        logger.info("Reading sieve list from: " + filename);
+    private String[] loadSieveList(File sieveFile) {
+//        String filename = new File(caevoDir, "default.sieves").getPath();
+//        logger.info("Reading sieve list from: " + filename);
 
         List<String> sieveNames = new ArrayList<>();
         try {
-            BufferedReader reader = new BufferedReader(new FileReader(new File(filename)));
+            BufferedReader reader = new BufferedReader(new FileReader(sieveFile));
             String line;
             while ((line = reader.readLine()) != null) {
                 if (!line.matches("^\\s*$") && !line.matches("^\\s*//.*$")) {
@@ -172,12 +200,9 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         return sieveNames.toArray(arr);
     }
 
-    private Span getSpan(JCas aJCas, SieveDocument doc, int sentenceId, int tokenId) {
-        ArrayList<StanfordCorenlpSentence> sentences = new ArrayList<>(JCasUtil.select(aJCas,
-                StanfordCorenlpSentence.class));
-        StanfordCorenlpSentence sent = sentences.get(sentenceId);
-        CoreLabel token = doc.getSentences().get(sentenceId).tokens().get(tokenId);
-        return Span.of(sent.getBegin() + token.beginPosition(), sent.getBegin() + token.endPosition());
+    private Span getSpan(StanfordCorenlpSentence uimaSent, SieveSentence sieveSent, int tokenId) {
+        CoreLabel token = sieveSent.tokens().get(tokenId - 1);
+        return Span.of(uimaSent.getBegin() + token.beginPosition(), uimaSent.getBegin() + token.endPosition());
     }
 
     private void markupAll(JCas aJCas) throws IOException, SAXException, ParserConfigurationException {
@@ -188,10 +213,21 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         logger.info("Marking events.");
         Map<String, EventMention> eidMapping = markupEvents(docs, aJCas);
 
+        Map<String, Event> timeMlEventIds = new HashMap<>();
+
+        ArrayList<StanfordCorenlpSentence> sentences = new ArrayList<>(JCasUtil.select(aJCas,
+                StanfordCorenlpSentence.class));
+//        logger.info("Number of uima sent : " + sentences.size());
+//        logger.info("Number of caevo sent : " + doc.getEventsBySentence().size());
+
         int sindex = 0;
         for (List<TextEvent> textEvents : doc.getEventsBySentence()) {
+            StanfordCorenlpSentence uimaSent = sentences.get(sindex);
+            SieveSentence caevoSent = doc.getSentences().get(sindex);
+
             for (TextEvent textEvent : textEvents) {
-                Span eventSpan = getSpan(aJCas, doc, sindex, textEvent.getIndex());
+                Span eventSpan = getSpan(uimaSent, caevoSent, textEvent.getIndex());
+
                 Event timemlEvent = new Event(aJCas, eventSpan.getBegin(), eventSpan.getEnd());
                 timemlEvent.setAspect(textEvent.getAspect().name());
                 timemlEvent.setModality(textEvent.getModality());
@@ -199,6 +235,8 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
                 timemlEvent.setTense(textEvent.getTense().name());
                 timemlEvent.setEventInstanceId(textEvent.getEiid());
                 UimaAnnotationUtils.finishAnnotation(timemlEvent, COMPONENT_ID, 0, aJCas);
+
+                timeMlEventIds.put(textEvent.getEiid(), timemlEvent);
             }
             sindex++;
         }
@@ -226,11 +264,19 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
 //                    logger.info(String.format("%s --%s--> %s", fromEvent.getCoveredText(), relation,
 //                            toEvent.getCoveredText()));
 
-                    EventMentionRelation emr = new EventMentionRelation(aJCas);
-                    emr.setHead(fromEvent);
-                    emr.setChild(toEvent);
-                    emr.setRelationType("TIMEML_" + relation);
-                    UimaAnnotationUtils.finishTop(emr, COMPONENT_ID, 0, aJCas);
+                    MentionLink ml = new MentionLink(aJCas);
+                    ml.setSource(fromEvent);
+                    ml.setTarget(toEvent);
+                    ml.setRelationType(relation);
+                    UimaAnnotationUtils.finishTop(ml, COMPONENT_ID, 0, aJCas);
+                }
+
+                if (timeMlEventIds.containsKey(fromEiid) && timeMlEventIds.containsKey(toEiid)) {
+                    TemporalLink timeLink = new TemporalLink(aJCas);
+                    timeLink.setSource(timeMlEventIds.get(fromEiid));
+                    timeLink.setTarget(timeMlEventIds.get(toEiid));
+                    timeLink.setRelationType(relation);
+                    UimaAnnotationUtils.finishTop(timeLink, COMPONENT_ID, 0, aJCas);
                 }
             }
         }
@@ -539,11 +585,42 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         List<List<HasWord>> sentences = new ArrayList<List<HasWord>>();
 
         for (StanfordCorenlpSentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
-            List<HasWord> convertedSent = tokenize(sentence.getCoveredText());
+            String sentenceText = removeLongToken(sentence);
+            List<HasWord> convertedSent = tokenize(avoidEmpty(sentenceText));
             sentences.add(convertedSent);
         }
         return sentences;
     }
+
+    private String avoidEmpty(String sentenceText) {
+        if (sentenceText.trim().equals("") && sentenceText.length() > 0) {
+            return "-" + sentenceText.substring(1);
+        }
+        return sentenceText;
+    }
+
+    private String removeLongToken(StanfordCorenlpSentence sentence) {
+        String text = sentence.getCoveredText();
+
+        for (StanfordCorenlpToken token : JCasUtil.selectCovered(StanfordCorenlpToken.class, sentence)) {
+            int tokenBeginOffset = token.getBegin() - sentence.getBegin();
+            int tokenEndOffset = token.getEnd() - sentence.getBegin();
+
+            int tokenLength = token.getEnd() - token.getBegin();
+
+            if (token.getCoveredText().length() > 20) {
+                text = text.substring(0, tokenBeginOffset) + nSpace(tokenLength) + text.substring(tokenEndOffset);
+            }
+        }
+        return text;
+    }
+
+    private String nSpace(int n) {
+        char[] chars = new char[n];
+        Arrays.fill(chars, ' ');
+        return new String(chars);
+    }
+
 
     public static List<HasWord> tokenize(String str) {
         List<HasWord> tokens = new ArrayList<>();
@@ -565,23 +642,13 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         return tokens;
     }
 
-    public static void main(String[] args) throws IOException, UIMAException {
-        if (args.length < 2) {
-            System.out.println("Please provide parent, base input directory");
-            System.exit(1);
-        }
-
-        String parentInput = args[0]; //"data";
-
-        String baseInput = args[1]; //"01_event_tuples"
-
-        String paramBaseOutputDirName = "caevo_parsed";
-
-        String paramTypeSystemDescriptor = "TaskEventMentionDetectionTypeSystem";
+    public static void runGold(String parentInput, String baseInput, String outputDir) throws
+            UIMAException, IOException {
+        String typeSystemDescriptor = "TaskEventMentionDetectionTypeSystem";
 
         // Instantiate the analysis engine.
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
-                .createTypeSystemDescription(paramTypeSystemDescriptor);
+                .createTypeSystemDescription(typeSystemDescriptor);
 
         // Instantiate a collection reader to get XMI as input.
         // Note that you should change the following parameters for your setting.
@@ -603,8 +670,56 @@ public class CaevoAnnotator extends AbstractLoggingAnnotator {
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
-                parentInput, paramBaseOutputDirName);
+                parentInput, outputDir);
 
-        SimplePipeline.runPipeline(reader, goldAnnotator, caevo, writer);
+        SimplePipeline.runPipeline(reader, caevo, writer);
+    }
+
+    public static void runExistingMention(String parentInput, String baseInput, String outputDir) throws
+            UIMAException, IOException {
+        String typeSystemDescriptor = "TaskEventMentionDetectionTypeSystem";
+
+        // Instantiate the analysis engine.
+        TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
+                .createTypeSystemDescription(typeSystemDescriptor);
+
+        // Instantiate a collection reader to get XMI as input.
+        // Note that you should change the following parameters for your setting.
+        CollectionReaderDescription reader = CustomCollectionReaderFactory.createXmiReader(
+                typeSystemDescription, parentInput, baseInput);
+
+//        AnalysisEngineDescription goldAnnotator = AnalysisEngineFactory.createEngineDescription(
+//                GoldStandardEventMentionAnnotator.class, typeSystemDescription,
+//                GoldStandardEventMentionAnnotator.PARAM_TARGET_VIEWS,
+//                new String[]{CAS.NAME_DEFAULT_SOFA, UimaConst.inputViewName},
+//                GoldStandardEventMentionAnnotator.PARAM_COPY_MENTION_TYPE, true,
+//                GoldStandardEventMentionAnnotator.PARAM_COPY_REALIS, true,
+//                GoldStandardEventMentionAnnotator.PARAM_COPY_CLUSTER, true,
+//                GoldStandardEventMentionAnnotator.PARAM_COPY_RELATIONS, true
+//        );
+
+        AnalysisEngineDescription caevo = AnalysisEngineFactory.createEngineDescription(
+                CaevoAnnotator.class, typeSystemDescription
+        );
+
+        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
+                parentInput, outputDir);
+
+        SimplePipeline.runPipeline(reader, caevo, writer);
+    }
+
+    public static void main(String[] args) throws IOException, UIMAException {
+        if (args.length < 2) {
+            System.out.println("Please provide parent, base input directory");
+            System.exit(1);
+        }
+
+        String parentInput = args[0]; //"data";
+
+        String baseInput = args[1]; //"01_event_tuples"
+
+        String paramBaseOutputDirName = "caevo_parsed";
+
+        runExistingMention(parentInput, baseInput, paramBaseOutputDirName);
     }
 }

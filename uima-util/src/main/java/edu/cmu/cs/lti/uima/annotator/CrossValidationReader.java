@@ -85,6 +85,11 @@ public class CrossValidationReader extends AbstractStepBasedDirReader {
                     corpus.addAll(partitions.get(i));
                 }
             }
+
+            // We sort and shuffle the training portion again.
+            Collections.sort(corpus);
+            Collections.shuffle(corpus, new Random(seed));
+
             logger.info(String.format("Reading %d files for training.", corpus.size()));
         }
         corpusIter = corpus.iterator();
