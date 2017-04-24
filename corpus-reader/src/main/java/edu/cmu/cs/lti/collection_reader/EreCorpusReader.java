@@ -4,13 +4,8 @@ import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
-import edu.cmu.cs.lti.uima.util.ForumStructureParser;
-import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
-import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
-import edu.cmu.cs.lti.uima.util.UimaConvenience;
+import edu.cmu.cs.lti.uima.util.*;
 import edu.cmu.cs.lti.util.NuggetFormat;
-import net.htmlparser.jericho.Attribute;
-import net.htmlparser.jericho.Attributes;
 import net.htmlparser.jericho.Element;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +18,6 @@ import org.apache.uima.fit.component.ViewCreatorAnnotator;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.jcas.JCas;
-import org.apache.uima.jcas.cas.StringArray;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
@@ -204,10 +198,10 @@ public class EreCorpusReader extends AbstractCollectionReader {
         String cleanedText = new NoiseTextFormatter(sourceFileStr).cleanAll(language);
         ArrayListMultimap<String, Element> tagsByName = ForumStructureParser.indexTagByName(sourceFileStr);
 
-        List<Span> quotedSpans = quotedAreaFile == null ? getQuotesFromElement(tagsByName) :
+        List<Span> quotedSpans = quotedAreaFile == null ? ForumStructureParser.getQuotesFromElement(tagsByName) :
                 quotesFromFile.get(sourceFile.getName());
 
-        String documentText = removeQuotes ? removeQuoteStr(cleanedText, quotedSpans) : cleanedText;
+        String documentText = removeQuotes ? ForumStructureParser.removeQuoteStr(cleanedText, quotedSpans) : cleanedText;
 
         Article article = new Article(jCas);
         UimaAnnotationUtils.finishAnnotation(article, 0, documentText.length(), COMPONENT_ID, 0, jCas);
@@ -224,7 +218,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
             try {
                 JCas inputView = ViewCreatorAnnotator.createViewSafely(jCas, inputViewName);
                 inputView.setDocumentText(sourceFileStr);
-                annotateTagAreas(inputView, tagsByName);
+                ForumStructureParser.annotateTagAreas(inputView, tagsByName, COMPONENT_ID);
             } catch (AnalysisEngineProcessException e) {
                 throw new CollectionException(e);
             }
@@ -243,8 +237,8 @@ public class EreCorpusReader extends AbstractCollectionReader {
         jCas.setDocumentText(documentText);
         goldView.setDocumentText(documentText);
 
-        annotateTagAreas(jCas, tagsByName);
-        annotateTagAreas(goldView, tagsByName);
+        ForumStructureParser.annotateTagAreas(jCas, tagsByName, COMPONENT_ID);
+        ForumStructureParser.annotateTagAreas(goldView, tagsByName, COMPONENT_ID);
 
         for (File ereFile : ereFiles) {
             try {
@@ -269,47 +263,47 @@ public class EreCorpusReader extends AbstractCollectionReader {
     }
 
 
-    private List<Span> getQuotesFromElement(ArrayListMultimap<String, Element> tagsByName) {
-        List<Span> quotedSpans = new ArrayList<>();
-        for (Element quote : tagsByName.get("quote")) {
-            quotedSpans.add(Span.of(quote.getBegin(), quote.getEnd()));
-        }
-        return quotedSpans;
-    }
-
-    private String removeQuoteStr(String original, List<Span> quotedAreas) {
-        StringBuilder sb = new StringBuilder(original);
-        for (Span quoteArea : quotedAreas) {
-            for (int i = quoteArea.getBegin(); i < quoteArea.getEnd(); i++) {
-                sb.setCharAt(i, ' ');
-            }
-        }
-        return sb.toString();
-    }
-
-    private void annotateTagAreas(JCas aJCas, ArrayListMultimap<String, Element> tagsByName) {
-        for (Map.Entry<String, Element> tagByName : tagsByName.entries()) {
-            Element tag = tagByName.getValue();
-            TaggedArea area = new TaggedArea(aJCas, tag.getBegin(), tag.getEnd());
-            area.setTagName(tagByName.getKey());
-
-            Attributes attributes = tag.getAttributes();
-
-            StringArray attributeNames = new StringArray(aJCas, attributes.size());
-            StringArray attributeValues = new StringArray(aJCas, attributes.size());
-
-            for (int i = 0; i < attributes.size(); i++) {
-                Attribute attribute = attributes.get(i);
-                attributeNames.set(i, attribute.getKey());
-                attributeValues.set(i, attribute.getValue());
-            }
-
-            area.setTagAttributeNames(attributeNames);
-            area.setTagAttributeValues(attributeValues);
-
-            UimaAnnotationUtils.finishAnnotation(area, COMPONENT_ID, 0, aJCas);
-        }
-    }
+//    private List<Span> getQuotesFromElement(ArrayListMultimap<String, Element> tagsByName) {
+//        List<Span> quotedSpans = new ArrayList<>();
+//        for (Element quote : tagsByName.get("quote")) {
+//            quotedSpans.add(Span.of(quote.getBegin(), quote.getEnd()));
+//        }
+//        return quotedSpans;
+//    }
+//
+//    private String removeQuoteStr(String original, List<Span> quotedAreas) {
+//        StringBuilder sb = new StringBuilder(original);
+//        for (Span quoteArea : quotedAreas) {
+//            for (int i = quoteArea.getBegin(); i < quoteArea.getEnd(); i++) {
+//                sb.setCharAt(i, ' ');
+//            }
+//        }
+//        return sb.toString();
+//    }
+//
+//    private void annotateTagAreas(JCas aJCas, ArrayListMultimap<String, Element> tagsByName) {
+//        for (Map.Entry<String, Element> tagByName : tagsByName.entries()) {
+//            Element tag = tagByName.getValue();
+//            TaggedArea area = new TaggedArea(aJCas, tag.getBegin(), tag.getEnd());
+//            area.setTagName(tagByName.getKey());
+//
+//            Attributes attributes = tag.getAttributes();
+//
+//            StringArray attributeNames = new StringArray(aJCas, attributes.size());
+//            StringArray attributeValues = new StringArray(aJCas, attributes.size());
+//
+//            for (int i = 0; i < attributes.size(); i++) {
+//                Attribute attribute = attributes.get(i);
+//                attributeNames.set(i, attribute.getKey());
+//                attributeValues.set(i, attribute.getValue());
+//            }
+//
+//            area.setTagAttributeNames(attributeNames);
+//            area.setTagAttributeValues(attributeValues);
+//
+//            UimaAnnotationUtils.finishAnnotation(area, COMPONENT_ID, 0, aJCas);
+//        }
+//    }
 
     private Span getCmpSpan(File sourceFile, File ereFile) {
         String sourceBasename = sourceFile.getName().replaceAll("." + sourceExt + "$", "");
@@ -337,6 +331,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
     /**
      * Older ERE annotation call the node Event.
+     *
      * @param view
      * @param document
      * @param id2EntityMention
@@ -408,6 +403,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
     /**
      * Later ERE annotation call the node Hoppers instead of Events.
+     *
      * @param view
      * @param document
      * @param id2EntityMention
@@ -462,7 +458,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
                     UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, mentionId, view);
                     mentionCluster.add(mention);
-                }else{
+                } else {
                     logger.warn(String.format("Omit event mention [%s], range [%d-%d], at doc [%s]",
                             triggerNode.getTextContent(), triggerStart, triggerEnd, UimaConvenience.getDocId(view)));
                 }
@@ -617,7 +613,8 @@ public class EreCorpusReader extends AbstractCollectionReader {
         if (originString.equals(expectedText)) {
             return true;
         } else {
-            logger.warn(String.format("Original string [%s] is not equal to expected [%s].", originString, expectedText));
+            logger.warn(String.format("Original string [%s] is not equal to expected [%s].", originString,
+                    expectedText));
             return false;
         }
     }
