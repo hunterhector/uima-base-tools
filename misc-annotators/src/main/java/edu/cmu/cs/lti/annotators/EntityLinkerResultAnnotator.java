@@ -68,7 +68,7 @@ public class EntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
                 String docId = locParts[0];
                 String[] spanParts = locParts[1].split("-");
                 int begin = Integer.parseInt(spanParts[0]);
-                int end = Integer.parseInt(spanParts[1]);
+                int end = Integer.parseInt(spanParts[1]) + 1;
 
                 annoMap.put(docId, new EntityAnnotation(entity, type, begin, end));
             }
@@ -81,6 +81,8 @@ public class EntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
 
         for (EntityAnnotation entityAnnotation : annoMap.get(baseName)) {
             GroundedEntity groundedEntity = new GroundedEntity(aJCas, entityAnnotation.begin, entityAnnotation.end);
+            groundedEntity.setEntityType(entityAnnotation.entityType);
+            groundedEntity.setKnowledgeBaseId(entityAnnotation.entityId);
             UimaAnnotationUtils.finishAnnotation(groundedEntity, COMPONENT_ID, 0, aJCas);
         }
     }

@@ -3,6 +3,7 @@ package edu.cmu.cs.lti.pipeline;
 import edu.cmu.cs.lti.annotators.EntityLinkerResultAnnotator;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.collection_reader.LDCXmlCollectionReader;
+import edu.cmu.cs.lti.model.UimaConst;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
@@ -38,16 +39,20 @@ public class CmuResultAggregator extends AbstractLoggingAnnotator {
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
                 .createTypeSystemDescription(typeSystemName);
 
-        String workingDir = "~/projects/data/project_data/cold_start_results/uima";
+        String workingDir = "../data/project_data/cold_start_results/uima";
 
-        CollectionReaderDescription preprocessed = preprocess(typeSystemDescription, workingDir);
+//        CollectionReaderDescription preprocessed = preprocess(typeSystemDescription, workingDir);
+
+        CollectionReaderDescription preprocessed = CustomCollectionReaderFactory.createXmiReader
+                (typeSystemDescription, workingDir, "preprocessed");
+
         runAggregator(typeSystemDescription, preprocessed, workingDir);
     }
 
     private static CollectionReaderDescription runAggregator(TypeSystemDescription typeSystemDescription,
                                                              CollectionReaderDescription reader, String workingDir)
             throws UIMAException, IOException {
-        String entityResults = "~/projects/data/project_data/cold_start_results/submission_post.txt";
+        String entityResults = "../data/project_data/cold_start_results/submission_post.txt";
 
         AnalysisEngineDescription entityLinker = AnalysisEngineFactory.createEngineDescription(
                 EntityLinkerResultAnnotator.class, typeSystemDescription,
@@ -55,9 +60,9 @@ public class CmuResultAggregator extends AbstractLoggingAnnotator {
         );
 
 
+
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
-                workingDir, "aggregated", 0,
-                null);
+                workingDir, "aggregated", null);
 
         SimplePipeline.runPipeline(reader, entityLinker, writer);
 
@@ -67,23 +72,25 @@ public class CmuResultAggregator extends AbstractLoggingAnnotator {
     private static CollectionReaderDescription preprocess(TypeSystemDescription typeSystemDescription,
                                                           String workingDir)
             throws UIMAException, IOException {
-        String inputPath = "~/projects/data/project_data/LDC/LDC2016E63_Cold_Start_Selected_Eng/";
-        String fileFilter = "~/projects/data/project_data/cold_start_results/common_doc.lst";
+        String inputPath = "../data/project_data/LDC/LDC2016E63_Cold_Start_Selected_Eng/";
+        String fileFilter = "../data/project_data/cold_start_results/common_doc.lst";
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 LDCXmlCollectionReader.class, typeSystemDescription,
                 LDCXmlCollectionReader.PARAM_DATA_PATH, inputPath,
                 LDCXmlCollectionReader.PARAM_BASE_NAME_FILE_FILTER, fileFilter,
-                LDCXmlCollectionReader.PARAM_LANGUAGE, "zh"
+                LDCXmlCollectionReader.PARAM_LANGUAGE, "en"
         );
 
         AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 StanfordCoreNlpAnnotator.class, typeSystemDescription,
-                StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, true);
+                StanfordCoreNlpAnnotator.PARAM_LANGUAGE, "en",
+                StanfordCoreNlpAnnotator.PARAM_SPLIT_ONLY, true,
+                StanfordCoreNlpAnnotator.PARAM_ADDITIONAL_VIEWS, new String[]{UimaConst.inputViewName}
+        );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
-                workingDir, "preprocessed", 0,
-                null);
+                workingDir, "preprocessed", null);
 
         SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer);
 
