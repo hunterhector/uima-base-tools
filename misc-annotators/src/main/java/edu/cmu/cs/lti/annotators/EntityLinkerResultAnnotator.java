@@ -2,7 +2,10 @@ package edu.cmu.cs.lti.annotators;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
+import edu.cmu.cs.lti.script.type.GroundedEntity;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
+import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -51,7 +54,6 @@ public class EntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
         }
     }
 
-
     private void loadResults() throws IOException {
         annoMap = ArrayListMultimap.create();
 
@@ -75,6 +77,11 @@ public class EntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
+        String baseName = UimaConvenience.getShortDocumentName(aJCas);
 
+        for (EntityAnnotation entityAnnotation : annoMap.get(baseName)) {
+            GroundedEntity groundedEntity = new GroundedEntity(aJCas, entityAnnotation.begin, entityAnnotation.end);
+            UimaAnnotationUtils.finishAnnotation(groundedEntity, COMPONENT_ID, 0, aJCas);
+        }
     }
 }
