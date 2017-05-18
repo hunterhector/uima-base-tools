@@ -18,8 +18,10 @@ import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,19 +34,16 @@ import java.util.List;
  * @author Zhengzhong Liu
  */
 public class CmuResultAggregator extends AbstractLoggingAnnotator {
+    static String workingDir = "../data/project_data/cold_start_results/uima";
+    static TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
+            .createTypeSystemDescription("TaskEventMentionDetectionTypeSystem");
+
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
 
     }
 
     public static void main(String[] argv) throws IOException, UIMAException {
-        String typeSystemName = "TaskEventMentionDetectionTypeSystem";
-
-        TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
-                .createTypeSystemDescription(typeSystemName);
-
-        String workingDir = "../data/project_data/cold_start_results/uima";
-
 //        CollectionReaderDescription preprocessed = preprocess(typeSystemDescription, workingDir);
 
         CollectionReaderDescription preprocessed = CustomCollectionReaderFactory.createXmiReader
@@ -65,13 +64,10 @@ public class CmuResultAggregator extends AbstractLoggingAnnotator {
                 EntityLinkerResultAnnotator.PARAM_ENTITY_LINKER_RESULTS, entityResults
         );
 
-        AnalysisEngineDescription coverage = AnalysisEngineFactory.createEngineDescription(
-                CoverageReporter.class, typeSystemDescription
-        );
 
         annotators.add(entityLinker);
-        annotators.add(coverage);
-
+        annotators.add(getReporter("entity_report"));
+        annotators.add(getWriter("entity"));
 
         String[] argumentOutputs = {
                 "../data/project_data/cold_start_results/arguments_jun",
@@ -84,17 +80,30 @@ public class CmuResultAggregator extends AbstractLoggingAnnotator {
                     KBPArgumentOutputAnnotator.class, typeSystemDescription,
                     KBPArgumentOutputAnnotator.PARAM_KBP_ARGUMENT_RESULTS, argumentOutput
             );
+            String name = new File(argumentOutput).getName();
             annotators.add(eventAdder);
-            annotators.add(coverage);
+            annotators.add(getReporter("event_" + name + "_report"));
+            annotators.add(getWriter("event_" + name));
         }
 
-        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
-                workingDir, "aggregated", null);
-        annotators.add(writer);
+        annotators.add(getWriter("overall"));
+        annotators.add(getReporter("overall_report"));
 
         SimplePipeline.runPipeline(reader, annotators.toArray(new AnalysisEngineDescription[annotators.size()]));
 
         return CustomCollectionReaderFactory.createXmiReader(typeSystemDescription, workingDir, "aggregated");
+    }
+
+    private static AnalysisEngineDescription getReporter(String reportName) throws ResourceInitializationException {
+        return AnalysisEngineFactory.createEngineDescription(
+                CoverageReporter.class, typeSystemDescription,
+                CoverageReporter.PARAM_REPORT_NAME, reportName
+        );
+    }
+
+    private static AnalysisEngineDescription getWriter(String baseOutput) throws ResourceInitializationException {
+        return CustomAnalysisEngineFactory.createXmiWriter(workingDir, baseOutput, null);
+
     }
 
     private static CollectionReaderDescription preprocess(TypeSystemDescription typeSystemDescription,

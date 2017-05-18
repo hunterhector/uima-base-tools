@@ -9,9 +9,9 @@ import gnu.trove.map.TObjectDoubleMap;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectDoubleHashMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-import gnu.trove.procedure.TObjectDoubleProcedure;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -23,6 +23,11 @@ import java.util.*;
  * Created by hunte on 5/17/2017.
  */
 public class CoverageReporter extends AbstractLoggingAnnotator {
+    public static final String PARAM_REPORT_NAME = "ReportName";
+
+    @ConfigurationParameter(name = PARAM_REPORT_NAME)
+    private String reportname;
+
     Class<Annotation>[] reportingClasses;
 
     Map<String, TObjectIntMap<String>> corpusPosCoveredByClass;
@@ -85,22 +90,31 @@ public class CoverageReporter extends AbstractLoggingAnnotator {
         TObjectDoubleMap<String> posCoveragesOverall = calculatePosCoverage(posCounts, corpusPosCoveredOverall);
         double tokenCoverageOverall = 1.0 * corpusTokenCoveredOverall / numTokens;
 
+        logger.info(String.format("==================Report %s==================", reportname));
         logger.info(String.format("Overall token coverage is %.2f.", tokenCoverageOverall));
         posCoveragesOverall.forEachEntry((pos, v) -> {
-            logger.info(String.format("POS %s coverage is %.2f.", pos, v));
+            if (v > 0) {
+                logger.info(String.format("POS %s coverage is %.2f.", pos, v));
+            }
             return true;
         });
 
         for (Class clazz : reportingClasses) {
+            logger.info(String.format("=================Class %s===================", clazz));
             TObjectDoubleMap<String> posCoverageForClass = calculatePosCoverage(posCounts,
                     corpusPosCoveredByClass.get(clazz.getSimpleName()));
             double tokenCoverageForClass = 1.0 * corpusTokenCoveredByClass.get(clazz.getSimpleName());
-            logger.info(String.format("Overall token coverage for class %s is %.2f.", clazz.getSimpleName(), tokenCoverageForClass));
+            logger.info(String.format("Overall token coverage for class %s is %.2f.", clazz.getSimpleName(),
+                    tokenCoverageForClass));
             posCoverageForClass.forEachEntry((pos, v) -> {
-                logger.info(String.format("POS %s coverage for class %s is %.2f.", pos, clazz.getSimpleName(), v));
+                if (v > 0) {
+                    logger.info(String.format("POS %s coverage for class %s is %.2f.", pos, clazz.getSimpleName(), v));
+                }
                 return true;
             });
         }
+        logger.info("=========================================");
+
     }
 
     private TObjectDoubleMap<String> calculatePosCoverage(TObjectIntMap<String> posCounts,
@@ -122,7 +136,8 @@ public class CoverageReporter extends AbstractLoggingAnnotator {
     }
 
     private String getPos(StanfordCorenlpToken token) {
-        return token.getPos().substring(1);
+        String pos = token.getPos();
+        return pos.length() > 2 ? token.getPos().substring(0, 2) : pos;
     }
 
     private Set<StanfordCorenlpToken> checkClassCoverage(JCas aJCas, Class<Annotation> clazz) {
