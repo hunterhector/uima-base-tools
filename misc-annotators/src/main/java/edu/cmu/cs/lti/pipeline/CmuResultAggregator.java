@@ -1,6 +1,8 @@
 package edu.cmu.cs.lti.pipeline;
 
+import edu.cmu.cs.lti.annotators.CoverageReporter;
 import edu.cmu.cs.lti.annotators.EntityLinkerResultAnnotator;
+import edu.cmu.cs.lti.annotators.KBPArgumentOutputAnnotator;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.collection_reader.LDCXmlCollectionReader;
 import edu.cmu.cs.lti.model.UimaConst;
@@ -19,6 +21,8 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -54,17 +58,41 @@ public class CmuResultAggregator extends AbstractLoggingAnnotator {
             throws UIMAException, IOException {
         String entityResults = "../data/project_data/cold_start_results/submission_post.txt";
 
+        List<AnalysisEngineDescription> annotators = new ArrayList<>();
+
         AnalysisEngineDescription entityLinker = AnalysisEngineFactory.createEngineDescription(
                 EntityLinkerResultAnnotator.class, typeSystemDescription,
                 EntityLinkerResultAnnotator.PARAM_ENTITY_LINKER_RESULTS, entityResults
         );
 
+        AnalysisEngineDescription coverage = AnalysisEngineFactory.createEngineDescription(
+                CoverageReporter.class, typeSystemDescription
+        );
 
+        annotators.add(entityLinker);
+        annotators.add(coverage);
+
+
+        String[] argumentOutputs = {
+                "../data/project_data/cold_start_results/arguments_jun",
+                "../data/project_data/cold_start_results/arguments_hector",
+                "../data/project_data/cold_start_results/arguments_andrew",
+        };
+
+        for (String argumentOutput : argumentOutputs) {
+            AnalysisEngineDescription eventAdder = AnalysisEngineFactory.createEngineDescription(
+                    KBPArgumentOutputAnnotator.class, typeSystemDescription,
+                    KBPArgumentOutputAnnotator.PARAM_KBP_ARGUMENT_RESULTS, argumentOutput
+            );
+            annotators.add(eventAdder);
+            annotators.add(coverage);
+        }
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
                 workingDir, "aggregated", null);
+        annotators.add(writer);
 
-        SimplePipeline.runPipeline(reader, entityLinker, writer);
+        SimplePipeline.runPipeline(reader, annotators.toArray(new AnalysisEngineDescription[annotators.size()]));
 
         return CustomCollectionReaderFactory.createXmiReader(typeSystemDescription, workingDir, "aggregated");
     }
