@@ -1,6 +1,8 @@
 package edu.cmu.cs.lti.collection_reader;
 
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Table;
 import edu.cmu.cs.lti.model.*;
 import edu.cmu.cs.lti.script.type.Event;
 import edu.cmu.cs.lti.script.type.EventMention;
@@ -14,6 +16,7 @@ import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.util.BratFormat;
 import edu.cmu.cs.lti.utils.StringUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -55,6 +58,7 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
     public static final String PARAM_TEXT_FILE_SUFFIX = "textFileSuffix";
     public static final String PARAM_TOKEN_OFFSET_BEGIN_FIELD_NUM = "tokenOffsetBeginFieldNum";
     public static final String PARAM_TOKEN_OFFSET_END_FIELD_NUM = "tokenOffsetEndFieldNum";
+    public static final String PARAM_PREFER_COREF_LINK = "preferCorefLink";
 
     @ConfigurationParameter(name = PARAM_ANNOTATION_DIR)
     private File annotationDir;
@@ -76,6 +80,9 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
 
     @ConfigurationParameter(name = PARAM_TOKEN_OFFSET_END_FIELD_NUM, defaultValue = "3")
     private Integer tokenOffsetEndFieldNumber;
+
+    @ConfigurationParameter(name = PARAM_PREFER_COREF_LINK, defaultValue = "false")
+    private boolean preferCorefLink;
 
     private static final String realisTypeName = "Realis";
     private static final String coreferenceLinkName = "Coreference";
@@ -231,6 +238,13 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
             eventMention.setBegin(earliestBegin);
             eventMention.setEnd(latestEnd);
 
+            UimaAnnotationUtils.finishAnnotation(eventMention, COMPONENT_ID, eventId, aJCas);
+
+//            if (eventMention.getCoveredText().trim().length() == 0) {
+//                logger.info(String.format("Found empty mention %s in document %s.", eventId,
+//                        UimaConvenience.getDocId(aJCas)));
+//            }
+
             id2Mentions.put(eventId, eventMention);
             for (BratAttribute attribute : annotations.getId2Attribute().get(eventId)) {
                 switch (attribute.attributeName) {
@@ -245,32 +259,8 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         return id2Mentions;
     }
 
-    private void annotateSpanRelations(JCas aJCas, List<BratRelation> relations,
-                                       Map<String, EventMention> id2Mentions) {
-        for (BratRelation relation : relations) {
-            String e1 = relation.arg1Id;
-            String e2 = relation.arg2Id;
-
-            EventMention mention1 = id2Mentions.get(e1);
-            EventMention mention2 = id2Mentions.get(e2);
-
-            String relationName = relation.relationName;
-
-            if (relationName.equals(subeventLinkName) || relationName.equals(afterLinkName)) {
-                EventMentionRelation eventMentionRelation = new EventMentionRelation(aJCas);
-                eventMentionRelation.setRelationType(relationName);
-                eventMentionRelation.setHead(mention1);
-                eventMentionRelation.setChild(mention2);
-                mention1.setChildEventRelations(UimaConvenience.appendFSList(aJCas, mention1.getChildEventRelations()
-                        , eventMentionRelation, EventMentionRelation.class));
-                mention2.setHeadEventRelations(UimaConvenience.appendFSList(aJCas, mention2.getChildEventRelations(),
-                        eventMentionRelation, EventMentionRelation.class));
-                UimaAnnotationUtils.finishTop(eventMentionRelation, COMPONENT_ID, 0, aJCas);
-            }
-        }
-    }
-
-    private void annotateCoref(JCas aJCas, List<BratRelation> relations, Map<String, EventMention> id2Mentions) {
+    private List<Set<EventMention>> getCorefClusters(List<BratRelation> relations, Map<String, EventMention>
+            id2Mentions) {
         List<Set<EventMention>> clusters = new ArrayList<>();
 
         for (BratRelation relation : relations) {
@@ -303,15 +293,57 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
                 }
             }
         }
+        return clusters;
+    }
 
-        ArrayList<EventMention> discoursedSortedEventMentions = new ArrayList<>(id2Mentions.values());
-        Collections.sort(discoursedSortedEventMentions, new Comparators.AnnotationSpanComparator<>());
 
-        final int[] evmId = new int[1];
-        discoursedSortedEventMentions.forEach(
-                sortedEventMention -> UimaAnnotationUtils.finishAnnotation(sortedEventMention, COMPONENT_ID,
-                        evmId[0]++, aJCas)
-        );
+    private Table<EventMention, EventMention, String> getSpanRelations(List<BratRelation> relations,
+                                                                       Map<String, EventMention> id2Mentions) {
+        Table<EventMention, EventMention, String> spanRelations = HashBasedTable.create();
+
+        for (BratRelation relation : relations) {
+            String e1 = relation.arg1Id;
+            String e2 = relation.arg2Id;
+
+            EventMention mention1 = id2Mentions.get(e1);
+            EventMention mention2 = id2Mentions.get(e2);
+
+            String relationName = relation.relationName;
+
+            if (relationName.equals(subeventLinkName) || relationName.equals(afterLinkName)) {
+                spanRelations.put(mention1, mention2, relationName);
+            }
+        }
+
+        return spanRelations;
+    }
+
+
+    private void annotateSpanRelations(JCas aJCas, Table<EventMention, EventMention, String> spanRelations) {
+        for (Table.Cell<EventMention, EventMention, String> spanRelation : spanRelations.cellSet()) {
+            String relationName = spanRelation.getValue();
+            EventMention mention1 = spanRelation.getRowKey();
+            EventMention mention2 = spanRelation.getColumnKey();
+
+            EventMentionRelation eventMentionRelation = new EventMentionRelation(aJCas);
+            eventMentionRelation.setRelationType(relationName);
+            eventMentionRelation.setHead(mention1);
+            eventMentionRelation.setChild(mention2);
+            mention1.setChildEventRelations(UimaConvenience.appendFSList(aJCas, mention1.getChildEventRelations()
+                    , eventMentionRelation, EventMentionRelation.class));
+            mention2.setHeadEventRelations(UimaConvenience.appendFSList(aJCas, mention2.getChildEventRelations(),
+                    eventMentionRelation, EventMentionRelation.class));
+            UimaAnnotationUtils.finishTop(eventMentionRelation, COMPONENT_ID, 0, aJCas);
+        }
+    }
+
+    private void annotateCoref(JCas aJCas, List<Set<EventMention>> clusters,
+                               ArrayList<EventMention> discoursedSortedEventMentions) {
+        int eventIndex = 0;
+        for (EventMention mention : discoursedSortedEventMentions) {
+            mention.setIndex(eventIndex);
+            eventIndex++;
+        }
 
         List<Event> allEvents = new ArrayList<>();
         Set<EventMention> mappedMentions = new HashSet<>();
@@ -351,11 +383,41 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         ).sum();
     }
 
-    public void annotateGoldStandard(JCas aJCas, BratAnnotations annotations,
-                                     Map<String, MultiSpan> textBoundId2Spans) {
+    private void annotateGoldStandard(JCas aJCas, BratAnnotations annotations,
+                                      Map<String, MultiSpan> textBoundId2Spans) {
         Map<String, EventMention> id2Mentions = annotateMention(aJCas, annotations, textBoundId2Spans);
-        annotateSpanRelations(aJCas, annotations.getRelations(), id2Mentions);
-        annotateCoref(aJCas, annotations.getRelations(), id2Mentions);
+        ArrayList<EventMention> discoursedSortedEventMentions = new ArrayList<>(id2Mentions.values());
+        discoursedSortedEventMentions.sort(new Comparators.AnnotationSpanComparator<>());
+
+        Table<EventMention, EventMention, String> spanRelations = getSpanRelations(annotations.getRelations(),
+                id2Mentions);
+        List<Set<EventMention>> clusters = getCorefClusters(annotations.getRelations(), id2Mentions);
+
+        Set<Pair<EventMention, EventMention>> typesToRemove = new HashSet<>();
+
+        if (preferCorefLink) {
+            for (Table.Cell<EventMention, EventMention, String> spanRelation : spanRelations.cellSet()) {
+                EventMention mention1 = spanRelation.getRowKey();
+                EventMention mention2 = spanRelation.getColumnKey();
+
+                for (Set<EventMention> cluster : clusters) {
+                    if (cluster.contains(mention1) && cluster.contains(mention2)) {
+                        logger.info(String.format(
+                                "Mention %s:%s and %s:%s have relation, but also coref, keeping coreference.",
+                                mention1.getId(), mention1.getCoveredText(), mention2.getId(), mention2.getCoveredText()
+                        ));
+                        typesToRemove.add(Pair.of(mention1, mention2));
+                    }
+                }
+            }
+        }
+
+        for (Pair<EventMention, EventMention> mentionPair : typesToRemove) {
+            spanRelations.remove(mentionPair.getKey(), mentionPair.getValue());
+        }
+
+        annotateSpanRelations(aJCas, spanRelations);
+        annotateCoref(aJCas, clusters, discoursedSortedEventMentions);
     }
 
     public static void main(String[] args) throws UIMAException, IOException {

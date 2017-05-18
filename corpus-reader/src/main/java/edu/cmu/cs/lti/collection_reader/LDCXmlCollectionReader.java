@@ -5,7 +5,6 @@ import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
-import edu.cmu.cs.lti.utils.XMLUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.filefilter.AbstractFileFilter;
@@ -111,6 +110,11 @@ public class LDCXmlCollectionReader extends AbstractCollectionReader {
             goldStandardView.setDocumentText(documentText);
             jCas.setDocumentText(documentText);
 
+            if (documentText.length() != rawText.length()) {
+                logger.error(String.format("Document length [%d] after cleaning [%d] is not matching.",
+                        documentText.length(), rawText.length()));
+            }
+
             // source document information are useful to reach the golden standard file while annotating
             UimaAnnotationUtils.setSourceDocumentInformation(jCas, f.toURI().toString(), (int) f.length(), 0, true);
 
@@ -125,7 +129,8 @@ public class LDCXmlCollectionReader extends AbstractCollectionReader {
     }
 
     private String getDocumentText(String xmlText) throws XMLStreamException {
-        return new NoiseTextFormatter(XMLUtils.parseXMLTextWithOffsets(xmlText, true)).multiNewLineBreaker().getText();
+        return new NoiseTextFormatter(xmlText).cleanAll(language);
+//      return new NoiseTextFormatter(XMLUtils.parseXMLTextWithOffsets(xmlText, true)).multiNewLineBreaker().getText();
     }
 
     @Override

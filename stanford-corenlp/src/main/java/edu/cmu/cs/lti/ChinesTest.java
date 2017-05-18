@@ -20,7 +20,9 @@ import java.util.Properties;
  * @author Zhengzhong Liu
  */
 public class ChinesTest {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] argv) throws Exception {
+        ClassLoader cl = ClassLoader.getSystemClassLoader();
+
         long startTime = System.currentTimeMillis();
 
         String text =
@@ -35,7 +37,7 @@ public class ChinesTest {
                 "吃了亏上了当也没办法，我们也是受害人。不知道将来退房时会是什么样子，受了气没关系，我们可以忍，善恶自有报。\n" +
                 "乐居行是一个骗子公司，这个公司的人都没有良心，全是骗子，希望受过这个公司骗的人都去投诉一下，不管有没有用，相信多行不义必自毙，总有一天他们会受到惩罚的！\n";
 
-        args = new String[]{"-props", "edu/stanford/nlp/hcoref/properties/zh-coref-default.properties"};
+        String[] args = new String[]{"-props", "edu/stanford/nlp/hcoref/properties/zh-coref-default.properties"};
 
         Annotation document = new Annotation(text);
         Properties props = StringUtils.argsToProperties(args);

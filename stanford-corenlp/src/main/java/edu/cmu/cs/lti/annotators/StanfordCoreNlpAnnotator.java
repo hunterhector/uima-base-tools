@@ -165,23 +165,21 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         UimaConvenience.printProcessLog(aJCas, logger);
 
-        String text = aJCas.getDocumentText();
-
         if (language.equals("en")) {
-            annotateEnglish(text, aJCas, 0);
+            annotateEnglish(aJCas, 0);
             for (JCas view : getAdditionalViews(aJCas)) {
-                annotateEnglish(text, view, 0);
+                annotateEnglish(view, 0);
             }
         } else if (language.equals("zh")) {
-            annotateChinese(text, aJCas, 0);
+            annotateChinese(aJCas, 0);
             for (JCas view : getAdditionalViews(aJCas)) {
-                annotateChinese(text, view, 0);
+                annotateChinese(view, 0);
             }
         }
     }
 
-    private void annotateChinese(String text, JCas aJCas, int textOffset) {
-        Annotation document = new Annotation(text);
+    private void annotateChinese(JCas aJCas, int textOffset) {
+        Annotation document = new Annotation(aJCas.getDocumentText());
         logger.info("Annotate document with Chinese CoreNLP.");
         pipeline.annotate(document);
 
@@ -216,8 +214,8 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         }
     }
 
-    private void annotateEnglish(String text, JCas aJCas, int textOffset) {
-        Annotation document = new Annotation(text);
+    private void annotateEnglish(JCas aJCas, int textOffset) {
+        Annotation document = new Annotation(aJCas.getDocumentText());
         logger.info("Annotate with English CoreNLP ...");
         pipeline.annotate(document);
         logger.info("Annotation done, applying to JCas.");
@@ -235,9 +233,10 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
 //        addHCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
 
-        addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-
-        createEntities(aJCas, allMentions);
+        if (!splitOnly) {
+            addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
+            createEntities(aJCas, allMentions);
+        }
     }
 
     private void createEntities(JCas aJCas, List<EntityMention> allMentions) {
@@ -269,17 +268,21 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
     private void addCorefAnnotation(JCas aJCas, Annotation document, Map<Span, StanfordEntityMention>
             spanMentionMap, List<EntityMention> allMentions) {
-        boolean hcorefGraphNull =
-                document.get(edu.stanford.nlp.hcoref.CorefCoreAnnotations.CorefChainAnnotation.class) == null;
 
-        boolean dcorefGraphNull =
-                document.get(CorefCoreAnnotations.CorefChainAnnotation.class) == null;
+        boolean hcorefFound = false;
+        if (document.get(edu.stanford.nlp.hcoref.CorefCoreAnnotations.CorefChainAnnotation.class) != null) {
+            hcorefFound = true;
+        }
 
-//        logger.info("Using HCoref, hgraph is null? " +hcorefGraphNull +" dcoref is null? " + dcorefGraphNull);
+        boolean dcorefFound = false;
 
-        if (document.has(edu.stanford.nlp.hcoref.CorefCoreAnnotations.CorefChainAnnotation.class)) {
+        if (document.get(CorefCoreAnnotations.CorefChainAnnotation.class) != null) {
+            dcorefFound = true;
+        }
+
+        if (hcorefFound) {
             addHCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-        } else if (document.has(CorefCoreAnnotations.CorefChainAnnotation.class)) {
+        } else if (dcorefFound) {
             addDCoreferenceAnnotation(aJCas, document, spanMentionMap, allMentions);
         } else {
             logger.error("No coreference annotation chain found, what key is used for Stanford CoreNLP?");
@@ -544,23 +547,6 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     private StanfordTreeAnnotation addPennTreeAnnotation(JCas aJCas, Tree currentNode, Tree parentNode,
                                                          StanfordTreeAnnotation parent, int textOffset) {
         StanfordTreeAnnotation treeAnno = new StanfordTreeAnnotation(aJCas);
-//        Tree headLeaf = currentNode.headTerminal(hf, parentNode);
-
-
-//        if (headLeaf != null) {
-//            List<edu.stanford.nlp.ling.Word> words = headLeaf.yieldWords();
-//            int leafBegin = words.get(0).beginPosition() + textOffset;
-//            int leafEnd = words.get(words.size() - 1).endPosition() + textOffset;
-//
-//            List<StanfordCorenlpToken> leafNodes = org.apache.uima.fit.util.JCasUtil.selectCovered(aJCas,
-//                    StanfordCorenlpToken.class, leafBegin, leafEnd);
-//
-//            if (leafNodes.size() != 1) {
-//                logger.warn("Incorrect leave span " + leafBegin + " " + leafEnd);
-//            } else {
-//                treeAnno.setHead(leafNodes.get(0));
-//            }
-//        }
 
         if (!currentNode.isLeaf()) {
             Tree headTree = hf.determineHead(currentNode);

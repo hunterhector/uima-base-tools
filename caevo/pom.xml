@@ -67,6 +67,11 @@
             <version>1.3.5</version>
             <classifier>models</classifier>
         </dependency>
+        <dependency>
+            <groupId>edu.cmu.cs.lti</groupId>
+            <artifactId>misc-annotators</artifactId>
+            <version>0.0.5</version>
+        </dependency>
     </dependencies>
 
     <build>
