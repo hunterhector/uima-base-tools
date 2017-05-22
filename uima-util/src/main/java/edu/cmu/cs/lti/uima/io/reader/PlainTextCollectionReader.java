@@ -54,7 +54,7 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
     private boolean doNoiseFilter;
 
     public static final String PARAM_REMOVE_QUOTES = "removeQuotes";
-    @ConfigurationParameter(name = PARAM_REMOVE_QUOTES)
+    @ConfigurationParameter(name = PARAM_REMOVE_QUOTES, defaultValue = "true")
     private boolean removeQuotes;
 
     private ArrayList<File> textFiles;
