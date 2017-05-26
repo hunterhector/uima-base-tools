@@ -14,10 +14,7 @@ import org.apache.uima.jcas.cas.FSArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -68,8 +65,9 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
 
         for (String targetViewName : targetViewNames) {
             JCas targetView = JCasUtil.getView(aJCas, targetViewName, false);
+            removeAllEventRelated(targetView);
 
-
+            // First copy the mentions and the spans.
             Map<EventMention, EventMention> from2toMentionMap = copyMentions(goldStandard, targetView);
             Map<EventMentionSpan, EventMentionSpan> from2toSpanMap = copyMentionSpans(goldStandard, targetView,
                     from2toMentionMap);
@@ -85,12 +83,30 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
         }
     }
 
-    private void copyMentionRelations(JCas fromView, JCas toView, Map<EventMention, EventMention> from2toMap) {
+    private void removeAllEventRelated(JCas toView){
         for (EventMentionRelation relation : UimaConvenience.getAnnotationList(toView, EventMentionRelation.class)) {
             relation.removeFromIndexes();
         }
 
+        for (EventMentionSpanRelation relation : UimaConvenience.getAnnotationList(toView,
+                EventMentionSpanRelation.class)) {
+            relation.removeFromIndexes();
+        }
 
+        for (Event event : UimaConvenience.getAnnotationList(toView, Event.class)) {
+            event.removeFromIndexes();
+        }
+
+        for (EventMention mention : UimaConvenience.getAnnotationList(toView, EventMention.class)) {
+            mention.removeFromIndexes();
+        }
+
+        for (EventMentionSpan span : UimaConvenience.getAnnotationList(toView, EventMentionSpan.class)) {
+            span.removeFromIndexes();
+        }
+    }
+
+    private void copyMentionRelations(JCas fromView, JCas toView, Map<EventMention, EventMention> from2toMap) {
         ArrayListMultimap<EventMention, EventMentionRelation> headRelations = ArrayListMultimap.create();
         ArrayListMultimap<EventMention, EventMentionRelation> childRelations = ArrayListMultimap.create();
 
@@ -120,11 +136,6 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
     }
 
     private void copySpanRelations(JCas fromView, JCas toView, Map<EventMentionSpan, EventMentionSpan> from2toSpanMap) {
-        for (EventMentionSpanRelation relation : UimaConvenience.getAnnotationList(toView,
-                EventMentionSpanRelation.class)) {
-            relation.removeFromIndexes();
-        }
-
         ArrayListMultimap<EventMentionSpan, EventMentionSpanRelation> headRelations = ArrayListMultimap.create();
         ArrayListMultimap<EventMentionSpan, EventMentionSpanRelation> childRelations = ArrayListMultimap.create();
 
@@ -154,20 +165,16 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
     }
 
     private Map<EventMention, EventMention> copyMentions(JCas fromView, JCas toView) {
-        // Delete the mentions from the target view first.
-        for (EventMention mention : UimaConvenience.getAnnotationList(toView, EventMention.class)) {
-            mention.removeFromIndexes();
-        }
-
         Map<EventMention, EventMention> from2toMentionMap = new HashMap<>();
 
-        for (EventMention goldMention : JCasUtil.select(fromView, EventMention.class)) {
+        Collection<EventMention> fromMentions = JCasUtil.select(fromView, EventMention.class);
+
+        for (EventMention goldMention : fromMentions) {
             if (validate(goldMention, toView)) {
                 EventMention copiedMention = copyMention(toView, goldMention, goldMention.getEventType());
                 from2toMentionMap.put(goldMention, copiedMention);
             }
         }
-
 
         return from2toMentionMap;
     }
@@ -175,10 +182,6 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
     private Map<EventMentionSpan, EventMentionSpan> copyMentionSpans(JCas fromView, JCas toView,
                                                                      Map<EventMention, EventMention>
                                                                              from2toMentionMap) {
-        for (EventMentionSpan eventMentionSpan : UimaConvenience.getAnnotationList(toView, EventMentionSpan.class)) {
-            eventMentionSpan.removeFromIndexes();
-        }
-
         Map<EventMentionSpan, EventMentionSpan> from2toSpanMap = new HashMap<>();
 
         for (EventMentionSpan goldMention : JCasUtil.select(fromView, EventMentionSpan.class)) {
