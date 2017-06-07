@@ -135,7 +135,7 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
         Article article = new Article(aJCas);
         UimaAnnotationUtils.finishAnnotation(article, 0, documentText.length(), COMPONENT_ID, 0, aJCas);
         article.setArticleName(FilenameUtils.getBaseName(file.getName()));
-        article.setLanguage("en");
+        article.setLanguage(language);
 
         // Also store location of source document in CAS. This information is critical
         // if CAS Consumers will need to know where the original document contents are located.
