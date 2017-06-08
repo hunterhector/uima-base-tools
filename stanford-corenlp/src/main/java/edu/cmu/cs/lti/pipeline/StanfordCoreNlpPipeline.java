@@ -1,8 +1,9 @@
 package edu.cmu.cs.lti.pipeline;
 
 import edu.cmu.cs.lti.annotators.JSONReader;
-import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
-import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
+import edu.cmu.cs.lti.annotators.JSONWriter;
+import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
+import edu.cmu.cs.lti.utils.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
@@ -37,7 +38,8 @@ public class StanfordCoreNlpPipeline {
 
         // Parameters for the writer
 //        String paramParentOutputDir = "data/test/process";
-        String outptuDir = args[0];
+        String outputDir = args[0];
+
         String paramBaseOutputDirName = "stanford";
 
         String paramTypeSystemDescriptor = "TypeSystem";
@@ -46,19 +48,19 @@ public class StanfordCoreNlpPipeline {
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
                 .createTypeSystemDescription(paramTypeSystemDescriptor);
 
-        CollectionReaderDescription reader = getReader(typeSystemDescription, "/media/hdd/hdd0/data/joint_semantics/doc_spot.json");
+        CollectionReaderDescription reader = CustomCollectionReaderFactory.createXmiReader(typeSystemDescription,
+                outputDir, paramBaseOutputDirName);
 
-        AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
-                StanfordCoreNlpAnnotator.class, typeSystemDescription,
-                StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, true);
+        String jsonOut = FileUtils.joinPaths(outputDir, "json");
 
-        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
-                outptuDir, paramBaseOutputDirName, 0,
-                null);
+        AnalysisEngineDescription jsonWriter = AnalysisEngineFactory.createEngineDescription(
+                JSONWriter.class, typeSystemDescription,
+                JSONWriter.PARAM_OUTPUT_PATH, jsonOut
+        );
 
         // Run the pipeline.
         try {
-            SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer);
+            SimplePipeline.runPipeline(reader, jsonWriter);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
@@ -66,5 +68,48 @@ public class StanfordCoreNlpPipeline {
 
         System.out.println(className + " successfully completed.");
     }
+
+//    public static void main(String[] args) throws UIMAException {
+//        System.out.println(className + " started...");
+//
+//        // Parameters for the writer
+////        String paramParentOutputDir = "data/test/process";
+//        String outputDir = args[0];
+//
+//        String paramBaseOutputDirName = "stanford";
+//
+//        String paramTypeSystemDescriptor = "TypeSystem";
+//
+//        // Instantiate the analysis engine.
+//        TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
+//                .createTypeSystemDescription(paramTypeSystemDescriptor);
+//
+//        CollectionReaderDescription reader = getReader(typeSystemDescription,
+//                "/media/hdd/hdd0/data/joint_semantics/doc_spot.json");
+//
+//        AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
+//                StanfordCoreNlpAnnotator.class, typeSystemDescription,
+//                StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, true);
+//
+//        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
+//                outputDir, paramBaseOutputDirName, null,
+//                null);
+//
+//        String jsonOut = FileUtils.joinPaths(outputDir, "json");
+//        AnalysisEngineDescription jsonWriter = AnalysisEngineFactory.createEngineDescription(
+//                JSONWriter.class, typeSystemDescription,
+//                JSONWriter.PARAM_OUTPUT_PATH, jsonOut
+//        );
+//
+//        // Run the pipeline.
+//        try {
+//            SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer, jsonWriter);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            System.exit(1);
+//        }
+//
+//        System.out.println(className + " successfully completed.");
+//    }
 
 }

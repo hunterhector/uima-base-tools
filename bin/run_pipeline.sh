@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 args=${@:3}
 
 if (( $# > 0 )); then
