@@ -5,6 +5,7 @@ import com.google.gson.JsonParser;
 import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.utils.DebugUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.collection.CollectionException;
@@ -41,19 +42,16 @@ public class JSONReader extends AbstractCollectionReader {
     }
 
     private String cleanText(String text) {
-        int invalid = XMLUtils.checkForNonXmlCharacters(text);
+        StringBuilder cleanedText = new StringBuilder(text);
+        int invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
 
-        logger.info("Cleaning text.");
-
-        while (invalid >= 0) {
-            text = text.substring(0, invalid) + "_" + text.substring(invalid);
-            invalid = XMLUtils.checkForNonXmlCharacters(text);
+        while (invalid > -1) {
+//            logger.info("Removing invalid character at " + invalid);
+            cleanedText.delete(invalid, invalid + 1);
+            invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
         }
 
-        logger.info("Done.");
-
-
-        return text;
+        return cleanedText.toString();
     }
 
     @Override
@@ -64,14 +62,6 @@ public class JSONReader extends AbstractCollectionReader {
         String docid = jsonObj.get("docno").getAsString();
 
         String documentText = cleanText(title + "\n" + text);
-
-        int invalid = XMLUtils.checkForNonXmlCharacters(documentText);
-
-        if (invalid >= 0) {
-            logger.info("Invalid character found at " + invalid);
-            logger.info(documentText.substring(invalid - 10, invalid + 10));
-        }
-
 
         jCas.setDocumentText(documentText);
 

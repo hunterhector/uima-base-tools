@@ -70,6 +70,14 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     @ConfigurationParameter(name = PARAM_SPLIT_ONLY, defaultValue = "false")
     private boolean splitOnly;
 
+    public static final String PARAM_WHITESPACE_TOKENIZE = "whiteSpaceTokenize";
+    @ConfigurationParameter(name = PARAM_WHITESPACE_TOKENIZE, defaultValue = "false")
+    private boolean whiteSpaceTokenize;
+
+    public static final String PARAM_PARSER_MAXLEN = "parserMaxLength";
+    @ConfigurationParameter(name = PARAM_PARSER_MAXLEN, mandatory = false)
+    private Integer parserMaxLen;
+
     private StanfordCoreNLP pipeline;
 
     private final static String PARSE_TREE_ROOT_NODE_LABEL = "ROOT";
@@ -99,6 +107,15 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 props.setProperty("ner.useSUTime", "true");
             } else {
                 props.setProperty("ner.useSUTime", "false");
+            }
+
+            if (whiteSpaceTokenize){
+                props.setProperty("tokenize.whitespace", "true");
+            }
+
+            if (parserMaxLen != null){
+                logger.info("Parser will have a max length of " + parserMaxLen);
+                props.setProperty("parse.maxlen", String.valueOf(parserMaxLen));
             }
 
             hf = new SemanticHeadFinder();

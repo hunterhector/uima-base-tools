@@ -90,9 +90,6 @@ public class JSONWriter extends AbstractLoggingAnnotator {
         Document document = new Document();
         document.docno = JCasUtil.selectSingle(aJCas, Article.class).getArticleName();
 
-        UimaConvenience.printProcessLog(aJCas);
-        logger.info("Number of tokens in title is " + numTokenInTitle);
-
         for (Entity entity : JCasUtil.select(aJCas, Entity.class)) {
             Collection<StanfordEntityMention> mentions = FSCollectionFactory.create(entity.getEntityMentions(),
                     StanfordEntityMention.class);
@@ -156,7 +153,7 @@ public class JSONWriter extends AbstractLoggingAnnotator {
                 endToken = token.getIndex();
             }
         }
-        return Span.of(beginToken, endToken);
+        return Span.of(beginToken, endToken + 1);
     }
 
     @Override
