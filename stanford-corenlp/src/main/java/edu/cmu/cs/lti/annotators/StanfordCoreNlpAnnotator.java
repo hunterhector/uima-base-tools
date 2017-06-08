@@ -78,9 +78,22 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     @ConfigurationParameter(name = PARAM_PARSER_MAXLEN, mandatory = false)
     private Integer parserMaxLen;
 
+    public static final String PARAM_PARSER_MAX_COREF_DIST = "corefMaxLookback";
+    @ConfigurationParameter(name = PARAM_PARSER_MAX_COREF_DIST, defaultValue = "-1")
+    private Integer corefMaxLookback;
+
     public final static String PARAM_NUMERIC_CLASSIFIER = "numericClassifier";
     @ConfigurationParameter(name = PARAM_NUMERIC_CLASSIFIER, defaultValue = "true")
     private boolean useNumericClassifier;
+
+    public final static String PARAM_SHIFT_REDUCE = "shiftReduceParse";
+    @ConfigurationParameter(name = PARAM_SHIFT_REDUCE, defaultValue = "false")
+    private boolean shiftReduceParser;
+
+        public static final String PARAM_NUM_THREADS = "numThreads";
+    @ConfigurationParameter(name = PARAM_NUM_THREADS, defaultValue = "1")
+    private int numThreads;
+
 
     private StanfordCoreNLP pipeline;
 
@@ -119,14 +132,26 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 props.setProperty("ner.applyNumericClassifiers", "false");
             }
 
-            if (whiteSpaceTokenize){
+            if (whiteSpaceTokenize) {
                 props.setProperty("tokenize.whitespace", "true");
             }
 
-            if (parserMaxLen != null){
+            if (shiftReduceParser) {
+                props.setProperty("-parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
+            }
+
+            if (parserMaxLen != null) {
                 logger.info("Parser will have a max length of " + parserMaxLen);
                 props.setProperty("parse.maxlen", String.valueOf(parserMaxLen));
             }
+
+            if (numThreads > 1) {
+                logger.info("Setting multiple threads: " + numThreads);
+                props.setProperty("threads", String.valueOf(numThreads));
+            }
+
+
+            props.setProperty("dcoref.maxdist", String.valueOf(corefMaxLookback));
 
             hf = new SemanticHeadFinder();
 

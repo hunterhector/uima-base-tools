@@ -75,7 +75,8 @@ public class StanfordCoreNlpPipeline {
 
         // Parameters for the writer
 //        String paramParentOutputDir = "data/test/process";
-        String outputDir = args[0];
+        String input = args[0];
+        String outputDir = args[1];
 
         String paramBaseOutputDirName = "stanford";
 
@@ -85,16 +86,17 @@ public class StanfordCoreNlpPipeline {
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
                 .createTypeSystemDescription(paramTypeSystemDescriptor);
 
-        CollectionReaderDescription reader = getReader(typeSystemDescription,
-                "/media/hdd/hdd0/data/joint_semantics/doc_spot.json");
+        CollectionReaderDescription reader = getReader(typeSystemDescription, input);
 
         AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 StanfordCoreNlpAnnotator.class, typeSystemDescription,
                 StanfordCoreNlpAnnotator.PARAM_WHITESPACE_TOKENIZE, true,
-                StanfordCoreNlpAnnotator.PARAM_PARSER_MAXLEN, 100,
+                StanfordCoreNlpAnnotator.PARAM_PARSER_MAXLEN, 70,
                 StanfordCoreNlpAnnotator.PARAM_NUMERIC_CLASSIFIER, false,
                 StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, false,
-                StanfordCoreNlpAnnotator.PARAM_SPLIT_ONLY, false
+                StanfordCoreNlpAnnotator.PARAM_SPLIT_ONLY, false,
+                StanfordCoreNlpAnnotator.PARAM_SHIFT_REDUCE, true,
+                StanfordCoreNlpAnnotator.PARAM_PARSER_MAX_COREF_DIST, 5
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
