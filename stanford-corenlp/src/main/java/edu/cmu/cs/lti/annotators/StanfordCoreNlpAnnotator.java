@@ -78,6 +78,10 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     @ConfigurationParameter(name = PARAM_PARSER_MAXLEN, mandatory = false)
     private Integer parserMaxLen;
 
+    public final static String PARAM_NUMERIC_CLASSIFIER = "numericClassifier";
+    @ConfigurationParameter(name = PARAM_NUMERIC_CLASSIFIER, defaultValue = "true")
+    private boolean useNumericClassifier;
+
     private StanfordCoreNLP pipeline;
 
     private final static String PARSE_TREE_ROOT_NODE_LABEL = "ROOT";
@@ -107,6 +111,12 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 props.setProperty("ner.useSUTime", "true");
             } else {
                 props.setProperty("ner.useSUTime", "false");
+            }
+
+            if (useNumericClassifier) {
+                props.setProperty("ner.applyNumericClassifiers", "true");
+            } else {
+                props.setProperty("ner.applyNumericClassifiers", "false");
             }
 
             if (whiteSpaceTokenize){

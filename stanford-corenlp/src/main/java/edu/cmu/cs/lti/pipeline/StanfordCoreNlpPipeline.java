@@ -3,7 +3,6 @@ package edu.cmu.cs.lti.pipeline;
 import edu.cmu.cs.lti.annotators.JSONReader;
 import edu.cmu.cs.lti.annotators.JSONWriter;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
-import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.utils.FileUtils;
 import org.apache.uima.UIMAException;
@@ -91,9 +90,11 @@ public class StanfordCoreNlpPipeline {
 
         AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 StanfordCoreNlpAnnotator.class, typeSystemDescription,
-                StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, true,
                 StanfordCoreNlpAnnotator.PARAM_WHITESPACE_TOKENIZE, true,
-                StanfordCoreNlpAnnotator.PARAM_PARSER_MAXLEN, 100
+                StanfordCoreNlpAnnotator.PARAM_PARSER_MAXLEN, 100,
+                StanfordCoreNlpAnnotator.PARAM_NUMERIC_CLASSIFIER, false,
+                StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, false,
+                StanfordCoreNlpAnnotator.PARAM_SPLIT_ONLY, false
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(

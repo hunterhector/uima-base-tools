@@ -5,7 +5,6 @@ import com.google.gson.JsonParser;
 import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
-import edu.cmu.cs.lti.utils.DebugUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.collection.CollectionException;
@@ -39,6 +38,10 @@ public class JSONReader extends AbstractCollectionReader {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private String splitSentences(String text) {
+        return text;
     }
 
     private String cleanText(String text) {
