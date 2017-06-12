@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.Random;
 
 /**
@@ -29,9 +28,12 @@ public class RandomizedXmiCollectionReader extends AbstractStepBasedDirReader {
 
     private String inputViewName;
 
-    private List<File> xmiFiles;
-
     private int currentDocIndex;
+
+    @Override
+    protected String defaultFileSuffix() {
+        return "xmi";
+    }
 
     /**
      * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
@@ -48,16 +50,16 @@ public class RandomizedXmiCollectionReader extends AbstractStepBasedDirReader {
         }
 
         // Get a list of XMI files in the specified directory
-        xmiFiles = new ArrayList<>();
+        files = new ArrayList<>();
         File[] files = inputDir.listFiles();
         for (int i = 0; i < files.length; i++) {
             if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {
-                xmiFiles.add(files[i]);
+                this.files.add(files[i]);
             }
         }
 
-        Collections.sort(xmiFiles);
-        Collections.shuffle(xmiFiles, new Random(initialSeed));
+        Collections.sort(this.files);
+        Collections.shuffle(this.files, new Random(initialSeed));
 
         currentDocIndex = 0;
     }
@@ -66,7 +68,7 @@ public class RandomizedXmiCollectionReader extends AbstractStepBasedDirReader {
      * @see org.apache.uima.collection.CollectionReader#hasNext()
      */
     public boolean hasNext() {
-        return currentDocIndex < xmiFiles.size();
+        return currentDocIndex < files.size();
     }
 
     /**
@@ -81,7 +83,7 @@ public class RandomizedXmiCollectionReader extends AbstractStepBasedDirReader {
             throw new CollectionException(e);
         }
 
-        CasSerialization.readXmi(jCas, xmiFiles.get(currentDocIndex));
+        CasSerialization.readXmi(jCas, files.get(currentDocIndex));
         currentDocIndex++;
     }
 
@@ -95,7 +97,7 @@ public class RandomizedXmiCollectionReader extends AbstractStepBasedDirReader {
      * @see org.apache.uima.collection.base_cpm.BaseCollectionReader#getProgress()
      */
     public Progress[] getProgress() {
-        return new Progress[]{new ProgressImpl(currentDocIndex, xmiFiles.size(), Progress.ENTITIES)};
+        return new Progress[]{new ProgressImpl(currentDocIndex, files.size(), Progress.ENTITIES)};
     }
 
 

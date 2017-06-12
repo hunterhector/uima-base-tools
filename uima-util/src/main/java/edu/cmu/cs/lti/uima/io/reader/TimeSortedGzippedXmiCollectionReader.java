@@ -18,21 +18,20 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
  */
 public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirReader {
-
-    private static final String DEFAULT_FILE_SUFFIX = ".xmi.gz";
-
-    private List<File> xmiFiles;
-
     private int currentDocIndex;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    @Override
+    protected String defaultFileSuffix() {
+        return "xmi.gz";
+    }
 
     /**
      * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
@@ -40,24 +39,20 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirRe
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
 
-        if (StringUtils.isEmpty(inputFileSuffix)) {
-            inputFileSuffix = DEFAULT_FILE_SUFFIX;
-        }
-
         // Get a list of XMI files in the specified directory
-        xmiFiles = new ArrayList<File>();
+        files = new ArrayList<File>();
         File[] files = inputDir.listFiles();
         for (int i = 0; i < files.length; i++) {
             if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {
-                xmiFiles.add(files[i]);
+                this.files.add(files[i]);
             }
         }
 
-        if (xmiFiles.size() == 0) {
+        if (this.files.size() == 0) {
             logger.warn("The directory " + inputDir.getAbsolutePath()
                     + " does not have any compressed files ending with " + inputFileSuffix);
         }
-        Collections.sort(xmiFiles, NewsNameComparators.getGigawordDateComparator(inputFileSuffix, "yyyymm"));
+        Collections.sort(this.files, NewsNameComparators.getGigawordDateComparator(inputFileSuffix, "yyyymm"));
 
         currentDocIndex = 0;
     }
@@ -67,7 +62,7 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirRe
      * @see org.apache.uima.collection.CollectionReader#hasNext()
      */
     public boolean hasNext() {
-        return currentDocIndex < xmiFiles.size();
+        return currentDocIndex < files.size();
     }
 
     /**
@@ -82,7 +77,7 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirRe
             throw new CollectionException(e);
         }
 
-        File currentFile = xmiFiles.get(currentDocIndex);
+        File currentFile = files.get(currentDocIndex);
         currentDocIndex++;
 
         GZIPInputStream gzipIn = new GZIPInputStream(new FileInputStream(currentFile));
@@ -104,7 +99,7 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirRe
      * @see org.apache.uima.collection.base_cpm.BaseCollectionReader#getProgress()
      */
     public Progress[] getProgress() {
-        return new Progress[]{new ProgressImpl(currentDocIndex, xmiFiles.size(), Progress.ENTITIES)};
+        return new Progress[]{new ProgressImpl(currentDocIndex, files.size(), Progress.ENTITIES)};
     }
 
 }

@@ -1,10 +1,8 @@
 package edu.cmu.cs.lti.pipeline;
 
 import edu.cmu.cs.lti.annotators.JSONReader;
-import edu.cmu.cs.lti.annotators.JSONWriter;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
-import edu.cmu.cs.lti.utils.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
@@ -103,15 +101,9 @@ public class StanfordCoreNlpPipeline {
                 outputDir, paramBaseOutputDirName, null,
                 null);
 
-        String jsonOut = FileUtils.joinPaths(outputDir, "json");
-        AnalysisEngineDescription jsonWriter = AnalysisEngineFactory.createEngineDescription(
-                JSONWriter.class, typeSystemDescription,
-                JSONWriter.PARAM_OUTPUT_PATH, jsonOut
-        );
-
         // Run the pipeline.
         try {
-            SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer, jsonWriter);
+            SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer);
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);

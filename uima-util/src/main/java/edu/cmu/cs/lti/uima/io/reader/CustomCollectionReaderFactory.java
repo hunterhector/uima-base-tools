@@ -119,6 +119,27 @@ public class CustomCollectionReaderFactory {
      * @return
      * @throws ResourceInitializationException
      */
+    public static CollectionReaderDescription createRecursiveXmiReader(String parentInputDirName, String
+            baseInputDirName)
+            throws ResourceInitializationException {
+        // Instantiate a collection reader to get XMI as input.
+
+        return CollectionReaderFactory.createReaderDescription(
+                StepBasedDirXmiCollectionReader.class,
+                StepBasedDirXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
+                StepBasedDirXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
+                StepBasedDirGzippedXmiCollectionReader.PARAM_RECURSIVE, true
+        );
+    }
+
+    /**
+     * Creates a simple XMI reader assuming the directory naming convention
+     *
+     * @param parentInputDirName
+     * @param baseInputDirName
+     * @return
+     * @throws ResourceInitializationException
+     */
     public static CollectionReaderDescription createXmiReader(TypeSystemDescription typeSystemDescription, String
             parentInputDirName, String baseInputDirName) throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.

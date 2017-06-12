@@ -13,8 +13,6 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -24,13 +22,14 @@ public class StepBasedDirGzippedXmiCollectionReader extends AbstractStepBasedDir
 
     public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
 
-    private static final String DEFAULT_FILE_SUFFIX = ".xmi";
-
     private String inputViewName;
 
-    private List<File> xmiFiles;
-
     private int currentDocIndex;
+
+    @Override
+    protected String defaultFileSuffix() {
+        return "xmi";
+    }
 
     /**
      * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
@@ -40,23 +39,6 @@ public class StepBasedDirGzippedXmiCollectionReader extends AbstractStepBasedDir
         super.initialize(aContext);
 
         inputViewName = (String) getConfigParameterValue(PARAM_INPUT_VIEW_NAME);
-        if (StringUtils.isEmpty(inputFileSuffix)) {
-            inputFileSuffix = DEFAULT_FILE_SUFFIX;
-        }
-
-        // Get a list of XMI files in the specified directory
-        xmiFiles = new ArrayList<>();
-        File[] files = inputDir.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {
-                xmiFiles.add(files[i]);
-            }
-        }
-
-        if (xmiFiles.size() == 0) {
-            logger.warn("The directory " + inputDir.getAbsolutePath()
-                    + " does not have any compressed files ending with " + inputFileSuffix);
-        }
 
         currentDocIndex = 0;
     }
@@ -66,7 +48,7 @@ public class StepBasedDirGzippedXmiCollectionReader extends AbstractStepBasedDir
      * @see org.apache.uima.collection.CollectionReader#hasNext()
      */
     public boolean hasNext() {
-        return currentDocIndex < xmiFiles.size();
+        return currentDocIndex < files.size();
     }
 
     /**
@@ -81,7 +63,7 @@ public class StepBasedDirGzippedXmiCollectionReader extends AbstractStepBasedDir
             throw new CollectionException(e);
         }
 
-        File currentFile = xmiFiles.get(currentDocIndex);
+        File currentFile = files.get(currentDocIndex);
         currentDocIndex++;
 
         GZIPInputStream gzipIn = new GZIPInputStream(new FileInputStream(currentFile));
@@ -103,7 +85,7 @@ public class StepBasedDirGzippedXmiCollectionReader extends AbstractStepBasedDir
      * @see org.apache.uima.collection.base_cpm.BaseCollectionReader#getProgress()
      */
     public Progress[] getProgress() {
-        return new Progress[]{new ProgressImpl(currentDocIndex, xmiFiles.size(), Progress.ENTITIES)};
+        return new Progress[]{new ProgressImpl(currentDocIndex, files.size(), Progress.ENTITIES)};
     }
 
 }

@@ -1,6 +1,8 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
 import com.google.common.base.Joiner;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.component.JCasCollectionReader_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -14,13 +16,14 @@ import java.util.List;
 
 /**
  * An abstract reader to consume input in a directory whose name is based on the
- * step number for convenience
+ * step number for convenience.
+ * <p>
+ * This is based on the UIMA Fit components.
  *
  * @author Jun Araki
  * @author Zhengzhong Liu
  */
 public abstract class AbstractStepBasedDirReader extends JCasCollectionReader_ImplBase {
-
     public static final String PARAM_PARENT_INPUT_DIR_PATH = "ParentInputDirPath";
 
     public static final String PARAM_BASE_INPUT_DIR_NAME = "BaseInputDirectoryName";
@@ -32,6 +35,8 @@ public abstract class AbstractStepBasedDirReader extends JCasCollectionReader_Im
     public static final String PARAM_FAIL_UNKNOWN = "FailOnUnknownType";
 
     public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
+
+    public static final String PARAM_RECURSIVE = "recursive";
 
     @ConfigurationParameter(name = PARAM_PARENT_INPUT_DIR_PATH)
     private String parentInputDirPath;
@@ -51,9 +56,16 @@ public abstract class AbstractStepBasedDirReader extends JCasCollectionReader_Im
     @ConfigurationParameter(name = PARAM_FAIL_UNKNOWN, defaultValue = "false")
     protected Boolean failOnUnknownType;
 
+    @ConfigurationParameter(name = PARAM_RECURSIVE, defaultValue = "false")
+    protected Boolean recursive;
+
     protected File inputDir;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+
+    protected ArrayList<File> files;
+
+    protected abstract String defaultFileSuffix();
 
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
@@ -64,9 +76,7 @@ public abstract class AbstractStepBasedDirReader extends JCasCollectionReader_Im
         if (inputStepNumber != null) {
             dirNameSegments.add(String.format("%02d", inputStepNumber));
         }
-//        if (!StringUtils.isEmpty(inputFileSuffix)) {
-//            dirNameSegments.add(inputFileSuffix);
-//        }
+
         dirNameSegments.add(baseInputDirName);
 
         String dirName = Joiner.on("_").join(dirNameSegments);
@@ -79,6 +89,23 @@ public abstract class AbstractStepBasedDirReader extends JCasCollectionReader_Im
         }
 
         logger.info(String.format("Reading from [%s]", inputDir.getAbsolutePath()));
+
+        if (recursive) {
+            logger.info("Reading the directory recursively.");
+        }
+
+        if (StringUtils.isEmpty(inputFileSuffix)) {
+            inputFileSuffix = defaultFileSuffix();
+        }
+
+        files = new ArrayList<>(FileUtils.listFiles(inputDir, new String[]{inputFileSuffix}, recursive));
+
+        if (this.files.size() == 0) {
+            logger.warn("The directory " + inputDir.getAbsolutePath()
+                    + " does not have any compressed files ending with " + inputFileSuffix);
+        } else {
+            logger.info("Number of files read : " + this.files.size());
+        }
     }
 
 }

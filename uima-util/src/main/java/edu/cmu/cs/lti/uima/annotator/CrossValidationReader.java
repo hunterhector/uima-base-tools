@@ -3,7 +3,6 @@ package edu.cmu.cs.lti.uima.annotator;
 import com.google.common.collect.Lists;
 import edu.cmu.cs.lti.uima.io.reader.AbstractStepBasedDirReader;
 import edu.cmu.cs.lti.uima.util.CasSerialization;
-import org.apache.commons.io.FileUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -29,7 +28,6 @@ import java.util.*;
 public class CrossValidationReader extends AbstractStepBasedDirReader {
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-
     public static final String PARAM_SEED = "seed";
     @ConfigurationParameter(name = PARAM_SEED, defaultValue = "17")
     private int seed;
@@ -52,6 +50,11 @@ public class CrossValidationReader extends AbstractStepBasedDirReader {
     private Iterator<File> corpusIter;
 
     @Override
+    protected String defaultFileSuffix() {
+        return "xmi";
+    }
+
+    @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
 
@@ -60,8 +63,6 @@ public class CrossValidationReader extends AbstractStepBasedDirReader {
         if (inputFileSuffix == null) {
             inputFileSuffix = DEFAULT_SUFFIX;
         }
-
-        List<File> files = new ArrayList<>(FileUtils.listFiles(inputDir, new String[]{inputFileSuffix}, false));
 
         if (files.size() < splitsCnt) {
             throw new IllegalArgumentException(String.format("Number of files [%d] smaller than split count [%d].",

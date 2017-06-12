@@ -35,7 +35,7 @@ public abstract class AbstractCustomizedTextWriterAnalysisEngine extends Abstrac
         if (StringUtils.isEmpty(outputFileSuffix)) {
             outputFileSuffix = DEFAULT_FILE_SUFFIX;
         }
-        String outputFileName = CasSerialization.getOutputFileName(srcDocInfoView, outputFileSuffix);
+        String outputFileName = CasSerialization.getOutputFileNameFromSource(srcDocInfoView, outputFileSuffix);
 
 
         File outputFile;

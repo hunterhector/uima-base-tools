@@ -73,7 +73,7 @@ public class NewsNameComparators {
                 int i = 0;
                 try {
                     int s = name.lastIndexOf('_') + 1;
-                    int e = name.lastIndexOf(inputFileSuffix);
+                    int e = name.lastIndexOf("." + inputFileSuffix);
                     String number = name.substring(s, e);
                     i = Integer.parseInt(number);
                 } catch (Exception e) {

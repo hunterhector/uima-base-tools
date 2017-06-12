@@ -12,8 +12,6 @@ import org.apache.uima.util.ProgressImpl;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
@@ -25,11 +23,12 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
     @ConfigurationParameter(name = PARAM_BASE_NAME_FILE_FILTER, mandatory = false)
     File baseNameFileFilter;
 
-    private String inputViewName;
-
-    private List<File> xmiFiles;
-
     private int currentDocIndex;
+
+    @Override
+    protected String defaultFileSuffix() {
+        return "xmi";
+    }
 
     /**
      * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
@@ -37,23 +36,6 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
-
-        inputViewName = (String) getConfigParameterValue(PARAM_INPUT_VIEW_NAME);
-        if (StringUtils.isEmpty(inputFileSuffix)) {
-            inputFileSuffix = ".xmi";
-        }
-
-        // Get a list of XMI files in the specified directory
-        xmiFiles = new ArrayList<>();
-        File[] files = inputDir.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {
-                xmiFiles.add(files[i]);
-            }
-        }
-
-        logger.info("Number of files read : " + xmiFiles.size());
-
         currentDocIndex = 0;
     }
 
@@ -61,7 +43,7 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
      * @see org.apache.uima.collection.CollectionReader#hasNext()
      */
     public boolean hasNext() {
-        return currentDocIndex < xmiFiles.size();
+        return currentDocIndex < files.size();
     }
 
     /**
@@ -76,7 +58,7 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
             throw new CollectionException(e);
         }
 
-        CasSerialization.readXmi(jCas, xmiFiles.get(currentDocIndex));
+        CasSerialization.readXmi(jCas, files.get(currentDocIndex));
         currentDocIndex++;
     }
 
@@ -90,7 +72,7 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
      * @see org.apache.uima.collection.base_cpm.BaseCollectionReader#getProgress()
      */
     public Progress[] getProgress() {
-        return new Progress[]{new ProgressImpl(currentDocIndex, xmiFiles.size(), Progress.ENTITIES)};
+        return new Progress[]{new ProgressImpl(currentDocIndex, files.size(), Progress.ENTITIES)};
     }
 
 }

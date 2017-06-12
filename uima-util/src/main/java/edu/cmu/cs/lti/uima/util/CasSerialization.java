@@ -123,7 +123,7 @@ public class CasSerialization {
      * @return A filename that based on the input file. Null if input if cannot find input file name.
      * @throws AnalysisEngineProcessException
      */
-    public static String getOutputFileName(JCas srcDocInfoView, String outputFileSuffix) throws
+    public static String getOutputFileNameFromSource(JCas srcDocInfoView, String outputFileSuffix) throws
             AnalysisEngineProcessException {
         // Retrieve the filename of the input file from the CAS.
         try {

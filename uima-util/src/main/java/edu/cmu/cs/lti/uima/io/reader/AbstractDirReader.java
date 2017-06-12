@@ -16,7 +16,9 @@ import java.util.List;
 
 /**
  * An abstract reader to consume input in a directory whose name is based on the
- * step number for convenience
+ * step number for convenience.
+ *
+ * This is based on the UIMA components.
  *
  * @author Jun Araki
  */
