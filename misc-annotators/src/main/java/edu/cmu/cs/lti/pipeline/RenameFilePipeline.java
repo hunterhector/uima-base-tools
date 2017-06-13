@@ -26,6 +26,8 @@ public class RenameFilePipeline {
 
     public static void writeXmi(TypeSystemDescription typeSystemDescription, String parentDir,
                                 String inputBase, String outputParent) throws UIMAException, IOException {
+        System.out.println("Writing XMI");
+
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createRecursiveXmiReader(parentDir,
                 inputBase);
 
@@ -39,6 +41,7 @@ public class RenameFilePipeline {
 
     public static void writeJson(TypeSystemDescription typeSystemDescription, String parentDir,
                                  String inputBase, String outputPath) throws UIMAException, IOException {
+        System.out.println("Writing JSON");
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createRecursiveXmiReader(parentDir,
                 inputBase);
 
@@ -61,7 +64,7 @@ public class RenameFilePipeline {
 
         String jsonOut = FileUtils.joinPaths(outputDir, "all.json");
 
-        writeXmi(typeSystemDescription, parentDir, inputBase, outputDir);
-        writeJson(typeSystemDescription, parentDir, middleBase, jsonOut);
+//        writeXmi(typeSystemDescription, parentDir, inputBase, outputDir);
+        writeJson(typeSystemDescription, outputDir, middleBase, jsonOut);
     }
 }

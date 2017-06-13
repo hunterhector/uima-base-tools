@@ -173,7 +173,7 @@ public class CoreferenceJSONWriter extends AbstractLoggingAnnotator {
                                 jsonEntityMention.surface = bodyMention.getCoveredText();
                                 jsonEntityMention.loc.add(bodyTokenSpan.getBegin() - numTokenInTitle);
                                 jsonEntityMention.loc.add(bodyTokenSpan.getEnd() - numTokenInTitle);
-                                jsonEntityMention.head = UimaNlpUtils.findHeadFromStanfordAnnotation(titleMention)
+                                jsonEntityMention.head = UimaNlpUtils.findHeadFromStanfordAnnotation(bodyMention)
                                         .getIndex() - numTokenInTitle;
                                 jsonEntityMention.source = "body";
                                 jsonEntity.mentions.add(jsonEntityMention);
