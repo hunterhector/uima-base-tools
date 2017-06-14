@@ -4,20 +4,35 @@ import edu.cmu.cs.lti.ark.fn.data.prep.formats.Token;
 import edu.cmu.cs.lti.ark.fn.parsing.SemaforParseResult;
 import edu.cmu.cs.lti.ark.pipeline.SemaforFullPipeline;
 import edu.cmu.cs.lti.ark.pipeline.parsing.ParsingException;
+import edu.cmu.cs.lti.collection_reader.LDCXmlCollectionReader;
 import edu.cmu.cs.lti.script.model.SemaforConstants;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
+import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.UimaConvenience;
+import edu.cmu.cs.lti.utils.FileUtils;
+import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
+import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.collection.CollectionReaderDescription;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.factory.AnalysisEngineFactory;
+import org.apache.uima.fit.factory.CollectionReaderFactory;
+import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.maltparser.core.exception.MaltChainedException;
+import org.uimafit.factory.TypeSystemDescriptionFactory;
 
+import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -37,7 +52,13 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
 
     public static final String COMPONENT_ID = SemaforAnnotator.class.getSimpleName();
 
-    SemaforFullPipeline semafor;
+    private SemaforFullPipeline semafor;
+
+    public static final String PARAM_JSON_OUTPUT_REDIRECT = "jsonOutputRedirect";
+    @ConfigurationParameter(name = PARAM_JSON_OUTPUT_REDIRECT, mandatory = false)
+    private String jsonOutputRidirectDir;
+
+    private boolean redirectJsonOutput;
 
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
@@ -51,19 +72,40 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
         } catch (IOException | URISyntaxException | ClassNotFoundException | MaltChainedException e) {
             e.printStackTrace();
         }
+
+        if (!FileUtils.ensureDirectory(jsonOutputRidirectDir)) {
+            throw new ResourceInitializationException(new IOException("Cannot ensure output directory : " +
+                    jsonOutputRidirectDir));
+        }
+
+        if (jsonOutputRidirectDir != null) {
+            redirectJsonOutput = true;
+        } else {
+            redirectJsonOutput = false;
+        }
     }
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         logger.info("Processing with Semafor.");
-        annotateSemafor(aJCas);
-        for (JCas view : getAdditionalViews(aJCas)) {
-            annotateSemafor(view);
+        try {
+            annotateSemafor(aJCas);
+            for (JCas view : getAdditionalViews(aJCas)) {
+                annotateSemafor(view);
+            }
+        } catch (IOException e) {
+            throw new AnalysisEngineProcessException(e);
         }
     }
 
+    private void annotateSemafor(JCas aJCas) throws IOException {
+        String docName = UimaConvenience.getDocumentName(aJCas);
+        BufferedWriter jsonRedirectOutput = null;
 
-    private void annotateSemafor(JCas aJCas) {
+        if (redirectJsonOutput) {
+            jsonRedirectOutput = new BufferedWriter(new FileWriter(new File(jsonOutputRidirectDir, docName)));
+        }
+
         for (Sentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
             List<Token> semaforTokens = new ArrayList<>();
 
@@ -84,18 +126,19 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
                         word.getPos(), null, null, null, null, null));
             }
 
-
-//            logger.info("Number of words " + words.size());
-//            for (Token semaforToken : semaforTokens) {
-//                System.out.println(semaforToken.getForm());
-//            }
-
             try {
                 SemaforParseResult result = semafor.parse(semaforTokens);
+                if (redirectJsonOutput) {
+                    jsonRedirectOutput.write(result.toJson());
+                }
                 annotateSemaforSentence(aJCas, sentence, result);
             } catch (ParsingException | IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        if (redirectJsonOutput) {
+            jsonRedirectOutput.close();
         }
     }
 
@@ -120,7 +163,6 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
             targetLabelArray.set(0, targetLabel);
             targetLayer.setLabels(targetLabelArray);
             layers.add(targetLayer);
-
 
             int roleId = 0;
             for (SemaforParseResult.Frame.ScoredRoleAssignment roleAssignment : frame.annotationSets) {
@@ -169,5 +211,33 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
         }
         UimaAnnotationUtils.finishAnnotation(label, COMPONENT_ID, 0, aJCas);
         return label;
+    }
+
+    public static void main(String[] argv) throws UIMAException, IOException {
+        TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
+                .createTypeSystemDescription("TypeSystem");
+
+        String inputDir = argv[0];
+        String outputDir = argv[1];
+
+        String semaforModelDirectory = "../models/semafor_malt_model_20121129";
+
+        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+                LDCXmlCollectionReader.class, typeSystemDescription,
+                LDCXmlCollectionReader.PARAM_DATA_PATH, inputDir,
+                LDCXmlCollectionReader.PARAM_LANGUAGE, "en"
+        );
+
+        AnalysisEngineDescription semaforAnalyzer = AnalysisEngineFactory.createEngineDescription(
+                SemaforAnnotator.class, typeSystemDescription,
+                SemaforAnnotator.SEMAFOR_MODEL_PATH, semaforModelDirectory,
+                SemaforAnnotator.PARAM_JSON_OUTPUT_REDIRECT, FileUtils.joinPaths(outputDir, "json")
+        );
+
+        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(outputDir, "xmi");
+
+        SimplePipeline.runPipeline(reader, semaforAnalyzer, writer);
+
+
     }
 }

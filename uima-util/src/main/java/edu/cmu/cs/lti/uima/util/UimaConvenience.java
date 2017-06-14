@@ -6,7 +6,9 @@
 package edu.cmu.cs.lti.uima.util;
 
 import com.google.common.collect.Iterables;
+import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.uima.model.AnnotationCondition;
+import edu.cmu.cs.lti.utils.StringUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.uima.cas.*;
 import org.apache.uima.cas.text.AnnotationFS;
@@ -771,6 +773,22 @@ public class UimaConvenience extends BasicConvenience {
         }
     }
 
+    public static String getDocumentName(JCas aJCas) {
+        String articleName = getArticleName(aJCas);
+        if (StringUtils.isEmpty(articleName)) {
+            return getShortDocumentNameWithOffset(aJCas);
+        } else {
+            return articleName;
+        }
+    }
+
+    public static String getArticleName(JCas aJCas) {
+        Article article = selectSingle(aJCas, Article.class);
+        if (article == null) {
+            return "";
+        }
+        return article.getArticleName();
+    }
 
     public static String getShortDocumentName(JCas aJCas) {
         SourceDocumentInformation srcDocInfo = selectSingle(aJCas,

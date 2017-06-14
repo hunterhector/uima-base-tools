@@ -62,6 +62,10 @@
             <artifactId>maltparser</artifactId>
             <version>1.7.2</version>
         </dependency>
+        <dependency>
+            <groupId>edu.cmu.cs.lti</groupId>
+            <artifactId>corpus-reader</artifactId>
+        </dependency>
     </dependencies>
 
 </project>
