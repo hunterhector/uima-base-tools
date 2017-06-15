@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.pipeline;
 
+import edu.cmu.cs.lti.annotators.QuoteAnnotator;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.collection_reader.LDCXmlCollectionReader;
 import edu.cmu.cs.lti.script.annotators.SemaforAnnotator;
@@ -55,6 +56,11 @@ public class SemaforAnnotatorPipeline {
                 SemaforAnnotator.PARAM_JSON_OUTPUT_REDIRECT, FileUtils.joinPaths(outputDir, "json")
         );
 
+        AnalysisEngineDescription quote = AnalysisEngineFactory.createEngineDescription(
+                QuoteAnnotator.class, typeSystemDescription
+        );
+
+
         new BasicPipeline(new ProcessorWrapper() {
             @Override
             public CollectionReaderDescription getCollectionReader() throws ResourceInitializationException {
@@ -63,9 +69,8 @@ public class SemaforAnnotatorPipeline {
 
             @Override
             public AnalysisEngineDescription[] getProcessors() throws ResourceInitializationException {
-                return new AnalysisEngineDescription[0];
-
-//                return new AnalysisEngineDescription[]{stanfordAnalyzer, semaforAnalyzer};
+                return new AnalysisEngineDescription[]{stanfordAnalyzer, semaforAnalyzer};
+//                return new AnalysisEngineDescription[]{quote};
             }
         }, true, outputDir, "xmi").runWithOutput();
     }

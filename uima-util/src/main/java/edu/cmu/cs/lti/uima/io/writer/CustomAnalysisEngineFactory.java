@@ -1,7 +1,6 @@
 package edu.cmu.cs.lti.uima.io.writer;
 
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
-import org.apache.uima.analysis_engine.metadata.AnalysisEngineMetaData;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
@@ -15,14 +14,14 @@ public class CustomAnalysisEngineFactory {
         typeSystemDescription = typeSystem;
     }
 
-    public static void setTypeSystem(AnalysisEngineDescription coreferenceEngine,
-                                     TypeSystemDescription typeSystem) {
-        AnalysisEngineMetaData metatData = coreferenceEngine.getAnalysisEngineMetaData();
-        metatData.setTypeSystem(typeSystem);
-        coreferenceEngine.setMetaData(metatData);
-
-        typeSystemDescription = typeSystem;
-    }
+//    public static void setTypeSystem(AnalysisEngineDescription coreferenceEngine,
+//                                     TypeSystemDescription typeSystem) {
+//        AnalysisEngineMetaData metatData = coreferenceEngine.getAnalysisEngineMetaData();
+//        metatData.setTypeSystem(typeSystem);
+//        coreferenceEngine.setMetaData(metatData);
+//
+//        typeSystemDescription = typeSystem;
+//    }
 
     /**
      * Creates an XMI writer assuming the directory naming convention

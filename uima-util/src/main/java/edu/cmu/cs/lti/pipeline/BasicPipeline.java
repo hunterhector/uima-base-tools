@@ -68,11 +68,12 @@ public class BasicPipeline {
             UIMAException, CpeDescriptorException, SAXException, IOException {
         readerDescription = wrapper.getCollectionReader();
         AnalysisEngineDescription[] processors = wrapper.getProcessors();
-
         AnalysisEngineDescription[] engineDescriptions;
+
         if (workingDir != null && outputDir != null) {
-            engineDescriptions = ArrayUtils.add(processors, CustomAnalysisEngineFactory.createXmiWriter(workingDir,
-                    outputDir));
+            AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(workingDir, outputDir);
+            engineDescriptions = ArrayUtils.add(processors, writer);
+
             outputReader = CustomCollectionReaderFactory.createXmiReader(workingDir, outputDir);
             withOutput = true;
 
@@ -83,13 +84,12 @@ public class BasicPipeline {
         }
 
         this.withStats = withStats;
-
         aggregateAnalysisEngineDesc = createEngineDescription(engineDescriptions);
     }
 
     private static class StatusCallbackListenerImpl implements StatusCallbackListener {
 
-        private final List<Exception> exceptions = new ArrayList<Exception>();
+        private final List<Exception> exceptions = new ArrayList<>();
 
         private boolean isProcessing = true;
 
@@ -231,13 +231,16 @@ public class BasicPipeline {
      * @throws ResourceInitializationException
      */
     public void initialize() throws ResourceInitializationException {
-        // Create Reader
+        // Create Reader.
         cReader = CollectionReaderFactory.createReader(readerDescription);
 
-        // Instantiate AAE
+        // Instantiate AAE.
         aggregateAnalysisEngine = createEngine(aggregateAnalysisEngineDesc);
 
-        // Create CAS from merged metadata
+        // The name must be set so that the aggregate trace can be done.
+        aggregateAnalysisEngine.getMetaData().setName("aggregate");
+
+        // Create CAS from merged metadata.
         mergedCas = CasCreationUtils.createCas(
                 Arrays.asList(cReader.getMetaData(), aggregateAnalysisEngineDesc.getMetaData())
         );
