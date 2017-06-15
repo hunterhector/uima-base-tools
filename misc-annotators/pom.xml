@@ -33,12 +33,17 @@
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>corpus-reader</artifactId>
-            <version>0.0.5</version>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>edu.cmu.cs.lti</groupId>
             <artifactId>stanford-corenlp</artifactId>
-            <version>0.0.5</version>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>edu.cmu.cs.lti</groupId>
+            <artifactId>semafor-parser</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

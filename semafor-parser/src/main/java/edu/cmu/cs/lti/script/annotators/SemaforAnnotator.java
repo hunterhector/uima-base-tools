@@ -4,31 +4,21 @@ import edu.cmu.cs.lti.ark.fn.data.prep.formats.Token;
 import edu.cmu.cs.lti.ark.fn.parsing.SemaforParseResult;
 import edu.cmu.cs.lti.ark.pipeline.SemaforFullPipeline;
 import edu.cmu.cs.lti.ark.pipeline.parsing.ParsingException;
-import edu.cmu.cs.lti.collection_reader.LDCXmlCollectionReader;
 import edu.cmu.cs.lti.script.model.SemaforConstants;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
-import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.utils.FileUtils;
-import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
-import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.fit.factory.AnalysisEngineFactory;
-import org.apache.uima.fit.factory.CollectionReaderFactory;
-import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.maltparser.core.exception.MaltChainedException;
-import org.uimafit.factory.TypeSystemDescriptionFactory;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -103,7 +93,9 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
         BufferedWriter jsonRedirectOutput = null;
 
         if (redirectJsonOutput) {
-            jsonRedirectOutput = new BufferedWriter(new FileWriter(new File(jsonOutputRidirectDir, docName)));
+            jsonRedirectOutput = new BufferedWriter(new FileWriter(
+                    new File(jsonOutputRidirectDir, docName + " .json"))
+            );
         }
 
         for (Sentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
@@ -191,7 +183,7 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
 
     private SemaforLabel namedSpan2Label(JCas aJCas, List<StanfordCorenlpToken> words,
                                          SemaforParseResult.Frame.NamedSpanSet namedSpanSet, String name) {
-        //assume only continous span is predicted, so return only one label
+        // Assume only continous span is predicted, so return only one label.
         int first = -1;
         int last = -1;
         for (SemaforParseResult.Frame.Span span : namedSpanSet.spans) {
@@ -211,33 +203,5 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
         }
         UimaAnnotationUtils.finishAnnotation(label, COMPONENT_ID, 0, aJCas);
         return label;
-    }
-
-    public static void main(String[] argv) throws UIMAException, IOException {
-        TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
-                .createTypeSystemDescription("TypeSystem");
-
-        String inputDir = argv[0];
-        String outputDir = argv[1];
-
-        String semaforModelDirectory = "../models/semafor_malt_model_20121129";
-
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
-                LDCXmlCollectionReader.class, typeSystemDescription,
-                LDCXmlCollectionReader.PARAM_DATA_PATH, inputDir,
-                LDCXmlCollectionReader.PARAM_LANGUAGE, "en"
-        );
-
-        AnalysisEngineDescription semaforAnalyzer = AnalysisEngineFactory.createEngineDescription(
-                SemaforAnnotator.class, typeSystemDescription,
-                SemaforAnnotator.SEMAFOR_MODEL_PATH, semaforModelDirectory,
-                SemaforAnnotator.PARAM_JSON_OUTPUT_REDIRECT, FileUtils.joinPaths(outputDir, "json")
-        );
-
-        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(outputDir, "xmi");
-
-        SimplePipeline.runPipeline(reader, semaforAnalyzer, writer);
-
-
     }
 }

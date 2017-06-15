@@ -27,4 +27,5 @@ public abstract class AbstractAnnotator extends JCasAnnotator_ImplBase {
     protected String encoding;
 
     public final String COMPONENT_ID = this.getClass().getSimpleName();
+
 }
