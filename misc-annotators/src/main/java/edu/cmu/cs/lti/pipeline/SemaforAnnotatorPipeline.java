@@ -1,6 +1,5 @@
 package edu.cmu.cs.lti.pipeline;
 
-import edu.cmu.cs.lti.annotators.QuoteAnnotator;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.collection_reader.LDCXmlCollectionReader;
 import edu.cmu.cs.lti.script.annotators.SemaforAnnotator;
@@ -55,11 +54,6 @@ public class SemaforAnnotatorPipeline {
                 SemaforAnnotator.SEMAFOR_MODEL_PATH, semaforModelDirectory,
                 SemaforAnnotator.PARAM_JSON_OUTPUT_REDIRECT, FileUtils.joinPaths(outputDir, "json")
         );
-
-        AnalysisEngineDescription quote = AnalysisEngineFactory.createEngineDescription(
-                QuoteAnnotator.class, typeSystemDescription
-        );
-
 
         new BasicPipeline(new ProcessorWrapper() {
             @Override

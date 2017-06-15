@@ -94,7 +94,7 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
 
         if (redirectJsonOutput) {
             jsonRedirectOutput = new BufferedWriter(new FileWriter(
-                    new File(jsonOutputRidirectDir, docName + " .json"))
+                    new File(jsonOutputRidirectDir, docName + ".json"))
             );
         }
 
