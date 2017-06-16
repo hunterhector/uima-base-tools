@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.script.annotators;
 
+import com.google.gson.Gson;
 import edu.cmu.cs.lti.ark.fn.data.prep.formats.Token;
 import edu.cmu.cs.lti.ark.fn.parsing.SemaforParseResult;
 import edu.cmu.cs.lti.ark.pipeline.SemaforFullPipeline;
@@ -9,6 +10,7 @@ import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
+import edu.cmu.cs.lti.utils.DebugUtils;
 import edu.cmu.cs.lti.utils.FileUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -121,7 +123,10 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
             try {
                 SemaforParseResult result = semafor.parse(semaforTokens);
                 if (redirectJsonOutput) {
-                    jsonRedirectOutput.write(result.toJson());
+                    String resultJson = result.toJson();
+                    logger.info("Result json is " + resultJson);
+                    jsonRedirectOutput.write(resultJson);
+                    DebugUtils.pause();
                 }
                 annotateSemaforSentence(aJCas, sentence, result);
             } catch (ParsingException | IOException e) {
@@ -132,6 +137,29 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
         if (redirectJsonOutput) {
             jsonRedirectOutput.close();
         }
+    }
+
+    class JsonToken {
+        String surface;
+        List<Integer> offset = new ArrayList<>();
+    }
+
+    private String addTokenOffsets(JCas aJCas){
+        Gson gson = new Gson();
+
+        List<JsonToken> allTokens = new ArrayList<>();
+
+        for (Sentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
+            for (StanfordCorenlpToken token : JCasUtil.selectCovered(StanfordCorenlpToken.class, sentence)) {
+                JsonToken t = new JsonToken();
+                t.offset.add(token.getBegin());
+                t.offset.add(token.getEnd());
+                t.surface = token.getCoveredText();
+                allTokens.add(t);
+            }
+        }
+
+        return gson.toJson(allTokens);
     }
 
     private void annotateSemaforSentence(JCas aJCas, Sentence sentence, SemaforParseResult result) {
