@@ -39,15 +39,12 @@ public class SemaforAnnotatorPipeline {
 
         AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 StanfordCoreNlpAnnotator.class, typeSystemDescription,
-                StanfordCoreNlpAnnotator.PARAM_WHITESPACE_TOKENIZE, true,
+                StanfordCoreNlpAnnotator.PARAM_WHITESPACE_TOKENIZE, false,
                 StanfordCoreNlpAnnotator.PARAM_PARSER_MAXLEN, 70,
                 StanfordCoreNlpAnnotator.PARAM_NUMERIC_CLASSIFIER, false,
                 StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, false,
-                StanfordCoreNlpAnnotator.PARAM_SPLIT_ONLY, false,
-                StanfordCoreNlpAnnotator.PARAM_SHIFT_REDUCE, true,
-                StanfordCoreNlpAnnotator.PARAM_PARSER_MAX_COREF_DIST, 5
+                StanfordCoreNlpAnnotator.PARAM_SHIFT_REDUCE, true
         );
-
 
         AnalysisEngineDescription semaforAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 SemaforAnnotator.class, typeSystemDescription,
