@@ -756,7 +756,7 @@ public class UimaConvenience extends BasicConvenience {
     }
 
     public static void printProcessLog(JCas aJCas) {
-        String fileName = getShortDocumentNameWithOffset(aJCas);
+        String fileName = getDocumentName(aJCas);
         System.out.println(String.format("Processing article: %s", fileName));
     }
 
@@ -765,7 +765,7 @@ public class UimaConvenience extends BasicConvenience {
     }
 
     public static void printProcessLog(JCas aJCas, Logger logger, boolean debug) {
-        String fileName = getShortDocumentNameWithOffset(aJCas);
+        String fileName = getDocumentName(aJCas);
         if (debug) {
             logger.debug(String.format("Processing article: %s", fileName));
         } else {

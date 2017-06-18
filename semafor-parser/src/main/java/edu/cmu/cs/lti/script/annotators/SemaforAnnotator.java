@@ -40,7 +40,6 @@ import java.util.List;
  * Time: 11:01 PM
  */
 public class SemaforAnnotator extends AbstractLoggingAnnotator {
-
     public static final String SEMAFOR_MODEL_PATH = "modelPath";
 
     public static final String COMPONENT_ID = SemaforAnnotator.class.getSimpleName();
@@ -55,7 +54,6 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
 
     // A shared gson object;
     private Gson gson = new Gson();
-
 
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {

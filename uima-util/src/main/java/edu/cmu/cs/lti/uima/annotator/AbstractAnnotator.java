@@ -18,6 +18,8 @@ public abstract class AbstractAnnotator extends JCasAnnotator_ImplBase {
 
     public static final String DEFAULT_ENCODING = "UTF-8";
 
+    public static final String MULTI_THREAD = "parallel";
+
     @ConfigurationParameter(description = "The view name for the golden standard view", name =
             PARAM_GOLD_STANDARD_VIEW_NAME, defaultValue = UimaConst.goldViewName)
     protected String goldStandardViewName;
@@ -25,6 +27,10 @@ public abstract class AbstractAnnotator extends JCasAnnotator_ImplBase {
     @ConfigurationParameter(description = "Specify the encoding of the input", name = PARAM_ENCODING, defaultValue =
             DEFAULT_ENCODING)
     protected String encoding;
+
+    @ConfigurationParameter(description = "Number of threads for processing.",
+            name = MULTI_THREAD, defaultValue = "false")
+    protected boolean multithread;
 
     public final String COMPONENT_ID = this.getClass().getSimpleName();
 
