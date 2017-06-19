@@ -65,14 +65,14 @@ public class BasicPipeline {
     private ProcessTrace performanceTrace = null;
 
     // Must be at least 1.
-    private final int maxThread = 10;
+    private final int maxThread = 1;
 
     private final BlockingQueue<CAS> sharedQueue = new ArrayBlockingQueue<>(maxThread);
     private ExecutorService executor = Executors.newFixedThreadPool(maxThread + 1);
 
     private Queue<CAS> availableCASes = new ArrayDeque<>();
 
-    private boolean readAllFiles = false;
+    private boolean allFilesRead = false;
 
     public BasicPipeline(ProcessorWrapper wrapper) throws UIMAException,
             CpeDescriptorException, SAXException, IOException {
@@ -190,17 +190,23 @@ public class BasicPipeline {
         Future<Integer> docsProcessed = runProducer();
         performanceTrace = runCasConsumers(engines);
         int numProcessed = docsProcessed.get();
-        readAllFiles = true;
-
+        logger.info("Got results from producer, all file read is set to " + allFilesRead);
+        allFilesRead = true;
         logger.info("Number documents processed : " + numProcessed);
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(800, TimeUnit.MILLISECONDS)) {
+                executor.shutdown();
+            }
+        } catch (InterruptedException e) {
+            executor.shutdownNow();
+        }
     }
 
     private class ProcessElement {
         CAS cas;
         int level;
         int maxLevel;
-
-        boolean isEnd;
 
         ProcessElement(CAS cas, int maxLevel) {
             this.cas = cas;
@@ -241,7 +247,9 @@ public class BasicPipeline {
 
                                     ProcessTrace t = null;
 
-                                    if (sharedQueue.isEmpty() && readAllFiles) {
+                                    if (allFilesRead && sharedQueue.isEmpty()) {
+                                        logger.info("All files read is set to " + allFilesRead);
+                                        logger.info("All jobs finished.");
                                         break;
                                     }
 
@@ -273,6 +281,7 @@ public class BasicPipeline {
                                             // Finished cas are reused by putting back to the available pool.
                                             cas.reset();
                                             availableCASes.add(cas);
+                                            logger.info("Finished, put into available cas.");
                                         }
                                     } catch (InterruptedException | AnalysisEngineProcessException e) {
                                         e.printStackTrace();
@@ -314,6 +323,8 @@ public class BasicPipeline {
                                 // When there is no available CAS, that means all of them are being processed by the
                                 // consumer.
                                 // We should wait until they are ready;
+
+                                logger.info("Checking for next available cas.");
                             }
 
                             // Get a available container.
@@ -325,7 +336,7 @@ public class BasicPipeline {
 
                             numDocuments.incrementAndGet();
                             logger.info("Take a cas container for the next document, available cas number : " +
-                                    availableCASes.size() + ", task queue size is " + sharedQueue);
+                                    availableCASes.size() + ", task queue is " + sharedQueue);
                         }
                     } catch (IOException | CollectionException e) {
                         e.printStackTrace();
