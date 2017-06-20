@@ -237,10 +237,12 @@ public class BasicPipeline {
 
         List<Function<CAS, ProcessTrace>> analysisFunctions = new ArrayList<>();
 
-        for (int i = 0; i < engines.length; i++) {
-            AnalysisEngine engine = engines[i];
-            logger.info("Checking multi thread for " + engine.getMetaData().getName());
+        List<AtomicInteger> processedCounters = new ArrayList<>();
+
+        for (AnalysisEngine engine : engines) {
             boolean multiThread = (boolean) engine.getConfigParameterValue(AbstractAnnotator.MULTI_THREAD);
+
+            processedCounters.add(new AtomicInteger());
 
             Function<CAS, ProcessTrace> func = cas -> {
                 try {
@@ -252,11 +254,9 @@ public class BasicPipeline {
                         }
                     }
                 } catch (AnalysisEngineProcessException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
-                return null;
             };
-
             analysisFunctions.add(func);
         }
 
@@ -287,8 +287,6 @@ public class BasicPipeline {
                                     CAS cas = executionTuple.cas;
                                     int level = executionTuple.level;
 
-//                                        ProcessTrace t = engines[level].process(cas);
-
                                     ProcessTrace t = analysisFunctions.get(level).apply(cas);
 
                                     if (executionTuple.increment()) {
@@ -300,6 +298,21 @@ public class BasicPipeline {
                                         availableCASes.add(cas);
                                     }
 
+                                    int count = processedCounters.get(level).incrementAndGet();
+
+                                    if (level == processedCounters.size() - 1) {
+                                        if (count % 100 == 0) {
+                                            StringBuilder sb = new StringBuilder();
+                                            sb.append("Showing current annotation progress.\n");
+                                            for (int i = 0; i < processedCounters.size(); i++) {
+                                                AtomicInteger counter = processedCounters.get(i);
+                                                String processName = engines[i].getMetaData().getName();
+                                                sb.append(String.format("Annotated by %s: %d.\n", processName,
+                                                        counter.get()));
+                                            }
+                                            logger.info(sb.toString());
+                                        }
+                                    }
                                     combineTrace(processTrace, t);
                                 }
                         );
@@ -348,7 +361,7 @@ public class BasicPipeline {
                             numDocuments.incrementAndGet();
                         }
                     } catch (IOException | CollectionException e) {
-                        e.printStackTrace();
+                        throw new RuntimeException(e);
                     }
 
                     return numDocuments.get();

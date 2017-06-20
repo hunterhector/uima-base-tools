@@ -14,15 +14,6 @@ public class CustomAnalysisEngineFactory {
         typeSystemDescription = typeSystem;
     }
 
-//    public static void setTypeSystem(AnalysisEngineDescription coreferenceEngine,
-//                                     TypeSystemDescription typeSystem) {
-//        AnalysisEngineMetaData metatData = coreferenceEngine.getAnalysisEngineMetaData();
-//        metatData.setTypeSystem(typeSystem);
-//        coreferenceEngine.setMetaData(metatData);
-//
-//        typeSystemDescription = typeSystem;
-//    }
-
     /**
      * Creates an XMI writer assuming the directory naming convention
      *
@@ -33,12 +24,11 @@ public class CustomAnalysisEngineFactory {
      */
     public static AnalysisEngineDescription createXmiWriter(String parentOutputDirPath, String baseOutputDirName)
             throws ResourceInitializationException {
-        AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
+        return AnalysisEngineFactory.createEngineDescription(
                 StepBasedDirXmiWriter.class,
                 StepBasedDirXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, parentOutputDirPath,
                 StepBasedDirXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME, baseOutputDirName
         );
-        return writer;
     }
 
     /**
@@ -55,12 +45,11 @@ public class CustomAnalysisEngineFactory {
                                                             String baseOutputDirName, Integer stepNumber, String
                                                                     outputFileSuffix)
             throws ResourceInitializationException {
-        AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
+        return AnalysisEngineFactory.createEngineDescription(
                 StepBasedDirXmiWriter.class, StepBasedDirXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH,
                 parentOutputDirPath, StepBasedDirXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME,
                 baseOutputDirName, StepBasedDirXmiWriter.PARAM_OUTPUT_FILE_SUFFIX, outputFileSuffix,
                 StepBasedDirXmiWriter.PARAM_OUTPUT_STEP_NUMBER, stepNumber);
-        return writer;
     }
 
     /**

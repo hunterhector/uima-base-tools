@@ -19,6 +19,7 @@ import java.util.List;
  * This analysis engine outputs CAS in the XMI format.
  *
  * @author Jun Araki
+ * @author Zhengzhong Liu
  */
 public class StepBasedDirXmiWriter extends AbstractStepBasedDirWriter {
     public static final String PARAM_OUTPUT_FILE_NUMBERS = "OutputFileNumbers";
@@ -65,7 +66,7 @@ public class StepBasedDirXmiWriter extends AbstractStepBasedDirWriter {
             outputFile = new File(outputDir, outputFileName);
         }
 
-        // serialize XCAS and write to output file
+        // Serialize XCAS and write to output file.
         try {
             CasSerialization.writeAsXmi(aJCas.getCas(), outputFile);
         } catch (IOException | SAXException e) {
