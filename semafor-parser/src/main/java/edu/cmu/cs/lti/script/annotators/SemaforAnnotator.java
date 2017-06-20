@@ -68,12 +68,11 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
             e.printStackTrace();
         }
 
-        if (!FileUtils.ensureDirectory(jsonOutputRidirectDir)) {
-            throw new ResourceInitializationException(new IOException("Cannot ensure output directory : " +
-                    jsonOutputRidirectDir));
-        }
-
         if (jsonOutputRidirectDir != null) {
+            if (!FileUtils.ensureDirectory(jsonOutputRidirectDir)) {
+                throw new ResourceInitializationException(new IOException("Cannot ensure output directory : " +
+                        jsonOutputRidirectDir));
+            }
             redirectJsonOutput = true;
         } else {
             redirectJsonOutput = false;

@@ -50,7 +50,11 @@ public class SemaforFullPipeline {
     }
 
     public SemaforParseResult parse(Sentence sentence) throws ParsingException, IOException {
-        Sentence parsedSentence = malt.parse(sentence);
+        Sentence parsedSentence;
+        // Malt parser is not thread safe.
+        synchronized (this) {
+             parsedSentence = malt.parse(sentence);
+        }
         return semafor.parseSentence(parsedSentence);
     }
 

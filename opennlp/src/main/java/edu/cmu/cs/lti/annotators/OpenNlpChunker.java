@@ -3,12 +3,12 @@ package edu.cmu.cs.lti.annotators;
 import edu.cmu.cs.lti.script.type.OpennlpChunk;
 import edu.cmu.cs.lti.script.type.StanfordCorenlpSentence;
 import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
+import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import opennlp.tools.chunker.ChunkerME;
 import opennlp.tools.chunker.ChunkerModel;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
@@ -26,7 +26,7 @@ import java.util.List;
  * <p/>
  * Required annotation: sentence
  */
-public class OpenNlpChunker extends JCasAnnotator_ImplBase {
+public class OpenNlpChunker extends AbstractLoggingAnnotator {
     ChunkerME chunker;
 
     public static final String PARAM_MODEL_PATH = "chunkerModel";

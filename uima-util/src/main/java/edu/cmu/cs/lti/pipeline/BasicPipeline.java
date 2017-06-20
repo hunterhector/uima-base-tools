@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.pipeline;
 
+import edu.cmu.cs.lti.uima.annotator.AbstractAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import org.apache.commons.lang3.ArrayUtils;
@@ -25,12 +26,11 @@ import org.xml.sax.SAXException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 
 import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngine;
 
@@ -48,10 +48,6 @@ public class BasicPipeline {
     private CollectionReaderDescription outputReader;
 
     private CollectionReader cReader;
-//    private CAS mergedCas;
-
-//    private AnalysisEngineDescription aggregateAnalysisEngineDesc;
-//    private AnalysisEngine aggregateAnalysisEngine;
 
     private AnalysisEngineDescription[] analysisEngineDescs;
     private AnalysisEngine[] engines;
@@ -65,12 +61,14 @@ public class BasicPipeline {
     private ProcessTrace performanceTrace = null;
 
     // Must be at least 1.
-    private final int maxThread = 1;
+    private final int numWorkers = 10;
 
-    private final BlockingQueue<CAS> sharedQueue = new ArrayBlockingQueue<>(maxThread);
-    private ExecutorService executor = Executors.newFixedThreadPool(maxThread + 1);
+    private final BlockingQueue<ProcessElement> taskQueue = new ArrayBlockingQueue<>(numWorkers);
 
-    private Queue<CAS> availableCASes = new ArrayDeque<>();
+    // Number of threads: for the workers, and one additional for producer.
+    private ExecutorService executor = Executors.newFixedThreadPool(numWorkers + 2);
+
+    private BlockingQueue<CAS> availableCASes = new ArrayBlockingQueue<>(numWorkers);
 
     private boolean allFilesRead = false;
 
@@ -81,7 +79,7 @@ public class BasicPipeline {
 
     public BasicPipeline(ProcessorWrapper wrapper, String workingDir, String outputDir) throws UIMAException,
             CpeDescriptorException, SAXException, IOException {
-        this(wrapper, false, null, null);
+        this(wrapper, false, workingDir, outputDir);
     }
 
     public BasicPipeline(ProcessorWrapper wrapper, boolean withStats, String workingDir, String outputDir) throws
@@ -104,7 +102,6 @@ public class BasicPipeline {
         }
 
         this.withStats = withStats;
-//        aggregateAnalysisEngineDesc = createEngineDescription(engineDescriptions);
         analysisEngineDescs = engineDescriptions;
     }
 
@@ -123,14 +120,8 @@ public class BasicPipeline {
         }
         complete();
 
-        if (withStats) {
-            if (performanceTrace != null) {
-                logger.info("Process complete, the full processing trace is as followed:");
-                logger.info(performanceTrace.toString());
-            }
-        }
-    }
 
+    }
 
     /**
      * Run processor from provided reader, write processed CAS as XMI to the given directory.
@@ -171,13 +162,13 @@ public class BasicPipeline {
 
         // Create multiple cas containers.
         TypeSystem typeSystem = null;
-        for (int i = 0; i < maxThread; i++) {
+        for (int i = 0; i < numWorkers; i++) {
             CAS cas = CasCreationUtils.createCas(metaData);
-            availableCASes.add(CasCreationUtils.createCas(metaData));
+            availableCASes.offer(CasCreationUtils.createCas(metaData));
             typeSystem = cas.getTypeSystem();
         }
 
-        logger.info("Created " + availableCASes.size() + " cas for processing.");
+        logger.info("Created " + availableCASes.size() + " CASes for processing.");
 
         // The reader can take type system from any CAS (they are the same.).
         cReader.typeSystemInit(typeSystem);
@@ -190,16 +181,15 @@ public class BasicPipeline {
         Future<Integer> docsProcessed = runProducer();
         performanceTrace = runCasConsumers(engines);
         int numProcessed = docsProcessed.get();
-        logger.info("Got results from producer, all file read is set to " + allFilesRead);
         allFilesRead = true;
-        logger.info("Number documents processed : " + numProcessed);
-        executor.shutdown();
-        try {
-            if (!executor.awaitTermination(800, TimeUnit.MILLISECONDS)) {
-                executor.shutdown();
+        logger.info("Number documents submitted: " + numProcessed);
+
+        if (withStats) {
+            if (performanceTrace != null) {
+                executor.awaitTermination(5, TimeUnit.MINUTES);
+                logger.info("Process complete, the full processing trace is as followed:");
+                logger.info("\n" + performanceTrace.toString());
             }
-        } catch (InterruptedException e) {
-            executor.shutdownNow();
         }
     }
 
@@ -208,12 +198,23 @@ public class BasicPipeline {
         int level;
         int maxLevel;
 
+        /**
+         * A new process element will all have a level of 1, which means it is not processed before.
+         *
+         * @param cas      The actual content.
+         * @param maxLevel Total number of process needed to get it done.
+         */
         ProcessElement(CAS cas, int maxLevel) {
             this.cas = cas;
             level = 0;
             this.maxLevel = maxLevel;
         }
 
+        /**
+         * Called when processed once, increment the process counter by 1.
+         *
+         * @return whether the element is processed enough times so that it is done.
+         */
         boolean increment() {
             level += 1;
             return level < maxLevel;
@@ -229,68 +230,81 @@ public class BasicPipeline {
      * @throws InterruptedException
      */
     private ProcessTrace runCasConsumers(AnalysisEngine[] engines) throws ExecutionException, InterruptedException {
-        Queue<ProcessElement> processedCas = new ArrayBlockingQueue<>(maxThread);
-
         // Now submit multiple jobs.
         ProcessTrace processTrace = new ProcessTrace_impl();
 
+        Object lock = new Object();
+
+        List<Function<CAS, ProcessTrace>> analysisFunctions = new ArrayList<>();
+
+        for (int i = 0; i < engines.length; i++) {
+            AnalysisEngine engine = engines[i];
+            logger.info("Checking multi thread for " + engine.getMetaData().getName());
+            boolean multiThread = (boolean) engine.getConfigParameterValue(AbstractAnnotator.MULTI_THREAD);
+
+            Function<CAS, ProcessTrace> func = cas -> {
+                try {
+                    if (multiThread) {
+                        return engine.process(cas);
+                    } else {
+                        synchronized (lock) {
+                            return engine.process(cas);
+                        }
+                    }
+                } catch (AnalysisEngineProcessException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            };
+
+            analysisFunctions.add(func);
+        }
+
         // The consumer manger thread that submit jobs.
-        executor.submit(
+        executor.execute(
                 () -> {
-                    // TODO: Need to find a way to terminate the jobs.
-                    // The actual workers doing the job.
-                    executor.execute(
-                            () -> {
-                                while (true) {
-                                    logger.info("Running from consumer thread " + Thread.currentThread().getName());
-                                    logger.info("Shared Queue size " + sharedQueue.size());
+                    while (true) {
+                        if (allFilesRead && taskQueue.isEmpty()) {
+                            executor.shutdown();
+                            break;
+                        }
 
-                                    ProcessTrace t = null;
+                        // The submitter will be responsible to check whether there are available task.
+                        ProcessElement nextTask = null;
+                        try {
+                            nextTask = taskQueue.take();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
 
-                                    if (allFilesRead && sharedQueue.isEmpty()) {
-                                        logger.info("All files read is set to " + allFilesRead);
-                                        logger.info("All jobs finished.");
-                                        break;
-                                    }
+                        ProcessElement executionTuple = nextTask;
 
-                                    try {
-                                        // Take a element from the task queue, or from the middle products.
-                                        ProcessElement executionTuple;
-                                        if (processedCas.isEmpty()) {
-                                            executionTuple = new ProcessElement(sharedQueue.take(), engines.length);
-                                        } else {
-                                            executionTuple = processedCas.poll();
-                                        }
+                        // The actual workers doing the job.
+                        executor.execute(
+                                () -> {
+                                    // Run the correct engine using one of the available thread in the executor
+                                    // pool.
+                                    CAS cas = executionTuple.cas;
+                                    int level = executionTuple.level;
 
-                                        logger.info("Taking execution tuple: " + executionTuple);
+//                                        ProcessTrace t = engines[level].process(cas);
 
-                                        // Run the correct engine using one of the available thread in the executor
-                                        // pool.
-                                        CAS cas = executionTuple.cas;
-                                        int level = executionTuple.level;
-                                        t = engines[level].process(cas);
+                                    ProcessTrace t = analysisFunctions.get(level).apply(cas);
 
-                                        logger.info("Tuple executed with engine " + engines[level].getMetaData()
-                                                .getName() + " at level " + level);
-
-                                        if (executionTuple.increment()) {
-                                            // If the tuple is still not finished, put it back to the list again.
-                                            processedCas.add(executionTuple);
-                                            logger.info("Not finished yet, place back to processed cas");
-                                        } else {
-                                            // Finished cas are reused by putting back to the available pool.
-                                            cas.reset();
-                                            availableCASes.add(cas);
-                                            logger.info("Finished, put into available cas.");
-                                        }
-                                    } catch (InterruptedException | AnalysisEngineProcessException e) {
-                                        e.printStackTrace();
+                                    if (executionTuple.increment()) {
+                                        // If the tuple is still not finished, put it back to the list again.
+                                        taskQueue.add(executionTuple);
+                                    } else {
+                                        // Finished cas are reused by putting back to the available pool.
+                                        cas.reset();
+                                        availableCASes.add(cas);
                                     }
 
                                     combineTrace(processTrace, t);
                                 }
-                            }
-                    );
+                        );
+                    }
+                    logger.info("Submitter thread finished.");
                 }
         );
 
@@ -313,30 +327,25 @@ public class BasicPipeline {
      * 2. No available cas container, consumers haven't returned the containers yet.
      */
     private Future<Integer> runProducer() {
+        // An producer thread that read from the reader, and use the available cas containers to hold the input.
+        // The CAS containers are put in a blocking queue (taskQueue), when the task queue is full, the producer will
+        // be blocked.
+        // The available CAS are placed in another blocking queue (availableCASes), if there is no available CAS, the
+        // producer will be blocked.
+        // The producer is done when it reads all the files.
         return executor.submit(
                 () -> {
                     AtomicInteger numDocuments = new AtomicInteger();
-                    logger.info("Producer thread started.");
+
                     try {
                         while (cReader.hasNext()) {
-                            while (availableCASes.isEmpty()) {
-                                // When there is no available CAS, that means all of them are being processed by the
-                                // consumer.
-                                // We should wait until they are ready;
-
-                                logger.info("Checking for next available cas.");
-                            }
-
                             // Get a available container.
-                            CAS currentContainer = availableCASes.poll();
+                            CAS currentContainer = availableCASes.take();
                             // Fill the container with actual document input.
                             cReader.getNext(currentContainer);
                             // Put element for processed in the queue. This will block the thread if necessary.
-                            sharedQueue.offer(currentContainer);
-
+                            taskQueue.offer(new ProcessElement(currentContainer, engines.length));
                             numDocuments.incrementAndGet();
-                            logger.info("Take a cas container for the next document, available cas number : " +
-                                    availableCASes.size() + ", task queue is " + sharedQueue);
                         }
                     } catch (IOException | CollectionException e) {
                         e.printStackTrace();
@@ -346,30 +355,6 @@ public class BasicPipeline {
                 }
         );
     }
-
-//    /**
-//     * Process the next CAS in the reader.
-//     */
-//    public void process() {
-//        try {
-//            // Process.
-//            while (cReader.hasNext()) {
-//                cReader.getNext(mergedCas);
-//                ProcessTrace trace = aggregateAnalysisEngine.process(mergedCas);
-//                mergedCas.reset();
-//
-//                if (aggregateTrace == null) {
-//                    aggregateTrace = trace;
-//                } else {
-//                    aggregateTrace.aggregate(trace);
-//                }
-//            }
-//        } catch (AnalysisEngineProcessException | CollectionException | IOException e) {
-//            e.printStackTrace();
-//            // Destroy.
-//            aggregateAnalysisEngine.destroy();
-//        }
-//    }
 
     /**
      * Complete the process.
