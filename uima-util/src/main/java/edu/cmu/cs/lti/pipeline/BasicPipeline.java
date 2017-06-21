@@ -35,11 +35,16 @@ import java.util.function.Function;
 import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngine;
 
 /**
- * Created with IntelliJ IDEA.
- * Date: 4/15/15
- * Time: 5:22 PM
+ * Implements a parallel pipeline. This is different from the default UIMA parallel mechanism that it run the
  *
  * @author Zhengzhong Liu
+ * @<<code>process(JCas)</code> step in a multi-thread manner. This save memory and preparation time needed for the
+ * @<code>initialize(final UimaContext context)</code> step. This require the process step to be thread safe, and it
+ * should not modify the initialized variables. The judgement is left to the caller.
+ * <p>
+ * The @<code>process(JCas)</code> step is called synchronized by default. To use the actual multi-thread
+ * computation, one should set the @<code>MULTI_THREAD</code> configuration parameter in
+ * @<code>AbstractAnnotator</code> to true.
  */
 public class BasicPipeline {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
