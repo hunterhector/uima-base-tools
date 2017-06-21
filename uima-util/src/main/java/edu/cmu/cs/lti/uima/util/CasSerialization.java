@@ -5,8 +5,6 @@ import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.cas.impl.XmiCasSerializer;
 import org.apache.uima.collection.CollectionException;
-import org.apache.uima.examples.SourceDocumentInformation;
-import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceProcessException;
 import org.apache.uima.util.XMLSerializer;
@@ -18,8 +16,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -118,25 +114,17 @@ public class CasSerialization {
     /**
      * Retrieve the input file name from the source document information.
      *
-     * @param srcDocInfoView   The view that contains the SourceDocumentInformation annotation.
+     * @param view   The view that contains the Article or SourceDocumentInformation annotation.
      * @param outputFileSuffix The file suffix to output.
      * @return A filename that based on the input file. Null if input if cannot find input file name.
      * @throws AnalysisEngineProcessException
      */
-    public static String getOutputFileNameFromSource(JCas srcDocInfoView, String outputFileSuffix) throws
+    public static String getOutputFileNameFromSource(JCas view, String outputFileSuffix) throws
             AnalysisEngineProcessException {
         // Retrieve the filename of the input file from the CAS.
         try {
-            SourceDocumentInformation fileLoc = JCasUtil.selectSingle(srcDocInfoView, SourceDocumentInformation.class);
-            File inFile = new File(new URL(fileLoc.getUri()).getPath());
-            StringBuilder buf = new StringBuilder();
-            buf.append(inFile.getName());
-            if (fileLoc.getOffsetInSource() > 0) {
-                buf.append("_").append(fileLoc.getOffsetInSource());
-            }
-            buf.append(outputFileSuffix);
-            return buf.toString();
-        } catch (IllegalArgumentException | MalformedURLException e) {
+            return UimaConvenience.getDocumentName(view) + outputFileSuffix;
+        } catch (IllegalArgumentException e) {
             logger.info("Cannot find original input for file.");
             e.printStackTrace();
         }

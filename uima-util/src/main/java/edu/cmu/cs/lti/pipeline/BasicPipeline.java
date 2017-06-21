@@ -70,6 +70,8 @@ public class BasicPipeline {
 
     private BlockingQueue<CAS> availableCASes = new ArrayBlockingQueue<>(numWorkers);
 
+    private int numInputFiles;
+
     private boolean allFilesRead = false;
 
     public BasicPipeline(ProcessorWrapper wrapper) throws UIMAException,
@@ -180,13 +182,14 @@ public class BasicPipeline {
     public void process() throws ExecutionException, InterruptedException {
         Future<Integer> docsProcessed = runProducer();
         performanceTrace = runCasConsumers(engines);
-        int numProcessed = docsProcessed.get();
+
+        numInputFiles = docsProcessed.get();
         allFilesRead = true;
-        logger.info("Number documents submitted: " + numProcessed);
+        logger.info("Number documents submitted: " + numInputFiles);
 
         if (withStats) {
             if (performanceTrace != null) {
-                executor.awaitTermination(5, TimeUnit.MINUTES);
+                executor.awaitTermination(15, TimeUnit.MINUTES);
                 logger.info("Process complete, the full processing trace is as followed:");
                 logger.info("\n" + performanceTrace.toString());
             }
@@ -260,12 +263,19 @@ public class BasicPipeline {
             analysisFunctions.add(func);
         }
 
+        // Count number of documents processed by each engine.
+        int[] counts = new int[engines.length];
+        for (int i = 0; i < engines.length; i++) {
+            counts[i] = 0;
+        }
+
         // The consumer manger thread that submit jobs.
         executor.execute(
                 () -> {
                     while (true) {
-                        if (allFilesRead && taskQueue.isEmpty()) {
+                        if (allFilesRead && counts[counts.length - 1] == numInputFiles) {
                             executor.shutdown();
+                            logger.info("Shut down executor, do not take more jobs.");
                             break;
                         }
 
@@ -278,6 +288,8 @@ public class BasicPipeline {
                         }
 
                         ProcessElement executionTuple = nextTask;
+
+                        counts[executionTuple.level] += 1;
 
                         // The actual workers doing the job.
                         executor.execute(
@@ -303,11 +315,11 @@ public class BasicPipeline {
                                     if (level == processedCounters.size() - 1) {
                                         if (count % 100 == 0) {
                                             StringBuilder sb = new StringBuilder();
-                                            sb.append("Showing current annotation progress.\n");
+                                            sb.append("Showing current annotation progress.");
                                             for (int i = 0; i < processedCounters.size(); i++) {
                                                 AtomicInteger counter = processedCounters.get(i);
                                                 String processName = engines[i].getMetaData().getName();
-                                                sb.append(String.format("Annotated by %s: %d.\n", processName,
+                                                sb.append(String.format("\nAnnotated by %s: %d.", processName,
                                                         counter.get()));
                                             }
                                             logger.info(sb.toString());
@@ -317,7 +329,14 @@ public class BasicPipeline {
                                 }
                         );
                     }
-                    logger.info("Submitter thread finished.");
+
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < counts.length; i++) {
+                        sb.append("\n to engine ").append(engines[i].getMetaData().getName()).append(":")
+                                .append(counts[i]);
+                    }
+
+                    logger.info("Submitter thread finished, number jobs submitted:" + sb.toString());
                 }
         );
 

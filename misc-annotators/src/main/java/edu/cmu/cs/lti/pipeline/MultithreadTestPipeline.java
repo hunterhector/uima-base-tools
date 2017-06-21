@@ -1,7 +1,11 @@
 package edu.cmu.cs.lti.pipeline;
 
 import edu.cmu.cs.lti.annotators.QuoteAnnotator;
+import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.collection_reader.LDCXmlCollectionReader;
+import edu.cmu.cs.lti.script.annotators.SemaforAnnotator;
+import edu.cmu.cs.lti.uima.annotator.AbstractAnnotator;
+import edu.cmu.cs.lti.utils.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
@@ -36,9 +40,29 @@ public class MultithreadTestPipeline {
                 LDCXmlCollectionReader.PARAM_LANGUAGE, "en"
         );
 
-        AnalysisEngineDescription engine = AnalysisEngineFactory.createEngineDescription(
-                QuoteAnnotator.class, typeSystemDescription
+
+        AnalysisEngineDescription stanford = AnalysisEngineFactory.createEngineDescription(
+                StanfordCoreNlpAnnotator.class, typeSystemDescription,
+                StanfordCoreNlpAnnotator.PARAM_LANGUAGE, "en",
+                AbstractAnnotator.MULTI_THREAD, true
         );
+
+
+        final String semaforModelDirectory = "../models/semafor_malt_model_20121129";
+
+        AnalysisEngineDescription semafor = AnalysisEngineFactory.createEngineDescription(
+                SemaforAnnotator.class, typeSystemDescription,
+                SemaforAnnotator.SEMAFOR_MODEL_PATH, semaforModelDirectory,
+                SemaforAnnotator.PARAM_JSON_OUTPUT_REDIRECT,
+                FileUtils.joinPaths(outputDir, "semafor_json"),
+                AbstractAnnotator.MULTI_THREAD, true
+        );
+
+        AnalysisEngineDescription quote = AnalysisEngineFactory.createEngineDescription(
+                QuoteAnnotator.class, typeSystemDescription,
+                QuoteAnnotator.MULTI_THREAD, true
+        );
+
 
         new BasicPipeline(new ProcessorWrapper() {
             @Override
@@ -48,7 +72,7 @@ public class MultithreadTestPipeline {
 
             @Override
             public AnalysisEngineDescription[] getProcessors() throws ResourceInitializationException {
-                return new AnalysisEngineDescription[]{engine};
+                return new AnalysisEngineDescription[]{stanford, semafor, quote};
             }
         }, true, outputDir, "xmi").runWithOutput();
     }

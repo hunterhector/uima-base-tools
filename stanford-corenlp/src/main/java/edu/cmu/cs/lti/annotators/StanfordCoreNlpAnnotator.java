@@ -56,8 +56,6 @@ import java.util.*;
  * @author Da Teng
  */
 public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
-    public final static String COMPONENT_ID = "System-stanford-corenlp";
-
     public final static String PARAM_USE_SUTIME = "UseSUTime";
     @ConfigurationParameter(name = PARAM_USE_SUTIME, defaultValue = "true")
     private boolean useSUTime;
@@ -90,7 +88,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     @ConfigurationParameter(name = PARAM_SHIFT_REDUCE, defaultValue = "false")
     private boolean shiftReduceParser;
 
-        public static final String PARAM_NUM_THREADS = "numThreads";
+    public static final String PARAM_NUM_THREADS = "numThreads";
     @ConfigurationParameter(name = PARAM_NUM_THREADS, defaultValue = "1")
     private int numThreads;
 
@@ -215,8 +213,6 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-        UimaConvenience.printProcessLog(aJCas, logger);
-
         if (language.equals("en")) {
             annotateEnglish(aJCas, 0);
             for (JCas view : getAdditionalViews(aJCas)) {
@@ -232,9 +228,8 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
     private void annotateChinese(JCas aJCas, int textOffset) {
         Annotation document = new Annotation(aJCas.getDocumentText());
-        logger.info("Annotate document with Chinese CoreNLP.");
+        logger.info(String.format("Annotate %s with Chinese CoreNLP.", UimaConvenience.getDocumentName(aJCas)));
         pipeline.annotate(document);
-
         logger.info("Annotation done, applying to JCas.");
 
         // Adding token level annotations.
@@ -268,7 +263,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
     private void annotateEnglish(JCas aJCas, int textOffset) {
         Annotation document = new Annotation(aJCas.getDocumentText());
-        logger.info("Annotate with English CoreNLP ...");
+        logger.info(String.format("Annotate %s with English CoreNLP.", UimaConvenience.getDocumentName(aJCas)));
         pipeline.annotate(document);
         logger.info("Annotation done, applying to JCas.");
 

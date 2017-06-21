@@ -81,7 +81,7 @@ public class SemaforAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-        logger.info("Processing with Semafor.");
+        logger.info(String.format("Processing %s with Semafor.", UimaConvenience.getDocumentName(aJCas)));
         try {
             annotateSemafor(aJCas);
             for (JCas view : getAdditionalViews(aJCas)) {
