@@ -126,8 +126,6 @@ public class BasicPipeline {
             throw new UIMAException(e);
         }
         complete();
-
-
     }
 
     /**
@@ -262,6 +260,9 @@ public class BasicPipeline {
                         }
                     }
                 } catch (AnalysisEngineProcessException e) {
+                    e.printStackTrace();
+                    // Errors in thread should terminate the program.
+                    System.exit(1);
                     throw new RuntimeException(e);
                 }
             };
@@ -385,7 +386,9 @@ public class BasicPipeline {
                             numDocuments.incrementAndGet();
                         }
                     } catch (IOException | CollectionException e) {
-                        throw new RuntimeException(e);
+                        // Errors in thread should terminate the program.
+                        e.printStackTrace();
+                        System.exit(1);
                     }
 
                     return numDocuments.get();
