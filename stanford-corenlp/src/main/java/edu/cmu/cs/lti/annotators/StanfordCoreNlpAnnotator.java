@@ -144,10 +144,9 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             }
 
             if (numThreads > 1) {
-                logger.info("Setting multiple threads: " + numThreads);
+                logger.info("Setting multiple threads for StanfordCoreNLP: " + numThreads);
                 props.setProperty("threads", String.valueOf(numThreads));
             }
-
 
             props.setProperty("dcoref.maxdist", String.valueOf(corefMaxLookback));
 
@@ -174,8 +173,10 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 // pipeline, we need to explicitly call HybridCorefAnnotator.
                 explicitCorefCall = true;
             } else {
-                throw new ResourceInitializationException(new IOException(String.format
-                        ("Cannot find 3.5.2 style path [%s] nor 3.6.0 style path [%s]", prop35Path, prop36Path)));
+                throw new ResourceInitializationException(new IOException(
+                        String.format("Cannot find 3.5.2 style path [%s] nor 3.6.0 style path [%s]",
+                                prop35Path, prop36Path)
+                ));
             }
 
             Properties props = StringUtils.argsToProperties(args);
@@ -185,6 +186,11 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
             props.setProperty("segment.verbose", "false");
             props.setProperty("coref.verbose", "false");
+
+            if (numThreads > 1) {
+                logger.info("Setting multiple threads for StanfordCoreNLP: " + numThreads);
+                props.setProperty("threads", String.valueOf(numThreads));
+            }
 
             pipeline = new StanfordCoreNLP(props);
 

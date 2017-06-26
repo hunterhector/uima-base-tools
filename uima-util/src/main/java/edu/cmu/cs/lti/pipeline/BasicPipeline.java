@@ -71,7 +71,8 @@ public class BasicPipeline {
     private final BlockingQueue<ProcessElement> taskQueue = new ArrayBlockingQueue<>(numWorkers);
 
     // Number of threads: for the workers, and one additional for producer.
-    private ExecutorService executor = Executors.newFixedThreadPool(numWorkers + 2);
+//    private ExecutorService executor = Executors.newFixedThreadPool(numWorkers + 2);
+    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(numWorkers + 2);
 
     private BlockingQueue<CAS> availableCASes = new ArrayBlockingQueue<>(numWorkers);
 
@@ -81,12 +82,12 @@ public class BasicPipeline {
 
     public BasicPipeline(ProcessorWrapper wrapper) throws UIMAException,
             CpeDescriptorException, SAXException, IOException {
-        this(wrapper, false, null, null);
+        this(wrapper, true, null, null);
     }
 
     public BasicPipeline(ProcessorWrapper wrapper, String workingDir, String outputDir) throws UIMAException,
             CpeDescriptorException, SAXException, IOException {
-        this(wrapper, false, workingDir, outputDir);
+        this(wrapper, true, workingDir, outputDir);
     }
 
     public BasicPipeline(ProcessorWrapper wrapper, boolean withStats, String workingDir, String outputDir) throws
@@ -193,9 +194,15 @@ public class BasicPipeline {
         if (withStats) {
             if (performanceTrace != null) {
                 executor.awaitTermination(15, TimeUnit.MINUTES);
+                // Wait forever.
+                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
                 logger.info("Process complete, the full processing trace is as followed:");
                 logger.info("\n" + performanceTrace.toString());
             }
+        } else {
+//            executor.awaitTermination(15, TimeUnit.MINUTES);
+            // Wait forever.
+            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         }
     }
 
@@ -298,7 +305,7 @@ public class BasicPipeline {
                         counts[executionTuple.level] += 1;
 
                         // The actual workers doing the job.
-                        executor.execute(
+                        Future<Void> handler = executor.submit(
                                 () -> {
                                     // Run the correct engine using one of the available thread in the executor
                                     // pool.
@@ -332,8 +339,10 @@ public class BasicPipeline {
                                         }
                                     }
                                     combineTrace(processTrace, t);
+                                    return null;
                                 }
                         );
+                        executor.schedule((Runnable) () -> handler.cancel(true), 15, TimeUnit.MINUTES);
                     }
 
                     StringBuilder sb = new StringBuilder();
