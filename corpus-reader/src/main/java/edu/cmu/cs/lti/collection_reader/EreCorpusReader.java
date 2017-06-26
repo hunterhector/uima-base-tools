@@ -4,7 +4,10 @@ import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
-import edu.cmu.cs.lti.uima.util.*;
+import edu.cmu.cs.lti.uima.util.ForumStructureParser;
+import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
+import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.util.NuggetFormat;
 import net.htmlparser.jericho.Element;
 import org.apache.commons.io.FileUtils;
@@ -170,8 +173,6 @@ public class EreCorpusReader extends AbstractCollectionReader {
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         }
-
-//        sourceIterator = sourceAndAnnotationFiles.keySet().iterator();
     }
 
     @Override
@@ -201,7 +202,8 @@ public class EreCorpusReader extends AbstractCollectionReader {
         List<Span> quotedSpans = quotedAreaFile == null ? ForumStructureParser.getQuotesFromElement(tagsByName) :
                 quotesFromFile.get(sourceFile.getName());
 
-        String documentText = removeQuotes ? ForumStructureParser.removeQuoteStr(cleanedText, quotedSpans) : cleanedText;
+        String documentText = removeQuotes ? ForumStructureParser.removeQuoteStr(cleanedText, quotedSpans) :
+                cleanedText;
 
         Article article = new Article(jCas);
         UimaAnnotationUtils.finishAnnotation(article, 0, documentText.length(), COMPONENT_ID, 0, jCas);
@@ -262,49 +264,6 @@ public class EreCorpusReader extends AbstractCollectionReader {
         return quotedSpans;
     }
 
-
-//    private List<Span> getQuotesFromElement(ArrayListMultimap<String, Element> tagsByName) {
-//        List<Span> quotedSpans = new ArrayList<>();
-//        for (Element quote : tagsByName.get("quote")) {
-//            quotedSpans.add(Span.of(quote.getBegin(), quote.getEnd()));
-//        }
-//        return quotedSpans;
-//    }
-//
-//    private String removeQuoteStr(String original, List<Span> quotedAreas) {
-//        StringBuilder sb = new StringBuilder(original);
-//        for (Span quoteArea : quotedAreas) {
-//            for (int i = quoteArea.getBegin(); i < quoteArea.getEnd(); i++) {
-//                sb.setCharAt(i, ' ');
-//            }
-//        }
-//        return sb.toString();
-//    }
-//
-//    private void annotateTagAreas(JCas aJCas, ArrayListMultimap<String, Element> tagsByName) {
-//        for (Map.Entry<String, Element> tagByName : tagsByName.entries()) {
-//            Element tag = tagByName.getValue();
-//            TaggedArea area = new TaggedArea(aJCas, tag.getBegin(), tag.getEnd());
-//            area.setTagName(tagByName.getKey());
-//
-//            Attributes attributes = tag.getAttributes();
-//
-//            StringArray attributeNames = new StringArray(aJCas, attributes.size());
-//            StringArray attributeValues = new StringArray(aJCas, attributes.size());
-//
-//            for (int i = 0; i < attributes.size(); i++) {
-//                Attribute attribute = attributes.get(i);
-//                attributeNames.set(i, attribute.getKey());
-//                attributeValues.set(i, attribute.getValue());
-//            }
-//
-//            area.setTagAttributeNames(attributeNames);
-//            area.setTagAttributeValues(attributeValues);
-//
-//            UimaAnnotationUtils.finishAnnotation(area, COMPONENT_ID, 0, aJCas);
-//        }
-//    }
-
     private Span getCmpSpan(File sourceFile, File ereFile) {
         String sourceBasename = sourceFile.getName().replaceAll("." + sourceExt + "$", "");
         String ereBasename = ereFile.getName().replaceAll("." + ereExt + "$", "");
@@ -320,13 +279,13 @@ public class EreCorpusReader extends AbstractCollectionReader {
     private void annotateGoldStandard(JCas goldView, File ereFile, int beginOffset) throws IOException, SAXException {
         Document document = documentBuilder.parse(ereFile);
         Map<String, EntityMention> id2EntityMention = new HashMap<>();
-        annotateEntity(goldView, document, id2EntityMention, beginOffset);
-        annotateFillers(goldView, document, id2EntityMention, beginOffset);
-        annotateRelations(goldView, document, id2EntityMention);
+        int numEntities = annotateEntity(goldView, document, id2EntityMention, beginOffset).size();
+        int numFillters = annotateFillers(goldView, document, id2EntityMention, beginOffset).size();
+        int numRelations = annotateRelations(goldView, document, id2EntityMention).size();
 
         // The following two are all coreference clusters, really based on what the annotation system is.
-        annotateEvents(goldView, document, id2EntityMention, beginOffset);
-        annotateEventHoppers(goldView, document, id2EntityMention, beginOffset);
+        int numEvents = annotateEvents(goldView, document, id2EntityMention, beginOffset).size();
+        int numHoppers = annotateEventHoppers(goldView, document, id2EntityMention, beginOffset).size();
     }
 
     /**
@@ -337,10 +296,11 @@ public class EreCorpusReader extends AbstractCollectionReader {
      * @param id2EntityMention
      * @param beginOffset
      */
-    private void annotateEvents(JCas view, Document document, Map<String, EntityMention> id2EntityMention, int
+    private List<Event> annotateEvents(JCas view, Document document, Map<String, EntityMention> id2EntityMention, int
             beginOffset) {
         NodeList hopperNodes = document.getElementsByTagName("event");
 
+        List<Event> events = new ArrayList<>();
         for (int hopperNodeIndex = 0; hopperNodeIndex < hopperNodes.getLength(); hopperNodeIndex++) {
             Node hopperNode = hopperNodes.item(hopperNodeIndex);
             String hopperId = getAttribute(hopperNode, "id");
@@ -357,7 +317,11 @@ public class EreCorpusReader extends AbstractCollectionReader {
                 int triggerLength = Integer.parseInt(getAttribute(triggerNode, "length"));
                 int triggerEnd = triggerStart + triggerLength;
 
-                if (validateAnnotation(view, triggerStart, triggerEnd, triggerNode.getTextContent())) {
+                String triggerText = "";
+                if (triggerNode.getTextContent() != null) {
+                    triggerText = triggerNode.getTextContent();
+                }
+                if (validateAnnotation(view, triggerStart, triggerEnd, triggerText)) {
                     EventMention mention = new EventMention(view, triggerStart, triggerEnd);
                     mention.setEventType(mergedType);
                     mention.setRealisType("None");
@@ -398,7 +362,10 @@ public class EreCorpusReader extends AbstractCollectionReader {
                 eventMention.setReferringEvent(event);
             }
             UimaAnnotationUtils.finishTop(event, COMPONENT_ID, hopperId, view);
+            events.add(event);
         }
+
+        return events;
     }
 
     /**
@@ -409,9 +376,12 @@ public class EreCorpusReader extends AbstractCollectionReader {
      * @param id2EntityMention
      * @param beginOffset
      */
-    private void annotateEventHoppers(JCas view, Document document, Map<String, EntityMention> id2EntityMention, int
+    private List<Event> annotateEventHoppers(JCas view, Document document, Map<String, EntityMention>
+            id2EntityMention, int
             beginOffset) {
         NodeList hopperNodes = document.getElementsByTagName("hopper");
+
+        List<Event> events = new ArrayList<>();
 
         for (int hopperNodeIndex = 0; hopperNodeIndex < hopperNodes.getLength(); hopperNodeIndex++) {
             Node hopperNode = hopperNodes.item(hopperNodeIndex);
@@ -470,13 +440,18 @@ public class EreCorpusReader extends AbstractCollectionReader {
                 eventMention.setReferringEvent(event);
             }
 
+            events.add(event);
+
             UimaAnnotationUtils.finishTop(event, COMPONENT_ID, hopperId, view);
         }
+        return events;
     }
 
-    private void annotateRelations(JCas view, Document document, Map<String, EntityMention> id2EntityMention) {
+    private List<EntityMentionRelation> annotateRelations(JCas view, Document document,
+                                                          Map<String, EntityMention> id2EntityMention) {
         NodeList relationNodes = document.getElementsByTagName("relation");
 
+        List<EntityMentionRelation> relations = new ArrayList<>();
         for (int relationNodeIndex = 0; relationNodeIndex < relationNodes.getLength(); relationNodeIndex++) {
             Node relationNode = relationNodes.item(relationNodeIndex);
             String relationId = getAttribute(relationNode, "id");
@@ -500,6 +475,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
                 mentionRelation.setChild(id2EntityMention.get(arg2ElementId));
                 mentionRelation.setRelationType(mergedType);
                 UimaAnnotationUtils.finishTop(mentionRelation, COMPONENT_ID, relationId, view);
+                relations.add(mentionRelation);
             }
 
             // Or spelled as arg. We currently ignore such relations.
@@ -507,13 +483,17 @@ public class EreCorpusReader extends AbstractCollectionReader {
             for (Node relationsArg : relationsArgs) {
                 //        <arg type="role" entity_id="ent-12744800" entity_mention_id="m-138">总理</arg>
             }
-
         }
+
+        return relations;
     }
 
-    private void annotateFillers(JCas view, Document document, Map<String, EntityMention> id2EntityMention, int
+    private List<EntityMention> annotateFillers(JCas view, Document document, Map<String, EntityMention>
+            id2EntityMention, int
             beginOffset) {
         NodeList fillerNodes = document.getElementsByTagName("filler");
+
+        List<EntityMention> fillers = new ArrayList<>();
 
         for (int fillerNodeIndex = 0; fillerNodeIndex < fillerNodes.getLength(); fillerNodeIndex++) {
             Node fillerNode = fillerNodes.item(fillerNodeIndex);
@@ -530,8 +510,12 @@ public class EreCorpusReader extends AbstractCollectionReader {
                 UimaAnnotationUtils.finishAnnotation(filler, COMPONENT_ID, fillerId, view);
 
                 id2EntityMention.put(fillerId, filler);
+
+                fillers.add(filler);
             }
         }
+
+        return fillers;
     }
 
     private List<EntityMention> annotateEntity(JCas view, Document document,
@@ -539,6 +523,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
         NodeList entityNodes = document.getElementsByTagName("entity");
 
         List<EntityMention> entityMentions = new ArrayList<>();
+
         for (int entityIndex = 0; entityIndex < entityNodes.getLength(); entityIndex++) {
             Node entityNode = entityNodes.item(entityIndex);
             String entityId = getAttribute(entityNode, "id");
@@ -556,8 +541,9 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
                 Node mentionTextNode = getSubNode(entityMentionNode, "mention_text");
                 if (mentionTextNode != null) {
-                    mentionText = mentionTextNode.getNodeValue();
+                    mentionText = mentionTextNode.getTextContent();
                 }
+
 
                 if (validateAnnotation(view, entityMentionStart, entityMentionEnd, mentionText)) {
                     EntityMention mention = new EntityMention(view, entityMentionStart, entityMentionEnd);
@@ -573,6 +559,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
             entity.setEntityType(entityType);
             UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, entityId, view);
         }
+
         return entityMentions;
     }
 
@@ -615,6 +602,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
         } else {
             logger.warn(String.format("Original string [%s] is not equal to expected [%s].", originString,
                     expectedText));
+//            DebugUtils.pause();
             return false;
         }
     }

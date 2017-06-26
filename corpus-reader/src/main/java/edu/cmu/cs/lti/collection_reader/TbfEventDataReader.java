@@ -117,7 +117,7 @@ public class TbfEventDataReader extends AbstractCollectionReader {
         Map<String, File> tokenBaseNames = null;
 
         if (tokenDir == null) {
-            logger.info("No tokenization provided.");
+            logger.info("No tokenization provided, reading as character based TBFs.");
             useToken = false;
         } else {
             logger.info("Looking for data in token text directory : " + tokenDir.getPath());

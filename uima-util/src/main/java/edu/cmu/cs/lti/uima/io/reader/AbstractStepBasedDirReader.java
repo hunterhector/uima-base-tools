@@ -102,7 +102,7 @@ public abstract class AbstractStepBasedDirReader extends JCasCollectionReader_Im
 
         if (this.files.size() == 0) {
             logger.warn("The directory " + inputDir.getAbsolutePath()
-                    + " does not have any compressed files ending with " + inputFileSuffix);
+                    + " does not have any files ending with " + inputFileSuffix);
         } else {
             logger.info("Number of files read : " + this.files.size());
         }
