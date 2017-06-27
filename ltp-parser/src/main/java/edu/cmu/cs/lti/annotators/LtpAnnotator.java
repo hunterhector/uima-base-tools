@@ -1,10 +1,11 @@
 package edu.cmu.cs.lti.annotators;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
-import edu.cmu.cs.lti.uima.util.UimaConvenience;
+import edu.cmu.cs.lti.utils.StringUtils;
 import edu.hit.ir.ltp4j.*;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
@@ -21,9 +22,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Created with IntelliJ IDEA.
- * Date: 9/20/16
- * Time: 10:57 AM
+ * This annotator runs the LTP platform's Java interface. This requires JNI dynamic library to be accessible through
+ * LD_LIBRARY_PATH environment variable.
  *
  * @author Zhengzhong Liu
  */
@@ -90,39 +90,99 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-        UimaConvenience.printProcessLog(aJCas, logger);
+        segment(aJCas);
 
-        for (StanfordCorenlpSentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
+        for (LtpSentence sentence : JCasUtil.select(aJCas, LtpSentence.class)) {
             List<String> words = new ArrayList<>();
             List<String> posTags = new ArrayList<>();
 
-            boolean validSegmentation = segmentSentence(sentence, words);
-            Postagger.postag(words, posTags);
-            List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
+            List<LtpToken> tokens = JCasUtil.selectCovered(LtpToken.class, sentence);
 
-            if (validSegmentation) {
-//            logger.info("Annotating tokens.");
-                List<LtpToken> tokens = annotateTokens(aJCas, characters, words, posTags);
-
-//            logger.info("Annotating NER.");
-                List<String> ners = annotateNer(aJCas, tokens, words, posTags);
-
-//            logger.info("Parsing.");
-                List<Integer> heads = new ArrayList<>();
-                List<String> depRels = new ArrayList<>();
-                annotateDep(aJCas, tokens, heads, depRels);
-
-//            logger.info("Annotating srl");
-                annotateSrl(aJCas, tokens, words, posTags, ners, heads, depRels);
-//            DebugUtils.pause();
-
-            }else{
-                logger.warn("Skipping adding annotation to this sentence.");
+            for (LtpToken ltpToken : tokens) {
+                words.add(ltpToken.getLemma());
+                posTags.add(ltpToken.getPos());
             }
+
+            List<String> ners = annotateNer(aJCas, tokens, words, posTags);
+            List<Integer> heads = new ArrayList<>();
+            List<String> depRels = new ArrayList<>();
+            annotateDep(aJCas, tokens, heads, depRels);
+
+            annotateSrl(aJCas, tokens, words, posTags, ners, heads, depRels);
         }
     }
 
-    private boolean segmentSentence(StanfordCorenlpSentence sentence, List<String> words) {
+    private void segment(JCas aJCas) {
+        String text = aJCas.getDocumentText();
+
+        List<String> sentences = new ArrayList<>();
+        List<String> allWords = new ArrayList<>();
+        List<String> allPos = new ArrayList<>();
+
+        SplitSentence.splitSentence(text, sentences);
+
+        List<LtpSentence> ltpSentences = new ArrayList<>();
+        List<Integer> firstWords = new ArrayList<>();
+        List<Integer> lastWords = new ArrayList<>();
+
+        for (int i = 0; i < sentences.size(); i++) {
+            String sent = sentences.get(i);
+
+            if (!sent.isEmpty()) {
+                LtpSentence sentence = new LtpSentence(aJCas);
+                ltpSentences.add(sentence);
+
+                List<String> words = new ArrayList<>();
+                List<String> pos = new ArrayList<>();
+
+                Segmentor.segment(sent, words);
+                Postagger.postag(words, pos);
+
+                firstWords.add(allWords.size());
+
+                allWords.addAll(words);
+                allPos.addAll(pos);
+
+                lastWords.add(allWords.size() - 1);
+            }
+        }
+
+        String wordStr = Joiner.on("").join(allWords);
+
+        int[] offsets = StringUtils.matchOffset(text, wordStr);
+
+        List<LtpToken> tokens = new ArrayList<>();
+
+        int currentOffset = 0;
+        for (int i = 0; i < allWords.size(); i++) {
+            String word = allWords.get(i);
+
+            int begin_char = currentOffset;
+            int end_char = currentOffset + word.length() - 1;
+
+            int begin_base_char = offsets[begin_char];
+            int end_base_char = offsets[end_char];
+
+
+            LtpToken ltpToken = new LtpToken(aJCas, begin_base_char, end_base_char + 1);
+            ltpToken.setLemma(word);
+            ltpToken.setPos(allPos.get(i));
+            UimaAnnotationUtils.finishAnnotation(ltpToken, COMPONENT_ID, 0, aJCas);
+
+            tokens.add(ltpToken);
+
+            currentOffset += word.length();
+        }
+
+        for (int i = 0; i < ltpSentences.size(); i++) {
+            LtpSentence sent = ltpSentences.get(i);
+            int begin = tokens.get(firstWords.get(i)).getBegin();
+            int end = tokens.get(lastWords.get(i)).getEnd();
+            UimaAnnotationUtils.finishAnnotation(sent, begin, end, COMPONENT_ID, 0, aJCas);
+        }
+    }
+
+    private boolean segmentWords(StanfordCorenlpSentence sentence, List<String> words) {
         String sourceSent = sentence.getCoveredText().replaceAll("\\s", "").replaceAll("\\n", "").replaceAll("\\r", "");
 //        logger.info("Annotating " + sourceSent);
         List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
@@ -171,7 +231,6 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
                 semanticRelation.setPropbankRoleName(type);
                 semanticRelations.add(semanticRelation);
                 UimaAnnotationUtils.finishTop(semanticRelation, COMPONENT_ID, 0, aJCas);
-
 //                logger.info(type + " " + argument.getCoveredText());
             }
 
@@ -190,21 +249,8 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
 
         int size = Parser.parse(words, posTags, heads, depRels);
 
-//        logger.info(Joiner.on(" ").join(words));
-//        logger.info("Number of words is " + words.size());
-//        logger.info("Number of dep relations is " + size);
-
         ArrayListMultimap<LtpToken, LtpDependency> headDependencies = ArrayListMultimap.create();
         ArrayListMultimap<LtpToken, LtpDependency> childDependencies = ArrayListMultimap.create();
-
-//        for (int i = 0; i < size; i++) {
-//            System.out.print(heads.get(i) + ":" + depRels.get(i));
-//            if (i == size - 1) {
-//                System.out.println();
-//            } else {
-//                System.out.print("        ");
-//            }
-//        }
 
         for (int i = 0; i < size; i++) {
             int headIndex = heads.get(i) - 1;
@@ -238,6 +284,7 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
     }
 
     private List<String> annotateNer(JCas aJCas, List<LtpToken> tokens, List<String> words, List<String> posTags) {
+        logger.info("Annotating ner");
         List<String> ners = new ArrayList<>();
 
         NER.recognize(words, posTags, ners);
@@ -276,25 +323,6 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
                                           List<String> posTags) {
         List<LtpToken> tokens = new ArrayList<>();
 
-//        String sourceSent = sentence.getCoveredText().replaceAll("\\s", "").replaceAll("\\n", "").replaceAll("\\r",
-// "");
-//        int size = Segmentor.segment(sourceSent, words);
-////        logger.info("Annotating " + sourceSent);
-//
-//        Postagger.postag(words, posTags);
-//
-//        List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
-//
-//        int totalLength = 0;
-//        for (String word : words) {
-//            totalLength += word.length();
-//        }
-//
-//        if (totalLength != characters.size()) {
-//            logger.error(String.format("Segmented words' total character length : %d is not the same as the " +
-//                    "original character length : %d", totalLength, characters.size()));
-//        }
-
         int currentLength = 0;
         for (int i = 0; i < words.size(); i++) {
             String word = words.get(i);
@@ -322,4 +350,6 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
         SRL.release();
         logger.info("LTP resources successfully released.");
     }
+
+
 }

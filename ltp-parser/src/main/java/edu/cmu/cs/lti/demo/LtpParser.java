@@ -1,7 +1,12 @@
 package edu.cmu.cs.lti.demo;
 
+import com.google.common.base.Joiner;
+import edu.cmu.cs.lti.utils.StringUtils;
 import edu.hit.ir.ltp4j.*;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -14,24 +19,73 @@ import java.util.stream.Collectors;
  * @author Zhengzhong Liu
  */
 public class LtpParser {
-    public static void main(String[] argv) {
+    public static void main(String[] argv) throws IOException {
         loadAll();
 
-        String shortSent = "上网流量超标了我女朋友都不知道。";
-        String longSent =
-                "上网流量超标了我女朋友都不知道，还经常抱着刷网页，收费贵死了，不过这个倒也认了，好歹确实是自己花掉的，最烦的是一些随意扣费，都是恶意软件还有就是一些莫名其妙的额外服务，我不查不知道，一查才知道有些还是每月定期扣费，同时还要产生大量流量，卧槽！";
-        String someSent = "被残忍杀害的女人不配有人权，这是美国民主自由的精神";
-        String nerSent = "美国总统奥巴马访问中国。中国国际广播电台创办于1941年。中央电视台呢？";
+        String paragraph;
 
-        testAll(shortSent);
-//        testAll(longSent);
-        testAll(someSent);
-        testAll(nerSent);
+        if (argv.length > 0) {
+            System.out.println("Reading string from input file.");
+            paragraph = FileUtils.readFileToString(new File(argv[0]));
+        } else {
+            String shortSent = "上网流量超标了我女朋友都不知道    。\n";
+            String longSent =
+                    "  上网流量超标了我女朋友都不知道，还经常抱着刷网页，收费贵死了，不过这个倒也认了，好歹确实是自己花掉的，最烦的是一些随意扣费，都是恶意软件还有就是一些莫名其妙的额外服务，我不查不知道，一查才知道有些还是每月定期扣费，同时还要产生大量流量，卧槽！";
+            String someSent = "被残忍杀害的女人不配有人权，   这是美国民主自由的精神。";
+            String nerSent = "美国总统奥巴马访问中国。中国国际广播电台创办于1941年。中央电视台呢？";
 
-//        testParser();
-//        testSegment();
-//        testNer();
-//        testSrl();
+            String randomSent = "差距的原因我觉得是2本书的准备时间和目的都不一样新的书很短时间成书肯定不够成熟而且目的大家可能忽略了西西出新书其实是竞选的广告。";
+
+            String sent2 = "相反，美国确实直接、或间接通过军事手段推翻了希特勒、萨达姆、米洛舍维奇等独裁政 权，使全球独裁国家的数量从120多个减 少到现在的不到20个国家。";
+
+            paragraph = shortSent + longSent + someSent + nerSent + randomSent + sent2;
+        }
+
+        ArrayList<String> sents = new ArrayList<>();
+
+        SplitSentence.splitSentence(paragraph, sents);
+
+        System.out.println("Found " + sents.size() + " sentences");
+
+        List<String> allWords = new ArrayList<>();
+
+        for (String sent : sents) {
+            if (!sent.isEmpty()) {
+
+                List<String> words = new ArrayList<>();
+                System.out.println("Source sentence is " + sent);
+                System.out.println("Segmenting");
+                int size = Segmentor.segment(sent, words);
+
+                allWords.addAll(words);
+
+                testAll(words);
+            }
+        }
+
+        String wordStr = Joiner.on("").join(allWords);
+
+        int[] offsets = StringUtils.matchOffset(paragraph, wordStr);
+
+        int currentOffset = 0;
+        for (String word : allWords) {
+            int begin_char = currentOffset;
+            int end_char = currentOffset + word.length() - 1;
+
+            int begin_base_char = offsets[begin_char];
+            int end_base_char = offsets[end_char];
+
+//            System.out.println(String.format("Begin character is %d -> %d, end character is %d -> %d", begin_char,
+//                    begin_base_char, end_char, end_base_char));
+
+            currentOffset += word.length();
+
+            String baseStr = paragraph.substring(begin_base_char, end_base_char + 1);
+
+            if (!word.equals(baseStr)) {
+                System.out.println(String.format("Word is %s, not equal to %s.", word, baseStr));
+            }
+        }
 
 
         releaseAll();
@@ -72,22 +126,18 @@ public class LtpParser {
         SRL.release();
     }
 
-    private static void testAll(String sourceSent) {
-        List<String> words = new ArrayList<>();
+    private static void testAll(List<String> words) {
+        int size = words.size();
+
         List<String> tags = new ArrayList<>();
         List<String> ners = new ArrayList<>();
         List<Integer> heads = new ArrayList<>();
         List<String> depRels = new ArrayList<>();
         List<Pair<Integer, List<Pair<String, Pair<Integer, Integer>>>>> srls = new ArrayList<>();
 
-        System.out.println("Source sentence is " + sourceSent);
-
-        System.out.println("Segmenting");
-        int size = Segmentor.segment(sourceSent, words);
-
-        for (int i = 0; i < words.size(); i++) {
-            System.out.println(i + " : " + words.get(i));
-        }
+//        for (int i = 0; i < words.size(); i++) {
+//            System.out.println(i + " : " + words.get(i));
+//        }
 
         System.out.println("POS tagging");
         Postagger.postag(words, tags);
@@ -100,30 +150,12 @@ public class LtpParser {
         SRL.srl(words, tags, ners, headsForSrl, depRels, srls);
         System.out.println("Done.");
 
-        System.out.println("NER results.");
-        for (int i = 0; i < words.size(); i++) {
-            System.out.println(words.get(i) + " " + ners.get(i));
-        }
 
-        System.out.println("Parser results.");
-
-        for (int i = 0; i < size; i++) {
-            System.out.print(heads.get(i) + ":" + depRels.get(i));
-            if (i == size - 1) {
-                System.out.println();
-            } else {
-                System.out.print("        ");
-            }
-        }
-
-        System.out.println("SRL results");
-        for (int i = 0; i < srls.size(); ++i) {
-            System.out.println(srls.get(i).first + ":");
-            for (int j = 0; j < srls.get(i).second.size(); ++j) {
-                System.out.println("   type = " + srls.get(i).second.get(j).first + " beg = " + srls.get(i).second
-                        .get(j).second.first + " end = " + srls.get(i).second.get(j).second.second);
-            }
-        }
+        System.out.println(Joiner.on("").join(words));
+        System.out.println(words.size() +" [" +  Joiner.on("],[").join(words)+"]");
+        System.out.println(tags.size() + " " + Joiner.on(" ").join(tags));
+        System.out.println(heads.size() + " " + Joiner.on(" ").join(heads));
+        System.out.println(depRels.size() + " " + Joiner.on(" ").join(depRels));
     }
 
     private static void testNer() {

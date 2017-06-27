@@ -193,8 +193,9 @@ public class BasicPipeline {
 
         if (withStats) {
             if (performanceTrace != null) {
-                executor.awaitTermination(15, TimeUnit.MINUTES);
+//                executor.awaitTermination(15, TimeUnit.MINUTES);
                 // Wait forever.
+                logger.info("Waiting for jobs to terminate.");
                 executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
                 logger.info("Process complete, the full processing trace is as followed:");
                 logger.info("\n" + performanceTrace.toString());
@@ -202,6 +203,7 @@ public class BasicPipeline {
         } else {
 //            executor.awaitTermination(15, TimeUnit.MINUTES);
             // Wait forever.
+            logger.info("Waiting for jobs to terminate.");
             executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         }
     }

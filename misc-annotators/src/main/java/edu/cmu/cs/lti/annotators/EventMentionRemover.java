@@ -3,10 +3,13 @@ package edu.cmu.cs.lti.annotators;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
+import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
+import org.apache.uima.cas.CAS;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.resource.ResourceInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,8 +30,17 @@ public class EventMentionRemover extends AbstractLoggingAnnotator {
 
     public static final String PARAM_TARGET_VIEWS = "targetViewNames";
 
-    @ConfigurationParameter(name = PARAM_TARGET_VIEWS)
+    @ConfigurationParameter(name = PARAM_TARGET_VIEWS, mandatory = false)
     private String[] targetViewNames;
+
+
+    @Override
+    public void initialize(UimaContext aContext) throws ResourceInitializationException {
+        super.initialize(aContext);
+        if (targetViewNames == null) {
+            targetViewNames = new String[]{CAS.NAME_DEFAULT_SOFA};
+        }
+    }
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
@@ -38,7 +50,7 @@ public class EventMentionRemover extends AbstractLoggingAnnotator {
         }
     }
 
-    private void removeAllEventRelated(JCas toView){
+    private void removeAllEventRelated(JCas toView) {
         for (EventMentionRelation relation : UimaConvenience.getAnnotationList(toView, EventMentionRelation.class)) {
             relation.removeFromIndexes();
         }

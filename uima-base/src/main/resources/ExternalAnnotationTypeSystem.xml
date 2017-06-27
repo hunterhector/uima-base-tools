@@ -44,6 +44,11 @@
             <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
         </typeDescription>
         <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.LtpSentence</name>
+            <description/>
+            <supertypeName>edu.cmu.cs.lti.script.type.Sentence</supertypeName>
+        </typeDescription>
+        <typeDescription>
             <name>edu.cmu.cs.lti.script.type.LtpEntityMention</name>
             <description/>
             <supertypeName>edu.cmu.cs.lti.script.type.EntityMention</supertypeName>

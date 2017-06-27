@@ -45,6 +45,11 @@
             <artifactId>semafor-parser</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>edu.cmu.cs.lti</groupId>
+            <artifactId>ltp-parser</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
 </project>
