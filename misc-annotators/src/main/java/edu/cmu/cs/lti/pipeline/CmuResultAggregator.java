@@ -1,7 +1,7 @@
 package edu.cmu.cs.lti.pipeline;
 
 import edu.cmu.cs.lti.annotators.CoverageReporter;
-import edu.cmu.cs.lti.annotators.EntityLinkerResultAnnotator;
+import edu.cmu.cs.lti.annotators.KbpEntityLinkerResultAnnotator;
 import edu.cmu.cs.lti.annotators.KBPArgumentOutputAnnotator;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.collection_reader.LDCXmlCollectionReader;
@@ -60,8 +60,8 @@ public class CmuResultAggregator extends AbstractLoggingAnnotator {
         List<AnalysisEngineDescription> annotators = new ArrayList<>();
 
         AnalysisEngineDescription entityLinker = AnalysisEngineFactory.createEngineDescription(
-                EntityLinkerResultAnnotator.class, typeSystemDescription,
-                EntityLinkerResultAnnotator.PARAM_ENTITY_LINKER_RESULTS, entityResults
+                KbpEntityLinkerResultAnnotator.class, typeSystemDescription,
+                KbpEntityLinkerResultAnnotator.PARAM_ENTITY_LINKER_RESULTS, entityResults
         );
 
 

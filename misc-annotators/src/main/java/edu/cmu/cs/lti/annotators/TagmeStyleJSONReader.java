@@ -1,5 +1,7 @@
 package edu.cmu.cs.lti.annotators;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import edu.cmu.cs.lti.script.type.Article;
@@ -17,7 +19,7 @@ import org.apache.uima.util.Progress;
 
 import java.io.*;
 
-public class JSONReader extends AbstractCollectionReader {
+public class TagmeStyleJSONReader extends AbstractCollectionReader {
     public static final String PARAM_INPUT_JSON = "inputJson";
 
     @ConfigurationParameter(name = PARAM_INPUT_JSON)
@@ -40,17 +42,15 @@ public class JSONReader extends AbstractCollectionReader {
         }
     }
 
-    private String splitSentences(String text) {
-        return text;
-    }
-
     private String cleanText(String text) {
         StringBuilder cleanedText = new StringBuilder(text);
         int invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
 
         while (invalid > -1) {
 //            logger.info("Removing invalid character at " + invalid);
-            cleanedText.delete(invalid, invalid + 1);
+//            cleanedText.delete(invalid, invalid + 1);
+            // Replacing invalid characters with spaces.
+            cleanedText.replace(invalid, invalid +1, " ");
             invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
         }
 
@@ -64,9 +64,18 @@ public class JSONReader extends AbstractCollectionReader {
         String text = jsonObj.get("bodyText").getAsString();
         String docid = jsonObj.get("docno").getAsString();
 
+        JsonObject allSpots = jsonObj.get("spot").getAsJsonObject();
+
+        JsonArray bodySpots = allSpots.get("bodyText").getAsJsonArray();
+        JsonArray titleSpots = allSpots.get("title").getAsJsonArray();
+
         String documentText = cleanText(title + "\n" + text);
 
         jCas.setDocumentText(documentText);
+
+        // Spots not implemented yet.
+        addSpots(jCas, titleSpots, 0);
+        addSpots(jCas, bodySpots, title.length() + 1);
 
         Article article = new Article(jCas);
         UimaAnnotationUtils.finishAnnotation(article, 0, documentText.length(), COMPONENT_ID, 0, jCas);
@@ -86,6 +95,10 @@ public class JSONReader extends AbstractCollectionReader {
         srcDocInfo.addToIndexes();
 
         lineNumber++;
+    }
+
+    private void addSpots(JCas aJCas, JsonArray spots, int offset){
+
     }
 
     @Override

@@ -23,7 +23,7 @@ import java.io.IOException;
  *
  * @author Zhengzhong Liu
  */
-public class EntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
+public class KbpEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
     public static final String PARAM_ENTITY_LINKER_RESULTS = "entityLinkerResults";
     @ConfigurationParameter(name = PARAM_ENTITY_LINKER_RESULTS)
     private File linkerResultFile;

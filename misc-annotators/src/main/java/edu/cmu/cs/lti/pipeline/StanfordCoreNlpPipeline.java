@@ -1,7 +1,7 @@
 package edu.cmu.cs.lti.pipeline;
 
+import edu.cmu.cs.lti.annotators.TagmeStyleJSONReader;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
-import edu.cmu.cs.lti.uima.io.reader.PlainTextCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -21,9 +21,10 @@ public class StanfordCoreNlpPipeline {
 
     private static CollectionReaderDescription getReader(TypeSystemDescription typeSystemDescription, String path)
             throws ResourceInitializationException {
+
         return CollectionReaderFactory.createReaderDescription(
-                PlainTextCollectionReader.class, typeSystemDescription,
-                PlainTextCollectionReader.PARAM_INPUTDIR, "data/test/input"
+                TagmeStyleJSONReader.class, typeSystemDescription,
+                TagmeStyleJSONReader.PARAM_INPUT_JSON, path
         );
     }
 
