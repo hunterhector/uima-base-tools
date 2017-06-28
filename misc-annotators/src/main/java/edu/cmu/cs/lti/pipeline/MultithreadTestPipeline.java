@@ -13,7 +13,6 @@ import org.apache.uima.collection.metadata.CpeDescriptorException;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
-import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.xml.sax.SAXException;
 
@@ -63,17 +62,6 @@ public class MultithreadTestPipeline {
                 QuoteAnnotator.MULTI_THREAD, true
         );
 
-
-        new BasicPipeline(new ProcessorWrapper() {
-            @Override
-            public CollectionReaderDescription getCollectionReader() throws ResourceInitializationException {
-                return reader;
-            }
-
-            @Override
-            public AnalysisEngineDescription[] getProcessors() throws ResourceInitializationException {
-                return new AnalysisEngineDescription[]{stanford, semafor, quote};
-            }
-        }, true, outputDir, "xmi").runWithOutput();
+        new BasicPipeline(reader, true, outputDir, "xmi", stanford, semafor, quote).run();
     }
 }

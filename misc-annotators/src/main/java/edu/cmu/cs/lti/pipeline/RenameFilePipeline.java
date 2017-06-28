@@ -9,7 +9,6 @@ import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.collection.metadata.CpeDescriptorException;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
-import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 import org.xml.sax.SAXException;
@@ -36,18 +35,7 @@ public class RenameFilePipeline {
 //        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(outputParent, "xmi");
 //        SimplePipeline.runPipeline(reader, writer);
 
-        new BasicPipeline(new ProcessorWrapper() {
-            @Override
-            public CollectionReaderDescription getCollectionReader() throws ResourceInitializationException {
-                return reader;
-            }
-
-            @Override
-            public AnalysisEngineDescription[] getProcessors() throws ResourceInitializationException {
-                return new AnalysisEngineDescription[0];
-            }
-        }, outputParent, "xmi").run();
-
+        new BasicPipeline(reader, outputParent, "xmi").run();
     }
 
     public static void writeJson(TypeSystemDescription typeSystemDescription, String parentDir,

@@ -65,16 +65,6 @@ public class LtpPipeline {
 
         SimplePipeline.runPipeline(reader, textWriter, annotator, writer);
 
-//        new BasicPipeline(new ProcessorWrapper() {
-//            @Override
-//            public CollectionReaderDescription getCollectionReader() throws ResourceInitializationException {
-//                return reader;
-//            }
-//
-//            @Override
-//            public AnalysisEngineDescription[] getProcessors() throws ResourceInitializationException {
-//                return new AnalysisEngineDescription[]{annotator};
-//            }
-//        }, true, outputDir, "xmi").runWithOutput();
+        new BasicPipeline(reader, true, outputDir, "xmi", annotator).run();
     }
 }

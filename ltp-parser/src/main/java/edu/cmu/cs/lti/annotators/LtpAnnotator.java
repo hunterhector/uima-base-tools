@@ -284,7 +284,6 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
     }
 
     private List<String> annotateNer(JCas aJCas, List<LtpToken> tokens, List<String> words, List<String> posTags) {
-        logger.info("Annotating ner");
         List<String> ners = new ArrayList<>();
 
         NER.recognize(words, posTags, ners);

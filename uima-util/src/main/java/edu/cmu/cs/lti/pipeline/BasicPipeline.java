@@ -80,20 +80,36 @@ public class BasicPipeline {
 
     private boolean allFilesRead = false;
 
-    public BasicPipeline(ProcessorWrapper wrapper) throws UIMAException,
-            CpeDescriptorException, SAXException, IOException {
-        this(wrapper, true, null, null);
-    }
+//    public BasicPipeline(ProcessorWrapper wrapper) throws UIMAException,
+//            CpeDescriptorException, SAXException, IOException {
+//        this(wrapper, true, null, null);
+//    }
 
-    public BasicPipeline(ProcessorWrapper wrapper, String workingDir, String outputDir) throws UIMAException,
-            CpeDescriptorException, SAXException, IOException {
-        this(wrapper, true, workingDir, outputDir);
-    }
-
-    public BasicPipeline(ProcessorWrapper wrapper, boolean withStats, String workingDir, String outputDir) throws
+    public BasicPipeline(CollectionReaderDescription reader, AnalysisEngineDescription... processors) throws
             UIMAException, CpeDescriptorException, SAXException, IOException {
-        readerDescription = wrapper.getCollectionReader();
-        AnalysisEngineDescription[] processors = wrapper.getProcessors();
+        this(reader, true, null, null, processors);
+    }
+
+//    public BasicPipeline(ProcessorWrapper wrapper, String workingDir, String outputDir) throws UIMAException,
+//            CpeDescriptorException, SAXException, IOException {
+//        this(wrapper, true, workingDir, outputDir);
+//    }
+
+    public BasicPipeline(CollectionReaderDescription reader, String workingDir, String outputDir,
+                         AnalysisEngineDescription... processors) throws
+            UIMAException, CpeDescriptorException, SAXException, IOException {
+        this(reader, true, workingDir, outputDir, processors);
+    }
+
+//    public BasicPipeline(ProcessorWrapper wrapper, boolean withStats, String workingDir, String outputDir) throws
+//            UIMAException, CpeDescriptorException, SAXException, IOException {
+//        this(wrapper.getCollectionReader(), withStats, workingDir, outputDir, wrapper.getProcessors());
+//    }
+
+    public BasicPipeline(CollectionReaderDescription reader, boolean withStats, String workingDir, String outputDir,
+                         AnalysisEngineDescription... processors) throws
+            UIMAException, CpeDescriptorException, SAXException, IOException {
+        readerDescription = reader;
         AnalysisEngineDescription[] engineDescriptions;
 
         if (workingDir != null && outputDir != null) {
@@ -119,7 +135,7 @@ public class BasicPipeline {
      * @throws IOException
      * @throws UIMAException
      */
-    public void run() throws IOException, UIMAException {
+    public BasicPipeline run() throws IOException, UIMAException {
         initialize();
         try {
             process();
@@ -127,6 +143,12 @@ public class BasicPipeline {
             throw new UIMAException(e);
         }
         complete();
+
+        return this;
+    }
+
+    public CollectionReaderDescription getOutput(){
+        return outputReader;
     }
 
     /**
