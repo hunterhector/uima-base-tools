@@ -3,6 +3,7 @@ package edu.cmu.cs.lti.pipeline;
 import edu.cmu.cs.lti.uima.annotator.AbstractAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
+import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngine;
@@ -71,40 +72,24 @@ public class BasicPipeline {
     private final BlockingQueue<ProcessElement> taskQueue = new ArrayBlockingQueue<>(numWorkers);
 
     // Number of threads: for the workers, and one additional for producer.
-//    private ExecutorService executor = Executors.newFixedThreadPool(numWorkers + 2);
-    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(numWorkers + 2);
+    private ExecutorService executor = Executors.newFixedThreadPool(numWorkers + 2);
+//    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(numWorkers + 2);
 
     private BlockingQueue<CAS> availableCASes = new ArrayBlockingQueue<>(numWorkers);
 
     private int numInputFiles;
-
-    private boolean allFilesRead = false;
-
-//    public BasicPipeline(ProcessorWrapper wrapper) throws UIMAException,
-//            CpeDescriptorException, SAXException, IOException {
-//        this(wrapper, true, null, null);
-//    }
 
     public BasicPipeline(CollectionReaderDescription reader, AnalysisEngineDescription... processors) throws
             UIMAException, CpeDescriptorException, SAXException, IOException {
         this(reader, true, null, null, processors);
     }
 
-//    public BasicPipeline(ProcessorWrapper wrapper, String workingDir, String outputDir) throws UIMAException,
-//            CpeDescriptorException, SAXException, IOException {
-//        this(wrapper, true, workingDir, outputDir);
-//    }
 
     public BasicPipeline(CollectionReaderDescription reader, String workingDir, String outputDir,
                          AnalysisEngineDescription... processors) throws
             UIMAException, CpeDescriptorException, SAXException, IOException {
         this(reader, true, workingDir, outputDir, processors);
     }
-
-//    public BasicPipeline(ProcessorWrapper wrapper, boolean withStats, String workingDir, String outputDir) throws
-//            UIMAException, CpeDescriptorException, SAXException, IOException {
-//        this(wrapper.getCollectionReader(), withStats, workingDir, outputDir, wrapper.getProcessors());
-//    }
 
     public BasicPipeline(CollectionReaderDescription reader, boolean withStats, String workingDir, String outputDir,
                          AnalysisEngineDescription... processors) throws
@@ -147,27 +132,9 @@ public class BasicPipeline {
         return this;
     }
 
-    public CollectionReaderDescription getOutput(){
+    public CollectionReaderDescription getOutput() {
         return outputReader;
     }
-
-    /**
-     * Run processor from provided reader, write processed CAS as XMI to the given directory.
-     *
-     * @return A reader description for the processed output.
-     * @throws UIMAException
-     * @throws IOException
-     */
-    public CollectionReaderDescription runWithOutput() throws UIMAException, IOException {
-        if (withOutput) {
-            logger.info("Processing with output at : " + fullOutputDir.getCanonicalPath());
-            run();
-            return outputReader;
-        } else {
-            throw new IllegalAccessError("Pipeline is not initialized with output.");
-        }
-    }
-
 
     /**
      * Initialize the processor so that process can be called multiple times.
@@ -210,23 +177,22 @@ public class BasicPipeline {
         performanceTrace = runCasConsumers(engines);
 
         numInputFiles = docsProcessed.get();
-        allFilesRead = true;
+//        allFilesRead = true;
         logger.info("Number documents submitted: " + numInputFiles);
+
+        // Waiting for the last batch of jobs to terminate.
+        logger.info("Waiting for jobs to terminate.");
+
+        logger.info("number of task in queue: " + taskQueue.size());
+        logger.info("number of available case: " + availableCASes.size());
+
+        executor.awaitTermination(30, TimeUnit.MINUTES);
 
         if (withStats) {
             if (performanceTrace != null) {
-//                executor.awaitTermination(15, TimeUnit.MINUTES);
-                // Wait forever.
-                logger.info("Waiting for jobs to terminate.");
-                executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
                 logger.info("Process complete, the full processing trace is as followed:");
                 logger.info("\n" + performanceTrace.toString());
             }
-        } else {
-//            executor.awaitTermination(15, TimeUnit.MINUTES);
-            // Wait forever.
-            logger.info("Waiting for jobs to terminate.");
-            executor.awaitTermination(Long.MAX_VALUE, TimeUnit.NANOSECONDS);
         }
     }
 
@@ -234,6 +200,15 @@ public class BasicPipeline {
         CAS cas;
         int level;
         int maxLevel;
+
+        boolean isPoison;
+
+        /**
+         * A new process element will all have a level of 1, which means it is not processed before.
+         */
+        ProcessElement() {
+            isPoison = true;
+        }
 
         /**
          * A new process element will all have a level of 1, which means it is not processed before.
@@ -245,6 +220,7 @@ public class BasicPipeline {
             this.cas = cas;
             level = 0;
             this.maxLevel = maxLevel;
+            isPoison = false;
         }
 
         /**
@@ -301,16 +277,21 @@ public class BasicPipeline {
         }
 
         // Count number of documents processed by each engine.
-        int[] counts = new int[engines.length];
+//        int[] counts = new int[engines.length];
+        AtomicInteger[] counts = new AtomicInteger[engines.length];
+
         for (int i = 0; i < engines.length; i++) {
-            counts[i] = 0;
+            counts[i] = new AtomicInteger();
         }
+
+        MutableBoolean noNewJobs = new MutableBoolean(false);
 
         // The consumer manger thread that submit jobs.
         executor.execute(
                 () -> {
                     while (true) {
-                        if (allFilesRead && counts[counts.length - 1] == numInputFiles) {
+                        // If there are no new jobs and all current jobs are done, we shut down the executor.
+                        if (noNewJobs.booleanValue() && counts[counts.length - 1].get() >= numInputFiles) {
                             executor.shutdown();
                             logger.info("Shut down executor, do not take more jobs.");
                             break;
@@ -324,12 +305,19 @@ public class BasicPipeline {
                             e.printStackTrace();
                         }
 
+                        // Get the poison item, all elements are read. No more new jobs coming.
+                        if (nextTask.isPoison) {
+                            noNewJobs.setValue(true);
+                            // Remember do not process the poison. It kills stuff.
+                            continue;
+                        }
+
                         ProcessElement executionTuple = nextTask;
 
-                        counts[executionTuple.level] += 1;
+                        counts[executionTuple.level].incrementAndGet();
 
                         // The actual workers doing the job.
-                        Future<Void> handler = executor.submit(
+                        executor.submit(
                                 () -> {
                                     // Run the correct engine using one of the available thread in the executor
                                     // pool.
@@ -340,7 +328,7 @@ public class BasicPipeline {
 
                                     if (executionTuple.increment()) {
                                         // If the tuple is still not finished, put it back to the list again.
-                                        taskQueue.add(executionTuple);
+                                        taskQueue.offer(executionTuple);
                                     } else {
                                         // Finished cas are reused by putting back to the available pool.
                                         cas.reset();
@@ -351,22 +339,13 @@ public class BasicPipeline {
 
                                     if (level == processedCounters.size() - 1) {
                                         if (count % 100 == 0) {
-                                            StringBuilder sb = new StringBuilder();
-                                            sb.append("Showing current annotation progress.");
-                                            for (int i = 0; i < processedCounters.size(); i++) {
-                                                AtomicInteger counter = processedCounters.get(i);
-                                                String processName = engines[i].getMetaData().getName();
-                                                sb.append(String.format("\nAnnotated by %s: %d.", processName,
-                                                        counter.get()));
-                                            }
-                                            logger.info(sb.toString());
+                                            showProgress(processedCounters);
                                         }
                                     }
+
                                     combineTrace(processTrace, t);
-                                    return null;
                                 }
                         );
-                        executor.schedule((Runnable) () -> handler.cancel(true), 15, TimeUnit.MINUTES);
                     }
 
                     StringBuilder sb = new StringBuilder();
@@ -380,6 +359,19 @@ public class BasicPipeline {
         );
 
         return processTrace;
+    }
+
+    private void showProgress(List<AtomicInteger> processedCounters) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Showing current annotation progress.");
+        for (int i = 0; i < processedCounters.size(); i++) {
+            AtomicInteger counter = processedCounters.get(i);
+            String processName = engines[i].getMetaData().getName();
+            sb.append(String.format("\nAnnotated by %s: %d.", processName,
+                    counter.get()));
+        }
+        logger.info(sb.toString());
+
     }
 
     /**
@@ -407,7 +399,6 @@ public class BasicPipeline {
         return executor.submit(
                 () -> {
                     AtomicInteger numDocuments = new AtomicInteger();
-
                     try {
                         while (cReader.hasNext()) {
                             // Get a available container.
@@ -418,12 +409,13 @@ public class BasicPipeline {
                             taskQueue.offer(new ProcessElement(currentContainer, engines.length));
                             numDocuments.incrementAndGet();
                         }
+
+                        taskQueue.offer(new ProcessElement());
                     } catch (IOException | CollectionException e) {
                         // Errors in thread should terminate the program.
                         e.printStackTrace();
                         System.exit(1);
                     }
-
                     return numDocuments.get();
                 }
         );
@@ -437,13 +429,11 @@ public class BasicPipeline {
     public void complete() throws AnalysisEngineProcessException {
         try {
             // Signal end of processing.
-//            aggregateAnalysisEngine.collectionProcessComplete();
             for (AnalysisEngine engine : engines) {
                 engine.collectionProcessComplete();
             }
         } finally {
             // Destroy.
-//            aggregateAnalysisEngine.destroy();
             for (AnalysisEngine engine : engines) {
                 engine.destroy();
             }

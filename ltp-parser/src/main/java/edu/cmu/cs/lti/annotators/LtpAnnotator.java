@@ -90,6 +90,7 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
+//        UimaConvenience.printProcessLog(aJCas);
         segment(aJCas);
 
         for (LtpSentence sentence : JCasUtil.select(aJCas, LtpSentence.class)) {
@@ -128,22 +129,24 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
         for (int i = 0; i < sentences.size(); i++) {
             String sent = sentences.get(i);
 
-            if (!sent.isEmpty()) {
-                LtpSentence sentence = new LtpSentence(aJCas);
-                ltpSentences.add(sentence);
-
+            if (!sent.trim().isEmpty()) {
                 List<String> words = new ArrayList<>();
                 List<String> pos = new ArrayList<>();
 
                 Segmentor.segment(sent, words);
-                Postagger.postag(words, pos);
 
-                firstWords.add(allWords.size());
+                if (words.size() > 0) {
+                    LtpSentence sentence = new LtpSentence(aJCas);
+                    ltpSentences.add(sentence);
+                    Postagger.postag(words, pos);
 
-                allWords.addAll(words);
-                allPos.addAll(pos);
+                    firstWords.add(allWords.size());
 
-                lastWords.add(allWords.size() - 1);
+                    allWords.addAll(words);
+                    allPos.addAll(pos);
+
+                    lastWords.add(allWords.size() - 1);
+                }
             }
         }
 
@@ -180,27 +183,6 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
             int end = tokens.get(lastWords.get(i)).getEnd();
             UimaAnnotationUtils.finishAnnotation(sent, begin, end, COMPONENT_ID, 0, aJCas);
         }
-    }
-
-    private boolean segmentWords(StanfordCorenlpSentence sentence, List<String> words) {
-        String sourceSent = sentence.getCoveredText().replaceAll("\\s", "").replaceAll("\\n", "").replaceAll("\\r", "");
-//        logger.info("Annotating " + sourceSent);
-        List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
-
-        // Do segmentation first.
-        int size = Segmentor.segment(sourceSent, words);
-
-        int totalLength = 0;
-        for (String word : words) {
-            totalLength += word.length();
-        }
-
-        if (totalLength != characters.size()) {
-            logger.warn(String.format("Segmented words' total character length : %d is not the same as the " +
-                    "original character length : %d", totalLength, characters.size()));
-            return false;
-        }
-        return true;
     }
 
     private void annotateSrl(JCas aJCas, List<LtpToken> tokens, List<String> words, List<String> posttags,
@@ -316,27 +298,6 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
         }
 
         return ners;
-    }
-
-    private List<LtpToken> annotateTokens(JCas aJCas, List<CharacterAnnotation> characters, List<String> words,
-                                          List<String> posTags) {
-        List<LtpToken> tokens = new ArrayList<>();
-
-        int currentLength = 0;
-        for (int i = 0; i < words.size(); i++) {
-            String word = words.get(i);
-            int wordEnd = currentLength + word.length() - 1;
-            int begin = characters.get(currentLength).getBegin();
-            int end = characters.get(wordEnd).getEnd();
-            LtpToken ltpToken = new LtpToken(aJCas, begin, end);
-            ltpToken.setLemma(word);
-            ltpToken.setPos(posTags.get(i));
-            UimaAnnotationUtils.finishAnnotation(ltpToken, begin, end, COMPONENT_ID, 0, aJCas);
-            currentLength += word.length();
-            tokens.add(ltpToken);
-        }
-
-        return tokens;
     }
 
     @Override

@@ -13,6 +13,8 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+
 /**
  * Created with IntelliJ IDEA.
  * Date: 4/20/15
@@ -50,25 +52,30 @@ public class EventMentionRemover extends AbstractLoggingAnnotator {
         }
     }
 
-    private void removeAllEventRelated(JCas toView) {
-        for (EventMentionRelation relation : UimaConvenience.getAnnotationList(toView, EventMentionRelation.class)) {
+    private void removeAllEventRelated(JCas view) {
+        List<EventMentionRelation> relations = UimaConvenience.getAnnotationList(view, EventMentionRelation.class);
+        for (EventMentionRelation relation : relations) {
             relation.removeFromIndexes();
         }
 
-        for (EventMentionSpanRelation relation : UimaConvenience.getAnnotationList(toView,
-                EventMentionSpanRelation.class)) {
+        List<EventMentionSpanRelation> spanRelations = UimaConvenience.getAnnotationList(view,
+                EventMentionSpanRelation.class);
+        for (EventMentionSpanRelation relation : spanRelations) {
             relation.removeFromIndexes();
         }
 
-        for (Event event : UimaConvenience.getAnnotationList(toView, Event.class)) {
+        List<Event> events = UimaConvenience.getAnnotationList(view, Event.class);
+        for (Event event : events) {
             event.removeFromIndexes();
         }
 
-        for (EventMention mention : UimaConvenience.getAnnotationList(toView, EventMention.class)) {
+        List<EventMention> mentions = UimaConvenience.getAnnotationList(view, EventMention.class);
+        for (EventMention mention : mentions) {
             mention.removeFromIndexes();
         }
 
-        for (EventMentionSpan span : UimaConvenience.getAnnotationList(toView, EventMentionSpan.class)) {
+        List<EventMentionSpan> spans = UimaConvenience.getAnnotationList(view, EventMentionSpan.class);
+        for (EventMentionSpan span : spans) {
             span.removeFromIndexes();
         }
     }

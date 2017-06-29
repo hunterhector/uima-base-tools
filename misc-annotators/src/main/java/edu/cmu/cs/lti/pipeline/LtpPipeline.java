@@ -11,7 +11,6 @@ import org.apache.uima.collection.metadata.CpeDescriptorException;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
-import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.xml.sax.SAXException;
 
@@ -63,7 +62,7 @@ public class LtpPipeline {
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(outputDir, "xmi");
 
-        SimplePipeline.runPipeline(reader, textWriter, annotator, writer);
+//        SimplePipeline.runPipeline(reader, textWriter, annotator, writer);
 
         new BasicPipeline(reader, true, outputDir, "xmi", annotator).run();
     }
