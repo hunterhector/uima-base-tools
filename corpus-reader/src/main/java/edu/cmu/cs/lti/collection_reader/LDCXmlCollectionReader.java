@@ -6,9 +6,6 @@ import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.filefilter.AbstractFileFilter;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
@@ -18,7 +15,6 @@ import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.component.ViewCreatorAnnotator;
-import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
@@ -31,10 +27,6 @@ import org.apache.uima.util.ProgressImpl;
 import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Read the LDC XML format files. Each file is simply taken as it is, retaining all original XML offsets.
@@ -42,52 +34,9 @@ import java.util.Set;
  * @author Zhengzhong Liu
  */
 public class LDCXmlCollectionReader extends AbstractCollectionReader {
-    public static final String PARAM_DATA_PATH = "dataPath";
-    @ConfigurationParameter(name = PARAM_DATA_PATH)
-    private String dataPath;
-
-    public static final String PARAM_BASE_NAME_FILE_FILTER = "BaseNameFileFilter";
-    @ConfigurationParameter(name = PARAM_BASE_NAME_FILE_FILTER, mandatory = false)
-    private File baseNameFileFilter;
-
-    private List<File> files;
-    private int fileIndex;
-
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
-
-        if (baseNameFileFilter != null) {
-            logger.info("Reading with base name filter from : " + dataPath);
-
-            Set<String> acceptableBasenames = new HashSet<>();
-
-            try {
-                for (String line : FileUtils.readLines(baseNameFileFilter)) {
-                    acceptableBasenames.add(line);
-                }
-            } catch (IOException e) {
-                throw new ResourceInitializationException(e);
-            }
-
-            logger.info(String.format("%d documents in the filter.", acceptableBasenames.size()));
-
-            this.files = new ArrayList<>(FileUtils.listFiles(new File(dataPath), new AbstractFileFilter() {
-                @Override
-                public boolean accept(File file) {
-                    return acceptableBasenames.contains(FilenameUtils.getBaseName(file.getName()));
-                }
-
-                @Override
-                public boolean accept(File dir, String name) {
-                    return false;
-                }
-            }, TrueFileFilter.INSTANCE));
-        } else {
-            logger.info("Reading from : " + dataPath);
-            files = new ArrayList<>(FileUtils.listFiles(new File(dataPath), new String[]{"xml"}, true));
-            fileIndex = 0;
-        }
     }
 
     @Override

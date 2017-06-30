@@ -51,7 +51,7 @@ public class SemaforAnnotatorPipeline {
                 SemaforAnnotator.PARAM_JSON_OUTPUT_REDIRECT, FileUtils.joinPaths(outputDir, "json")
         );
 
-        new BasicPipeline(reader, true, outputDir, "xmi", stanfordAnalyzer, semaforAnalyzer).run();
+        new BasicPipeline(reader, false, true, outputDir, "xmi", stanfordAnalyzer, semaforAnalyzer).run();
 
     }
 }

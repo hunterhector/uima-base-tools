@@ -64,6 +64,6 @@ public class LtpPipeline {
 
 //        SimplePipeline.runPipeline(reader, textWriter, annotator, writer);
 
-        new BasicPipeline(reader, true, outputDir, "xmi", annotator).run();
+        new BasicPipeline(reader, false, true, outputDir, "xmi", annotator).run();
     }
 }

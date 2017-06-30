@@ -73,7 +73,7 @@ public class DiscourseParserAnnotator extends AbstractLoggingAnnotator {
     }
 
     private void annotateDiscourse(JCas aJCas) {
-        logger.info(progressInfo(aJCas));
+        startProcessInfo(aJCas);
         SistaDocumentMaker maker = new SistaDocumentMaker();
 
         for (Sentence sent : JCasUtil.select(aJCas, Sentence.class)) {

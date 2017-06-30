@@ -95,14 +95,17 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
 
         // Setup ignores.
         Set<String> ignoringBaseNames = new HashSet<>();
-        try {
-            for (String s : FileUtils.readLines(baseNameIgnores)) {
-                ignoringBaseNames.add(s.trim());
+        if (baseNameIgnores != null) {
+            try {
+                for (String s : FileUtils.readLines(baseNameIgnores)) {
+                    ignoringBaseNames.add(s.trim());
+                }
+            } catch (IOException e) {
+                throw new ResourceInitializationException(e);
             }
-        } catch (IOException e) {
-            throw new ResourceInitializationException(e);
         }
         logger.info(String.format("Number of black listed base name: %d.", ignoringBaseNames.size()));
+
 
         // Setup accepts
         Set<String> acceptableBasenames = new HashSet<>();

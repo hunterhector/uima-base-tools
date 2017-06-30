@@ -74,16 +74,15 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-        logger.info("Annotated with Fanse.");
+        startProcessInfo(aJCas);
         annotateFanse(aJCas);
         for (JCas view : getAdditionalViews(aJCas)) {
             annotateFanse(view);
         }
+        endProcessInfo(aJCas);
     }
 
     private void annotateFanse(JCas aJCas) {
-        logger.info(progressInfo(aJCas));
-
         List<Sentence> sentList = UimaConvenience.getAnnotationList(aJCas, Sentence.class);
 
         for (Sentence sent : sentList) {
