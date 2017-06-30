@@ -71,6 +71,8 @@ public class BasicPipeline {
 
     private final BlockingQueue<ProcessElement> taskQueue = new ArrayBlockingQueue<>(numWorkers);
 
+    private final boolean robust;
+
     // Number of threads: for the workers, and one additional for producer.
     private ExecutorService executor = Executors.newFixedThreadPool(numWorkers + 2);
 //    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(numWorkers + 2);
@@ -81,21 +83,29 @@ public class BasicPipeline {
 
     public BasicPipeline(CollectionReaderDescription reader, AnalysisEngineDescription... processors) throws
             UIMAException, CpeDescriptorException, SAXException, IOException {
-        this(reader, true, null, null, processors);
+        this(reader, false, true, null, null, processors);
     }
 
 
     public BasicPipeline(CollectionReaderDescription reader, String workingDir, String outputDir,
                          AnalysisEngineDescription... processors) throws
             UIMAException, CpeDescriptorException, SAXException, IOException {
-        this(reader, true, workingDir, outputDir, processors);
+        this(reader, false, true, workingDir, outputDir, processors);
     }
 
-    public BasicPipeline(CollectionReaderDescription reader, boolean withStats, String workingDir, String outputDir,
-                         AnalysisEngineDescription... processors) throws
+    public static BasicPipeline getRobust(CollectionReaderDescription reader, String workingDir,
+                                          String outputDir, AnalysisEngineDescription... processors)
+            throws SAXException, UIMAException, CpeDescriptorException, IOException {
+        return new BasicPipeline(reader, true, true, workingDir, outputDir, processors);
+    }
+
+    public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats,
+                         String workingDir, String outputDir, AnalysisEngineDescription... processors) throws
             UIMAException, CpeDescriptorException, SAXException, IOException {
         readerDescription = reader;
         AnalysisEngineDescription[] engineDescriptions;
+
+        this.robust = robust;
 
         if (workingDir != null && outputDir != null) {
             AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(workingDir, outputDir);
@@ -266,11 +276,17 @@ public class BasicPipeline {
                             return engine.process(cas);
                         }
                     }
-                } catch (AnalysisEngineProcessException e) {
+                } catch (AnalysisEngineProcessException | RuntimeException e) {
                     e.printStackTrace();
-                    // Errors in thread should terminate the program.
-                    System.exit(1);
-                    throw new RuntimeException(e);
+                    if (robust) {
+                        logger.info("Ignoring errors.");
+                        // Ignore any exceptions just to make the process continue.
+                    } else {
+                        // Errors in thread should terminate the program.
+                        System.exit(1);
+                        throw new RuntimeException(e);
+                    }
+                    return null;
                 }
             };
             analysisFunctions.add(func);
@@ -381,7 +397,9 @@ public class BasicPipeline {
      * @param newTrace
      */
     private synchronized void combineTrace(ProcessTrace base, ProcessTrace newTrace) {
-        base.aggregate(newTrace);
+        if (newTrace != null) {
+            base.aggregate(newTrace);
+        }
     }
 
     /**

@@ -75,11 +75,15 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
         return additionalViews;
     }
 
-    protected void printProcessInfo(JCas aJCas) {
-        logger.info(progressInfo(aJCas));
+    protected void startProcessInfo(JCas aJCas) {
+        logger.info(progressInfo(aJCas, "Start"));
     }
 
-    protected String progressInfo(JCas aJCas) {
-        return "Processing " + UimaConvenience.getDocumentName(aJCas);
+    protected void endProcessInfo(JCas aJCas) {
+        logger.info(progressInfo(aJCas, "Done"));
+    }
+
+    protected String progressInfo(JCas aJCas, String message) {
+        return message + " " + UimaConvenience.getDocumentName(aJCas);
     }
 }
