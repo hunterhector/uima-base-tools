@@ -106,6 +106,9 @@ public class BasicPipeline {
         AnalysisEngineDescription[] engineDescriptions;
 
         this.robust = robust;
+        if (robust){
+            logger.info("Set to robust mode, will ignore all exceptions and continue.");
+        }
 
         if (workingDir != null && outputDir != null) {
             AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(workingDir, outputDir);
