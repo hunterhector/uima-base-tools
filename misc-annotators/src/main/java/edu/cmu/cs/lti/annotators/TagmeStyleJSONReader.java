@@ -1,7 +1,6 @@
 package edu.cmu.cs.lti.annotators;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import edu.cmu.cs.lti.script.type.Article;
@@ -12,12 +11,13 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.examples.SourceDocumentInformation;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.internal.util.XMLUtils;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 
 import java.io.*;
+
+import static edu.cmu.cs.lti.uima.util.CasSerialization.cleanText;
 
 public class TagmeStyleJSONReader extends AbstractCollectionReader {
     public static final String PARAM_INPUT_JSON = "inputJson";
@@ -42,20 +42,20 @@ public class TagmeStyleJSONReader extends AbstractCollectionReader {
         }
     }
 
-    private String cleanText(String text) {
-        StringBuilder cleanedText = new StringBuilder(text);
-        int invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
-
-        while (invalid > -1) {
-//            logger.info("Removing invalid character at " + invalid);
-//            cleanedText.delete(invalid, invalid + 1);
-            // Replacing invalid characters with spaces.
-            cleanedText.replace(invalid, invalid +1, " ");
-            invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
-        }
-
-        return cleanedText.toString();
-    }
+//    private String cleanText(String text) {
+//        StringBuilder cleanedText = new StringBuilder(text);
+//        int invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
+//
+//        while (invalid > -1) {
+////            logger.info("Removing invalid character at " + invalid);
+////            cleanedText.delete(invalid, invalid + 1);
+//            // Replacing invalid characters with spaces.
+//            cleanedText.replace(invalid, invalid +1, " ");
+//            invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
+//        }
+//
+//        return cleanedText.toString();
+//    }
 
     @Override
     public void getNext(JCas jCas) throws IOException, CollectionException {

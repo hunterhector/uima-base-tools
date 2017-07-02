@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
+import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.util.NewsNameComparators;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
@@ -16,14 +17,13 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.zip.GZIPInputStream;
 
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
  */
-public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirReader {
+public class TimeSortedGzippedXmiCollectionReader extends AbstractCollectionReader {
     private int currentDocIndex;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -39,19 +39,6 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractStepBasedDirRe
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
 
-        // Get a list of XMI files in the specified directory
-        files = new ArrayList<File>();
-        File[] files = inputDir.listFiles();
-        for (int i = 0; i < files.length; i++) {
-            if (!files[i].isDirectory() && files[i].getName().endsWith(inputFileSuffix)) {
-                this.files.add(files[i]);
-            }
-        }
-
-        if (this.files.size() == 0) {
-            logger.warn("The directory " + inputDir.getAbsolutePath()
-                    + " does not have any compressed files ending with " + inputFileSuffix);
-        }
         Collections.sort(this.files, NewsNameComparators.getGigawordDateComparator(inputFileSuffix, "yyyymm"));
 
         currentDocIndex = 0;

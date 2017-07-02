@@ -34,15 +34,18 @@ public class NoiseTextFormatter {
     };
 
     private static String[] xmlPattern = {
-        "<\\?xml.*\\?>"
+            "<\\?xml.*\\?>"
     };
 
     private static String sentenceEndFixer = "[^\\p{Punct}](\\n)[\\s|\\n]*\\n";
 
     private String text;
 
+    private int originalLength;
+
     public NoiseTextFormatter(String input) {
         this.text = input;
+        this.originalLength = input.length();
     }
 
     public NoiseTextFormatter cleanWithPattern(String... patterns) {
@@ -60,16 +63,28 @@ public class NoiseTextFormatter {
         return this;
     }
 
-    public NoiseTextFormatter cleanXMLHeader(){
+    public NoiseTextFormatter cleanXMLHeader() {
         cleanTextWithPatterns(xmlPattern);
         return this;
     }
 
-    public String cleanAll(String language){
-        return cleanForum().cleanNews().cleanXMLHeader().multiNewLineBreaker(language).getText();
+    public NoiseTextFormatter cleanXMLCharacters() {
+        text = CasSerialization.cleanText(text);
+        return this;
     }
 
-    public String cleanAll(){
+    public String cleanAll(String language) {
+        cleanForum().cleanNews().cleanXMLHeader().multiNewLineBreaker(language).cleanXMLCharacters();
+        if (text.length() != originalLength) {
+            System.out.println(String.format(
+                    "[ERROR] cleaned text length is %d, not the same as original length %d."
+                    , text.length(), originalLength)
+            );
+        }
+        return text;
+    }
+
+    public String cleanAll() {
         return cleanAll("en");
     }
 

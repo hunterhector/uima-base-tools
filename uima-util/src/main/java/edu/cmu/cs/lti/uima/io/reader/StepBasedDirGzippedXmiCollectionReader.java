@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
+import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
@@ -18,18 +19,13 @@ import java.util.zip.GZIPInputStream;
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
  */
-public class StepBasedDirGzippedXmiCollectionReader extends AbstractStepBasedDirReader {
+public class StepBasedDirGzippedXmiCollectionReader extends AbstractCollectionReader {
 
     public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
 
     private String inputViewName;
 
     private int currentDocIndex;
-
-    @Override
-    protected String defaultFileSuffix() {
-        return "xmi";
-    }
 
     /**
      * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()

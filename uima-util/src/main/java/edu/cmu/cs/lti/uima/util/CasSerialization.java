@@ -5,6 +5,7 @@ import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.cas.impl.XmiCasSerializer;
 import org.apache.uima.collection.CollectionException;
+import org.apache.uima.internal.util.XMLUtils;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceProcessException;
 import org.apache.uima.util.XMLSerializer;
@@ -54,6 +55,19 @@ public class CasSerialization {
                 gzipOut.close();
             }
         }
+    }
+
+    public static String cleanText(String text) {
+        StringBuilder cleanedText = new StringBuilder(text);
+        int invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
+
+        while (invalid > -1) {
+            // Replacing invalid characters with spaces.
+            cleanedText.replace(invalid, invalid +1, " ");
+            invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
+        }
+
+        return cleanedText.toString();
     }
 
     /**

@@ -19,6 +19,7 @@
 
 package edu.cmu.cs.lti.uima.io.reader;
 
+import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.util.NewsNameComparators;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
@@ -38,7 +39,7 @@ import java.util.Collections;
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem,
  * sort them by the offset
  */
-public class TimeSortedXmiCollectionReader extends AbstractStepBasedDirReader {
+public class TimeSortedXmiCollectionReader extends AbstractCollectionReader {
     private int mCurrentIndex;
 
     @Override

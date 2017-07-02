@@ -1,31 +1,25 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
+import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.util.CasSerialization;
-import org.apache.commons.lang3.StringUtils;
+import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import org.apache.uima.UimaContext;
 import org.apache.uima.collection.CollectionException;
-import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
-import java.io.File;
 import java.io.IOException;
 
 /**
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
  */
-public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader {
+public class StepBasedDirXmiCollectionReader extends AbstractCollectionReader {
     public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
-
-    public static final String PARAM_BASE_NAME_FILE_FILTER = "BaseNameFileFilter";
-    @ConfigurationParameter(name = PARAM_BASE_NAME_FILE_FILTER, mandatory = false)
-    File baseNameFileFilter;
 
     private int currentDocIndex;
 
-    @Override
     protected String defaultFileSuffix() {
         return "xmi";
     }
@@ -51,14 +45,13 @@ public class StepBasedDirXmiCollectionReader extends AbstractStepBasedDirReader 
      */
     public void getNext(JCas jCas) throws IOException, CollectionException {
         try {
-            if (!StringUtils.isEmpty(inputViewName)) {
-                jCas = jCas.getView(inputViewName);
-            }
-        } catch (Exception e) {
-            throw new CollectionException(e);
+            CasSerialization.readXmi(jCas, files.get(currentDocIndex));
+        } catch (CollectionException e) {
+            logger.info("Found exceptions in document: " + UimaConvenience.getDocumentName(jCas));
+            UimaConvenience.printProcessLog(jCas);
+            e.printStackTrace();
         }
 
-        CasSerialization.readXmi(jCas, files.get(currentDocIndex));
         currentDocIndex++;
     }
 

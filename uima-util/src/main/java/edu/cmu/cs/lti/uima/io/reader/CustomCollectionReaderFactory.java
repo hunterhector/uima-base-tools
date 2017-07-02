@@ -12,14 +12,12 @@ public class CustomCollectionReaderFactory {
      *
      * @param parentInputDirName
      * @param baseInputDirName
-     * @param stepNumber
      * @param failOnUnkown
      * @return
      * @throws ResourceInitializationException
      */
     public static CollectionReaderDescription createXmiReader(String parentInputDirName,
                                                               String baseInputDirName,
-                                                              Integer stepNumber,
                                                               Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
@@ -28,7 +26,6 @@ public class CustomCollectionReaderFactory {
                 StepBasedDirXmiCollectionReader.class,
                 StepBasedDirXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
                 StepBasedDirXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
-                StepBasedDirXmiCollectionReader.PARAM_INPUT_STEP_NUMBER, stepNumber,
                 StepBasedDirXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
     }
 
@@ -40,8 +37,8 @@ public class CustomCollectionReaderFactory {
      * @return
      * @throws ResourceInitializationException
      */
-    public static CollectionReaderDescription createXmiReader(
-            TypeSystemDescription typeSystemDescription, String inputDirName)
+    public static CollectionReaderDescription createXmiReader(TypeSystemDescription typeSystemDescription,
+                                                              String inputDirName)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
@@ -70,27 +67,6 @@ public class CustomCollectionReaderFactory {
                 XmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
     }
 
-    /**
-     * Creates a simple XMI reader assuming the directory naming convention
-     *
-     * @param parentInputDirName
-     * @param baseInputDirName
-     * @param stepNumber
-     * @return
-     * @throws ResourceInitializationException
-     */
-    public static CollectionReaderDescription createXmiReader(TypeSystemDescription typeSystemDescription, String
-            parentInputDirName, String baseInputDirName, Integer stepNumber)
-            throws ResourceInitializationException {
-        // Instantiate a collection reader to get XMI as input.
-
-        return CollectionReaderFactory.createReaderDescription(
-                StepBasedDirXmiCollectionReader.class, typeSystemDescription,
-                StepBasedDirXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
-                StepBasedDirXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
-                StepBasedDirXmiCollectionReader.PARAM_INPUT_STEP_NUMBER, stepNumber
-        );
-    }
 
     /**
      * Creates a simple XMI reader assuming the directory naming convention
@@ -235,7 +211,7 @@ public class CustomCollectionReaderFactory {
                 CrossValidationReader.PARAM_MODE_EVAL, takeEvalSplit,
                 CrossValidationReader.PARAM_SEED, randomSeed,
                 CrossValidationReader.PARAM_SLICE, slice,
-                AbstractStepBasedDirReader.PARAM_INPUT_FILE_SUFFIX, extension
+                CrossValidationReader.PARAM_INPUT_FILE_SUFFIX, extension
         );
     }
 
@@ -345,57 +321,6 @@ public class CustomCollectionReaderFactory {
                 GzippedXmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
                 GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown,
                 GzippedXmiCollectionReader.PARAM_RECURSIVE, true);
-    }
-
-
-    /**
-     * Create a gzipped XMI reader, with specified type system. Assuming the directory naming
-     * convention.
-     *
-     * @param typeSystemDescription
-     * @param parentInputDirName
-     * @param baseInputDirName
-     * @param stepNumber
-     * @param failOnUnkown
-     * @return
-     * @throws ResourceInitializationException
-     */
-    public static CollectionReaderDescription createStepBasedGzippedXmiReader(
-            TypeSystemDescription typeSystemDescription, String parentInputDirName,
-            String baseInputDirName, Integer stepNumber, Boolean failOnUnkown)
-            throws ResourceInitializationException {
-        // Instantiate a collection reader to get XMI as input.
-
-        return CollectionReaderFactory.createReaderDescription(
-                StepBasedDirGzippedXmiCollectionReader.class, typeSystemDescription,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_INPUT_STEP_NUMBER, stepNumber,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
-    }
-
-
-    /**
-     * Create a gzipped XMI reader assuming the directory naming convention.
-     *
-     * @param parentInputDirName
-     * @param baseInputDirName
-     * @param stepNumber
-     * @return
-     * @throws ResourceInitializationException
-     */
-    public static CollectionReaderDescription createStepBasedGzippedXmiReader(String parentInputDirName,
-                                                                              String baseInputDirName, Integer
-                                                                                      stepNumber)
-            throws ResourceInitializationException {
-        // Instantiate a collection reader to get XMI as input.
-
-        return CollectionReaderFactory.createReaderDescription(
-                StepBasedDirGzippedXmiCollectionReader.class,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
-                StepBasedDirGzippedXmiCollectionReader.PARAM_INPUT_STEP_NUMBER, stepNumber
-        );
     }
 
     public static CollectionReaderDescription createTimeSortedGzipXmiReader(

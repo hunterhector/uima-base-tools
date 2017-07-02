@@ -4,6 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
+import edu.cmu.cs.lti.uima.util.CasSerialization;
 import edu.cmu.cs.lti.uima.util.ForumStructureParser;
 import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
@@ -112,7 +113,8 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
         File file = textFiles.get(currentDocIndex++);
         String originalText = FileUtils.file2String(file, encoding);
 
-        String cleanedText = doNoiseFilter ? new NoiseTextFormatter(originalText).cleanAll() : originalText;
+        String cleanedText = doNoiseFilter ? new NoiseTextFormatter(originalText).cleanAll() :
+                CasSerialization.cleanText(originalText);
 
         ArrayListMultimap<String, Element> tagsByName = ForumStructureParser.indexTagByName(originalText);
 

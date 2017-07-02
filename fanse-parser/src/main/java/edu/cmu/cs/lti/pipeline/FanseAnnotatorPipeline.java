@@ -44,7 +44,7 @@ public class FanseAnnotatorPipeline {
         // Instantiate a collection reader to get XMI as input.
         // Note that you should change the following parameters for your setting.
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createXmiReader(
-                paramParentInputDir, paramBaseInputDirName, paramInputStepNumber,
+                paramParentInputDir, paramBaseInputDirName,
                 paramFailUnknown);
 
         // Instantiate the analysis engine.

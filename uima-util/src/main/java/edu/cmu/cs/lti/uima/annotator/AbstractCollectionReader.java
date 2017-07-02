@@ -62,12 +62,28 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
     protected File baseNameIgnores;
 
     public static final String PARAM_DATA_PATH = "dataPath";
-    @ConfigurationParameter(name = PARAM_DATA_PATH)
+    @ConfigurationParameter(name = PARAM_DATA_PATH, mandatory = false)
     protected String dataPath;
+
+    public static final String PARAM_PARENT_INPUT_DIR_PATH = "ParentInputDirPath";
+    @ConfigurationParameter(name = PARAM_PARENT_INPUT_DIR_PATH, mandatory = false)
+    private String parentInputDirPath;
+
+    public static final String PARAM_BASE_INPUT_DIR_NAME = "BaseInputDirectoryName";
+    @ConfigurationParameter(name = PARAM_BASE_INPUT_DIR_NAME, mandatory = false)
+    private String baseInputDirName;
 
     public static final String PARAM_FILE_EXTENSION = "extension";
     @ConfigurationParameter(name = PARAM_FILE_EXTENSION, mandatory = false)
     protected String extension;
+
+    public static final String PARAM_INPUT_FILE_SUFFIX = "InputFileSuffix";
+    @ConfigurationParameter(name = PARAM_INPUT_FILE_SUFFIX, mandatory = false)
+    protected String inputFileSuffix;
+
+    public static final String PARAM_FAIL_UNKNOWN = "FailOnUnknownType";
+    @ConfigurationParameter(name = PARAM_FAIL_UNKNOWN, defaultValue = "false")
+    protected Boolean failOnUnknownType;
 
     protected List<File> files;
 
@@ -89,6 +105,20 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
 
         if (goldStandardViewName == null) {
             goldStandardViewName = DEFAULT_GOLD_STANDARD_NAME;
+        }
+
+        if (inputFileSuffix == null) {
+            inputFileSuffix = defaultFileSuffix();
+        }
+
+        if (dataPath == null) {
+            if (parentInputDirPath == null || baseInputDirName == null) {
+                logger.error("Both data path, and parent/base pair path are null.");
+                throw new ResourceInitializationException(
+                        new IllegalArgumentException("One of the two directory parameter options must be true.")
+                );
+            }
+            dataPath = new File(parentInputDirPath, baseInputDirName).getPath();
         }
 
         logger.info("Reading from: " + dataPath);
@@ -159,4 +189,9 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
         logger.info(String.format("%d files ignored, %d files will be read.",
                 numFilesIgnored.get(), numFilesToRead.get()));
     }
+
+    protected String defaultFileSuffix() {
+        return "xmi";
+    }
+
 }
