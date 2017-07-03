@@ -125,11 +125,11 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
 
         // Setup ignores.
         Set<String> ignoringBaseNames = new HashSet<>();
+        boolean useBlackList = false;
         if (baseNameIgnores != null) {
-            if (!baseNameIgnores.exists()){
-                logger.warn(String.format("Base name black list file [%s] cannot be found, will not use blacklist.",
-                        baseNameIgnores));
-            }else {
+            if (baseNameIgnores.exists()) {
+                logger.info("Base name ignore file is: " + baseNameIgnores);
+                useBlackList = true;
                 try {
                     for (String s : FileUtils.readLines(baseNameIgnores)) {
                         ignoringBaseNames.add(s.trim());
@@ -137,23 +137,32 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
                 } catch (IOException e) {
                     throw new ResourceInitializationException(e);
                 }
+            } else {
+                logger.warn(String.format("Base name black list file [%s] cannot be found, will not use blacklist.",
+                        baseNameIgnores));
             }
         }
         logger.info(String.format("Number of black listed base name: %d.", ignoringBaseNames.size()));
 
-
         // Setup accepts
         Set<String> acceptableBasenames = new HashSet<>();
+        boolean useWhiteList = false;
         if (baseNameFileFilter != null) {
-            logger.info("Reading with base name filter from : " + dataPath);
-            try {
-                for (String line : FileUtils.readLines(baseNameFileFilter)) {
-                    acceptableBasenames.add(line);
+            if (baseNameFileFilter.exists()) {
+                logger.info("Reading with base name white list from : " + dataPath);
+                useWhiteList = true;
+                try {
+                    for (String line : FileUtils.readLines(baseNameFileFilter)) {
+                        acceptableBasenames.add(line.trim());
+                    }
+                } catch (IOException e) {
+                    throw new ResourceInitializationException(e);
                 }
-            } catch (IOException e) {
-                throw new ResourceInitializationException(e);
+                logger.info(String.format("Number of white listed files: %d.", acceptableBasenames.size()));
+            } else {
+                logger.warn(String.format("Base name whitelist file [%s] cannot be found, will not use whitelist.",
+                        baseNameFileFilter));
             }
-            logger.info(String.format("Number of white listed files: %d.", acceptableBasenames.size()));
         } else {
             logger.info("No white listed file found.");
         }
@@ -163,19 +172,21 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
         AtomicInteger numFilesToRead = new AtomicInteger();
         AtomicInteger numFilesIgnored = new AtomicInteger();
 
+        boolean finalUseBlackList = useBlackList;
+        boolean finalUseWhiteList = useWhiteList;
         fileFilter = new AbstractFileFilter() {
             @Override
             public boolean accept(File file) {
                 String baseName = FilenameUtils.getBaseName(file.getName());
                 boolean trueExtension = extension == null || file.getName().endsWith(extension);
-                boolean blackList = ignoringBaseNames.contains(baseName);
-                boolean inWhilteList = baseNameFileFilter == null || acceptableBasenames.contains(baseName);
+                boolean blackList = finalUseBlackList && ignoringBaseNames.contains(baseName);
+                boolean passWhiteList = !finalUseWhiteList || acceptableBasenames.contains(baseName);
 
                 if (blackList) {
                     numFilesIgnored.incrementAndGet();
                 }
 
-                boolean accept = inWhilteList && !blackList && trueExtension;
+                boolean accept = passWhiteList && !blackList && trueExtension;
 
                 if (accept) {
                     if (file.isFile()) {
