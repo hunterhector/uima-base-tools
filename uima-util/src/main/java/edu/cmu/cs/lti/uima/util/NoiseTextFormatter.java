@@ -1,10 +1,9 @@
 package edu.cmu.cs.lti.uima.util;
 
 import de.l3s.boilerpipe.BoilerpipeProcessingException;
-import de.l3s.boilerpipe.extractors.ArticleExtractor;
-import de.l3s.boilerpipe.extractors.ExtractorBase;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.apache.tika.exception.TikaException;
 import org.xml.sax.SAXException;
 
@@ -20,7 +19,7 @@ import java.util.regex.Pattern;
  * Time: 5:36 PM
  */
 public class NoiseTextFormatter {
-    private static ExtractorBase extractor = ArticleExtractor.getInstance();
+//    private static ExtractorBase extractor = ArticleExtractor.getInstance();
 
     private static String[] forumPatterns = {"<post[^<]*>", "<quote[^<]*>", "<\\s?/\\s?quote>", "<\\s?/\\s?post>",
             "<img[^<]*>",
@@ -28,16 +27,19 @@ public class NoiseTextFormatter {
 
     private static String[] newsDiscardPattern = {
             "<DOCID>[^<]*<\\s/\\sDOCID>", "<DOCTYPE[^>]*>[^<]*<\\s?/\\sDOCTYPE>", "<KEYWORD>", "<\\s?/\\s?KEYWORD>",
-            "<BODY>", "<TEXT>", "<\\s?/\\s?TEXT>", "<\\s?/\\s?BODY>", "<DOC>", "<\\s?/\\s?DOC>?", "<P>", "<\\s?/\\s?P>",
-            "<DATETIME>[^<]*<\\s/\\sDATETIME>", "<DATELINE>[^<]*<\\s?/\\s*DATELINE>", "<DOC[^>]*>", "<HEADLINE>",
-            "<\\s?/\\s?HEADLINE>"
+            "<BODY>", "<TEXT>", "<\\s?/\\s?TEXT>", "<\\s?/\\s?BODY>", "<DOC>", "<\\s?/\\s?DOC>?",
+            "<DATE_TIME>[^<]*<\\s?/\\s*DATE_TIME>", "<AUTHOR>", "</AUTHOR>",
+            "<DATETIME>[^<]*<\\s?/\\s*DATETIME>", "<DATELINE>[^<]*<\\s?/\\s*DATELINE>", "<DOC[^>]*>", "<HEADLINE>",
+            "<\\s?/\\s?HEADLINE>", "<\\s{0,6}/\\s{0,3}body>"
+    };
+
+    private static String[] breakablePattern = {
+            "<\\s{0,3}P>", "<\\s?/\\s{0,3}P>", "<\\s{0,6}p>", "<\\s{0,6}/\\s{0,3}p>"
     };
 
     private static String[] xmlPattern = {
             "<\\?xml.*\\?>"
     };
-
-    private static String sentenceEndFixer = "[^\\p{Punct}](\\n)[\\s|\\n]*\\n";
 
     private String text;
 
@@ -63,8 +65,23 @@ public class NoiseTextFormatter {
         return this;
     }
 
+    public NoiseTextFormatter possibleStopBreaker(String language) {
+        char stopSymbol = '.';
+        if (language.equals("zh")) {
+            stopSymbol = '。';
+        }
+        replaceMatchedWithChar(breakablePattern, stopSymbol);
+        return this;
+    }
+
     public NoiseTextFormatter cleanXMLHeader() {
         cleanTextWithPatterns(xmlPattern);
+        return this;
+    }
+
+    public NoiseTextFormatter cleanEscapeCharecter() {
+        String unescapeText = StringEscapeUtils.unescapeXml(text);
+        text = edu.cmu.cs.lti.utils.StringUtils.matchText(text, unescapeText);
         return this;
     }
 
@@ -74,13 +91,15 @@ public class NoiseTextFormatter {
     }
 
     public String cleanAll(String language) {
-        cleanForum().cleanNews().cleanXMLHeader().multiNewLineBreaker(language).cleanXMLCharacters();
+        cleanEscapeCharecter().cleanXMLCharacters().possibleStopBreaker(language).cleanForum().cleanNews()
+                .cleanXMLHeader().multiNewLineBreaker(language);
         if (text.length() != originalLength) {
             System.out.println(String.format(
                     "[ERROR] cleaned text length is %d, not the same as original length %d."
                     , text.length(), originalLength)
             );
         }
+
         return text;
     }
 
@@ -147,13 +166,13 @@ public class NoiseTextFormatter {
 
     public static void main(String[] args) throws BoilerpipeProcessingException, IOException, SAXException,
             TikaException {
-        String noisyText = FileUtils.readFileToString(new File
-                ("../data/project_data/LDC/LDC2015E112_DEFT_Rich_ERE_Chinese_Training_Annotation_R2/data/source" +
-                        "/CMN_DF_000181_20141218_F000000CL.xml"));
+        String noisyText = FileUtils.readFileToString(
+                new File("/Users/zhengzhongliu/Documents/projects/uima-base-tools/uima-util/example/example.xml"));
 
         String language = "zh";
 
         NoiseTextFormatter formatter = new NoiseTextFormatter(noisyText);
+
         String ruleCleaned = formatter.cleanAll(language);
 
         System.out.println("=== Rule results ===");
