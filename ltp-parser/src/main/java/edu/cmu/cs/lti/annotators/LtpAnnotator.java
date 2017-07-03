@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.annotators;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
@@ -100,9 +101,13 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
             Postagger.postag(words, posTags);
             List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
 
+            logger.info("Sentence is " + sentence.getCoveredText());
+
             if (validSegmentation) {
 //            logger.info("Annotating tokens.");
                 List<LtpToken> tokens = annotateTokens(aJCas, characters, words, posTags);
+
+                logger.info("Sentence is " + Joiner.on(" ").join(words));
 
 //            logger.info("Annotating NER.");
                 List<String> ners = annotateNer(aJCas, tokens, words, posTags);

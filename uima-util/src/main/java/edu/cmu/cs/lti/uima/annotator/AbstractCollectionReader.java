@@ -50,7 +50,7 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
     protected String language;
 
     public static final String PARAM_RECURSIVE = "recursive";
-    @ConfigurationParameter(name = PARAM_RECURSIVE, description = "false")
+    @ConfigurationParameter(name = PARAM_RECURSIVE, defaultValue = "false")
     protected boolean recursive;
 
     public static final String PARAM_BASE_NAME_FILE_FILTER = "BaseNameFileFilter";
@@ -126,12 +126,17 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
         // Setup ignores.
         Set<String> ignoringBaseNames = new HashSet<>();
         if (baseNameIgnores != null) {
-            try {
-                for (String s : FileUtils.readLines(baseNameIgnores)) {
-                    ignoringBaseNames.add(s.trim());
+            if (!baseNameIgnores.exists()){
+                logger.warn(String.format("Base name black list file [%s] cannot be found, will not use blacklist.",
+                        baseNameIgnores));
+            }else {
+                try {
+                    for (String s : FileUtils.readLines(baseNameIgnores)) {
+                        ignoringBaseNames.add(s.trim());
+                    }
+                } catch (IOException e) {
+                    throw new ResourceInitializationException(e);
                 }
-            } catch (IOException e) {
-                throw new ResourceInitializationException(e);
             }
         }
         logger.info(String.format("Number of black listed base name: %d.", ignoringBaseNames.size()));

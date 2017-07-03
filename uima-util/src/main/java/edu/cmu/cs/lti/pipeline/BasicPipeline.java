@@ -312,6 +312,8 @@ public class BasicPipeline {
                         // If there are no new jobs and all current jobs are done, we shut down the executor.
                         if (noNewJobs.booleanValue() && counts[counts.length - 1].get() >= numInputFiles) {
                             executor.shutdown();
+                            logger.info(String.format("Level %d count is %d, larger than %d.",
+                                    counts.length -1, counts[counts.length -1].get(), numInputFiles));
                             logger.info("Shut down executor, do not take more jobs.");
                             break;
                         }

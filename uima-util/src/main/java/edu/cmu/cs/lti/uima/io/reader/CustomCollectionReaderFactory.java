@@ -6,6 +6,8 @@ import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 
+import java.io.File;
+
 public class CustomCollectionReaderFactory {
     /**
      * Creates a simple XMI reader assuming the directory naming convention
@@ -125,6 +127,26 @@ public class CustomCollectionReaderFactory {
                 StepBasedDirXmiCollectionReader.class, typeSystemDescription,
                 StepBasedDirXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
                 StepBasedDirXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName
+        );
+    }
+
+    /**
+     * Creates a simple XMI reader assuming the directory naming convention
+     *
+     * @param parentInputDirName
+     * @param baseInputDirName
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static CollectionReaderDescription createXmiReader(TypeSystemDescription typeSystemDescription, String
+            parentInputDirName, String baseInputDirName, File blackList ) throws ResourceInitializationException {
+        // Instantiate a collection reader to get XMI as input.
+
+        return CollectionReaderFactory.createReaderDescription(
+                StepBasedDirXmiCollectionReader.class, typeSystemDescription,
+                StepBasedDirXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDirName,
+                StepBasedDirXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDirName,
+                StepBasedDirGzippedXmiCollectionReader.PARAM_BASE_NAME_IGNORES, blackList
         );
     }
 
