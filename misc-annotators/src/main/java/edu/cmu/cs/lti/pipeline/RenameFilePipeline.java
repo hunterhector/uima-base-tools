@@ -31,11 +31,6 @@ public class RenameFilePipeline {
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createRecursiveXmiReader(
                 typeSystemDescription, parentDir, inputBase);
 
-//        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(outputParent, "xmi");
-//        SimplePipeline.runPipeline(reader, writer);
-
-//        AnalysisEngineDescription xmiWriter = CustomAnalysisEngineFactory.createXmiWriter(outputParent, "xmi");
-
         new BasicPipeline(reader, outputParent, "xmi").run();
     }
 
