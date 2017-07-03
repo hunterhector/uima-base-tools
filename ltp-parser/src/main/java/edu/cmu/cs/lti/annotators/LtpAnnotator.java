@@ -101,14 +101,9 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
             Postagger.postag(words, posTags);
             List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
 
-            logger.info("Sentence is " + sentence.getCoveredText());
-
             if (validSegmentation) {
 //            logger.info("Annotating tokens.");
                 List<LtpToken> tokens = annotateTokens(aJCas, characters, words, posTags);
-
-                logger.info("Sentence is " + Joiner.on(" ").join(words));
-
 //            logger.info("Annotating NER.");
                 List<String> ners = annotateNer(aJCas, tokens, words, posTags);
 
@@ -121,8 +116,10 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
                 annotateSrl(aJCas, tokens, words, posTags, ners, heads, depRels);
 //            DebugUtils.pause();
 
-            }else{
-                logger.warn("Skipping adding annotation to this sentence.");
+            } else {
+                logger.warn("Skipping adding annotation because invalid segmentation.");
+                logger.warn(sentence.getCoveredText());
+                logger.warn(Joiner.on(" ").join(words));
             }
         }
     }
@@ -159,8 +156,6 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
             int head = srls.get(i).first;
             LtpToken headToken = tokens.get(head);
 
-//            logger.info("Predicate is " + headToken.getCoveredText());
-
             List<LtpSemanticRelation> semanticRelations = new ArrayList<>();
             for (int j = 0; j < srls.get(i).second.size(); ++j) {
                 String type = srls.get(i).second.get(j).first;
@@ -176,8 +171,6 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
                 semanticRelation.setPropbankRoleName(type);
                 semanticRelations.add(semanticRelation);
                 UimaAnnotationUtils.finishTop(semanticRelation, COMPONENT_ID, 0, aJCas);
-
-//                logger.info(type + " " + argument.getCoveredText());
             }
 
             headToken.setChildSemanticRelations(FSCollectionFactory.createFSList(aJCas, semanticRelations));
@@ -195,21 +188,8 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
 
         int size = Parser.parse(words, posTags, heads, depRels);
 
-//        logger.info(Joiner.on(" ").join(words));
-//        logger.info("Number of words is " + words.size());
-//        logger.info("Number of dep relations is " + size);
-
         ArrayListMultimap<LtpToken, LtpDependency> headDependencies = ArrayListMultimap.create();
         ArrayListMultimap<LtpToken, LtpDependency> childDependencies = ArrayListMultimap.create();
-
-//        for (int i = 0; i < size; i++) {
-//            System.out.print(heads.get(i) + ":" + depRels.get(i));
-//            if (i == size - 1) {
-//                System.out.println();
-//            } else {
-//                System.out.print("        ");
-//            }
-//        }
 
         for (int i = 0; i < size; i++) {
             int headIndex = heads.get(i) - 1;
@@ -280,25 +260,6 @@ public class LtpAnnotator extends AbstractLoggingAnnotator {
     private List<LtpToken> annotateTokens(JCas aJCas, List<CharacterAnnotation> characters, List<String> words,
                                           List<String> posTags) {
         List<LtpToken> tokens = new ArrayList<>();
-
-//        String sourceSent = sentence.getCoveredText().replaceAll("\\s", "").replaceAll("\\n", "").replaceAll("\\r",
-// "");
-//        int size = Segmentor.segment(sourceSent, words);
-////        logger.info("Annotating " + sourceSent);
-//
-//        Postagger.postag(words, posTags);
-//
-//        List<CharacterAnnotation> characters = JCasUtil.selectCovered(CharacterAnnotation.class, sentence);
-//
-//        int totalLength = 0;
-//        for (String word : words) {
-//            totalLength += word.length();
-//        }
-//
-//        if (totalLength != characters.size()) {
-//            logger.error(String.format("Segmented words' total character length : %d is not the same as the " +
-//                    "original character length : %d", totalLength, characters.size()));
-//        }
 
         int currentLength = 0;
         for (int i = 0; i < words.size(); i++) {
