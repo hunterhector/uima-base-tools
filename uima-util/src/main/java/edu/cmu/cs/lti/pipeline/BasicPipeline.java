@@ -106,7 +106,7 @@ public class BasicPipeline {
         AnalysisEngineDescription[] engineDescriptions;
 
         this.robust = robust;
-        if (robust){
+        if (robust) {
             logger.info("Set to robust mode, will ignore all exceptions and continue.");
         }
 
@@ -310,20 +310,28 @@ public class BasicPipeline {
                 () -> {
                     while (true) {
                         // If there are no new jobs and all current jobs are done, we shut down the executor.
-                        if (noNewJobs.booleanValue() && counts[counts.length - 1].get() >= numInputFiles) {
-                            executor.shutdown();
-                            logger.info(String.format("Level %d count is %d, larger than %d.",
-                                    counts.length -1, counts[counts.length -1].get(), numInputFiles));
-                            logger.info("Shut down executor, do not take more jobs.");
-                            break;
+                        if (noNewJobs.booleanValue()) {
+                            logger.info(String.format("Jobs submitted : %s.", noNewJobs.booleanValue()));
+                            boolean jobFinished = counts[counts.length - 1].get() >= numInputFiles;
+                            if (jobFinished) {
+                                executor.shutdown();
+//                                logger.info(String.format("Level %d count is %d, larger than %d.",
+//                                        counts.length - 1, counts[counts.length - 1].get(), numInputFiles));
+//                                logger.info(String.format("Level larger : %s",
+//                                        counts[counts.length - 1].get() >= numInputFiles));
+//                                logger.info(String.format("Job finished : %s", jobFinished));
+                                logger.info("Shut down executor, do not take more jobs.");
+                                break;
+                            }
                         }
 
                         // The submitter will be responsible to check whether there are available task.
-                        ProcessElement nextTask = null;
+                        ProcessElement nextTask;
                         try {
                             nextTask = taskQueue.take();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
+                            break;
                         }
 
                         // Get the poison item, all elements are read. No more new jobs coming.
