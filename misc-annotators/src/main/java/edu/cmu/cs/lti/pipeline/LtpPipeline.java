@@ -2,7 +2,6 @@ package edu.cmu.cs.lti.pipeline;
 
 import edu.cmu.cs.lti.annotators.LtpAnnotator;
 import edu.cmu.cs.lti.collection_reader.LDCXmlCollectionReader;
-import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.io.writer.DocumentTextWriter;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -60,10 +59,6 @@ public class LtpPipeline {
                 DocumentTextWriter.PARAM_BASE_OUTPUT_DIR_NAME, "text"
         );
 
-        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(outputDir, "xmi");
-
-//        SimplePipeline.runPipeline(reader, textWriter, annotator, writer);
-
-        new BasicPipeline(reader, false, true, outputDir, "xmi", annotator).run();
+        new BasicPipeline(reader, false, true, 4, outputDir, "xmi", annotator).run();
     }
 }

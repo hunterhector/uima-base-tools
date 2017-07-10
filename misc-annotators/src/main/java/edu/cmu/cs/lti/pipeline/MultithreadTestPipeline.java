@@ -62,6 +62,6 @@ public class MultithreadTestPipeline {
                 QuoteAnnotator.MULTI_THREAD, true
         );
 
-        new BasicPipeline(reader, false, true, outputDir, "xmi", stanford, semafor, quote).run();
+        new BasicPipeline(reader, false, true, 10, outputDir, "xmi", stanford, semafor, quote).run();
     }
 }
