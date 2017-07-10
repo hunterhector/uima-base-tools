@@ -67,45 +67,48 @@ public class BasicPipeline {
     private ProcessTrace performanceTrace = null;
 
     // Must be at least 1.
-    private final int numWorkers = 10;
+    private final int numWorkers;
 
-    private final BlockingQueue<ProcessElement> taskQueue = new ArrayBlockingQueue<>(numWorkers);
+    private final BlockingQueue<ProcessElement> taskQueue;
 
     private final boolean robust;
 
-    // Number of threads: for the workers, and one additional for producer.
-    private ExecutorService executor = Executors.newFixedThreadPool(numWorkers + 2);
-//    private ScheduledExecutorService executor = Executors.newScheduledThreadPool(numWorkers + 2);
-
-    private BlockingQueue<CAS> availableCASes = new ArrayBlockingQueue<>(numWorkers);
+    private ExecutorService executor;
+    private BlockingQueue<CAS> availableCASes;
 
     private int numInputFiles;
 
     public BasicPipeline(CollectionReaderDescription reader, AnalysisEngineDescription... processors) throws
             UIMAException, CpeDescriptorException, SAXException, IOException {
-        this(reader, false, true, null, null, processors);
+        this(reader, false, true, 10, null, null, processors);
+    }
+
+    public BasicPipeline(CollectionReaderDescription reader, int numWorkers, AnalysisEngineDescription... processors)
+            throws UIMAException, CpeDescriptorException, SAXException, IOException {
+        this(reader, false, true, numWorkers, null, null, processors);
     }
 
 
     public BasicPipeline(CollectionReaderDescription reader, String workingDir, String outputDir,
                          AnalysisEngineDescription... processors) throws
             UIMAException, CpeDescriptorException, SAXException, IOException {
-        this(reader, false, true, workingDir, outputDir, processors);
+        this(reader, false, true, 10, workingDir, outputDir, processors);
     }
 
     public static BasicPipeline getRobust(CollectionReaderDescription reader, String workingDir,
                                           String outputDir, AnalysisEngineDescription... processors)
             throws SAXException, UIMAException, CpeDescriptorException, IOException {
-        return new BasicPipeline(reader, true, true, workingDir, outputDir, processors);
+        return new BasicPipeline(reader, true, true, 10, workingDir, outputDir, processors);
     }
 
-    public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats,
+    public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats, int numWorkers,
                          String workingDir, String outputDir, AnalysisEngineDescription... processors) throws
             UIMAException, CpeDescriptorException, SAXException, IOException {
         readerDescription = reader;
         AnalysisEngineDescription[] engineDescriptions;
 
         this.robust = robust;
+        this.numWorkers = numWorkers;
         if (robust) {
             logger.info("Set to robust mode, will ignore all exceptions and continue.");
         }
@@ -125,6 +128,11 @@ public class BasicPipeline {
 
         this.withStats = withStats;
         analysisEngineDescs = engineDescriptions;
+
+        // Number of threads for the workers, one additional for producer, one additional for dispatcher.
+        executor = Executors.newFixedThreadPool(numWorkers + 2);
+        availableCASes = new ArrayBlockingQueue<>(numWorkers);
+        taskQueue = new ArrayBlockingQueue<>(numWorkers);
     }
 
     /**

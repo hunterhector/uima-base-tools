@@ -36,8 +36,8 @@ import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -51,14 +51,7 @@ import java.util.List;
  * @author zhengzhongliu
  */
 public class AgigaCollectionReader extends AbstractCollectionReader {
-
-    public static final String PARAM_INPUTDIR = "InputDirectory";
-
-    private File[] gzFileList;
-
     private int gCurrentIndex;
-
-    private File currentFile;
 
     private int fileOffset;
 
@@ -70,24 +63,26 @@ public class AgigaCollectionReader extends AbstractCollectionReader {
 
     private HeadFinder shf = new SemanticHeadFinder();
 
-    int treeId = 0;
+    private int treeId = 0;
 
     private static String className = AgigaCollectionReader.class.getSimpleName();
+    private String fileUrl;
+    private long fileSize;
+
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
-        File inputDir = new File(((String) getConfigParameterValue(PARAM_INPUTDIR)).trim());
         gCurrentIndex = 0;
 
-        if (!(inputDir.exists() && inputDir.isDirectory())) {
-            throw new ResourceInitializationException(new FileNotFoundException(inputDir.getAbsolutePath()));
-        }
+        logger.info("Number of original document collection: " + files.size());
 
-        gzFileList = inputDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".gz"));
-
-        if (gzFileList.length > 0) {
-            readNewGzFile();
+        if (files.size() > 0) {
+            try {
+                readNewGzFile();
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -101,15 +96,19 @@ public class AgigaCollectionReader extends AbstractCollectionReader {
         fileOffset += 1;
         treeId = 0;
         uimafyAnnotations(jcas, currentDoc);
-        UimaAnnotationUtils.setSourceDocumentInformation(jcas, currentFile.toURI().toURL().toString(), (int) currentFile.length(), fileOffset, !reader.hasNext());
+        UimaAnnotationUtils.setSourceDocumentInformation(jcas, fileUrl, (int) fileSize, fileOffset, !reader.hasNext());
     }
 
 
     @Override
     public boolean hasNext() throws IOException, CollectionException {
+        if (files.size() == 0) {
+            return false;
+        }
+
         if (reader.hasNext()) {
             return true;
-        } else if (gCurrentIndex < gzFileList.length) {
+        } else if (gCurrentIndex < files.size()) {
             readNewGzFile();
             if (reader.hasNext()) {
                 return true;
@@ -119,10 +118,15 @@ public class AgigaCollectionReader extends AbstractCollectionReader {
         return false;
     }
 
-    private void readNewGzFile() {
-        currentFile = gzFileList[gCurrentIndex];
-        reader = new StreamingDocumentReader(gzFileList[gCurrentIndex++].getAbsolutePath(), prefs);
+    private void readNewGzFile() throws MalformedURLException {
+        File currentFile = files.get(gCurrentIndex);
+        fileUrl = currentFile.toURI().toURL().toString();
+        fileSize = currentFile.length();
+
+        logger.info("Reading compressed package: " + currentFile);
+        reader = new StreamingDocumentReader(currentFile.getAbsolutePath(), prefs);
         fileOffset = 0;
+        gCurrentIndex++;
     }
 
     private void uimafyAnnotations(JCas jcas, AgigaDocument doc) {
@@ -381,7 +385,7 @@ public class AgigaCollectionReader extends AbstractCollectionReader {
 
     @Override
     public Progress[] getProgress() {
-        return new Progress[]{new ProgressImpl(gCurrentIndex, gzFileList.length, Progress.ENTITIES)};
+        return new Progress[]{new ProgressImpl(gCurrentIndex, files.size(), Progress.ENTITIES)};
     }
 
 
@@ -471,7 +475,8 @@ public class AgigaCollectionReader extends AbstractCollectionReader {
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 AgigaCollectionReader.class, typeSystemDescription,
-                AgigaCollectionReader.PARAM_INPUTDIR, paramInputDir);
+                AgigaCollectionReader.PARAM_DATA_PATH, paramInputDir
+        );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
                 paramParentOutputDir, paramBaseOutputDirName, 0,

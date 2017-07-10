@@ -6,7 +6,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.xml.sax.SAXException;
@@ -48,12 +47,11 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
             }
         }
 
-        JCas srcDocInfoView = JCasUtil.getView(aJCas, srcDocInfoViewName, aJCas);
-
         if (StringUtils.isEmpty(outputFileSuffix)) {
             outputFileSuffix = DEFAULT_FILE_SUFFIX;
         }
-        String outputFileName = CasSerialization.getOutputFileNameFromSource(srcDocInfoView, outputFileSuffix);
+        String outputFileName = CasSerialization.getOutputFileNameFromSource(aJCas, outputFileSuffix);
+
 
         File outputFile;
         if (outputFileName == null) {
