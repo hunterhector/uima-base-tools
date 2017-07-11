@@ -1,20 +1,19 @@
-package edu.cmu.cs.lti.cr.readers.annotated_nyt;
+package edu.cmu.cs.lti.collection_reader;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.nytlabs.corpus.NYTCorpusDocument;
 import com.nytlabs.corpus.NYTCorpusDocumentParser;
-import edu.cmu.cs.lti.cr.io.IOHelper;
-import edu.stanford.nlp.ie.AbstractSequenceClassifier;
-import edu.stanford.nlp.ie.crf.CRFClassifier;
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreLabel;
+import edu.cmu.cs.lti.util.IOHelper;
+import edu.cmu.cs.lti.utils.DebugUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Created with IntelliJ IDEA.
@@ -25,27 +24,31 @@ import java.util.*;
 public class AnnotatedNytReader {
     private Iterator<File> nytIter;
 
-    NYTCorpusDocumentParser parser = new NYTCorpusDocumentParser();
+    private NYTCorpusDocumentParser parser = new NYTCorpusDocumentParser();
 
-    boolean doValidate = false;
+    private boolean doValidate = false;
 
-    File dataRootDirectory;
+    private File dataRootDirectory;
 
-    int yearIdx = 0;
-    int monthIdx = 0;
-    int dayIdx = 0;
+    private int yearIdx = 0;
+    private int monthIdx = 0;
+    private int dayIdx = 0;
 
-    List<File> years;
+    private List<File> years;
 
-    List<File> months;
+    private List<File> months;
 
-    List<File> days;
+    private List<File> days;
 
-    File nytFile;
+    private File nytFile;
 
-    NYTCorpusDocument nytDoc;
+    private NYTCorpusDocument nytDoc;
 
     public AnnotatedNytReader(File dataRootDirectory) {
+        years = new ArrayList<>();
+        months = new ArrayList<>();
+        days = new ArrayList<>();
+
         if (!dataRootDirectory.isDirectory()) {
             throw new IllegalArgumentException("Please provide a correct directory to start");
         }
@@ -68,21 +71,21 @@ public class AnnotatedNytReader {
         }
     }
 
-    public void reset(){
+    public void reset() {
         yearIdx = 0;
-         monthIdx = 0;
-         dayIdx = 0;
+        monthIdx = 0;
+        dayIdx = 0;
     }
 
-    public void resetYear(){
+    public void resetYear() {
         yearIdx = 0;
     }
 
-    public void resetMonth(){
+    public void resetMonth() {
         monthIdx = 0;
     }
 
-    public void resetDay(){
+    public void resetDay() {
         dayIdx = 0;
     }
 
@@ -96,7 +99,7 @@ public class AnnotatedNytReader {
 
     public void readNextYear() {
         scanDocuments(years.get(yearIdx));
-        yearIdx ++;
+        yearIdx++;
     }
 
     public boolean hasNextMonth() {
@@ -105,7 +108,7 @@ public class AnnotatedNytReader {
 
     public void readNextMonth() {
         scanDocuments(months.get(monthIdx));
-        monthIdx ++;
+        monthIdx++;
     }
 
     public boolean hasNextDay() {
@@ -114,18 +117,19 @@ public class AnnotatedNytReader {
 
     public void readNextDay() {
         scanDocuments(days.get(dayIdx));
-        dayIdx ++;
+        dayIdx++;
     }
 
-    public void readAll(){
+    public void readAll() {
         scanDocuments(dataRootDirectory);
     }
 
-    public void scanDocuments(File dataDirectory) {
+    private void scanDocuments(File dataDirectory) {
         if (!dataDirectory.isDirectory()) {
             throw new IllegalArgumentException("Please provide a correct directory to start");
         }
-        Collection<File> nytFiles = FileUtils.listFiles(dataDirectory, new SuffixFileFilter(".xml"), TrueFileFilter.INSTANCE);
+        Collection<File> nytFiles = FileUtils.listFiles(dataDirectory, new SuffixFileFilter(".xml"), TrueFileFilter
+                .INSTANCE);
         nytIter = nytFiles.iterator();
     }
 
@@ -138,17 +142,17 @@ public class AnnotatedNytReader {
             nytFile = nytIter.next();
             nytDoc = parser.parseNYTCorpusDocumentFromFile(nytFile, doValidate);
             return nytDoc;
-        }else{
+        } else {
             return null;
         }
     }
 
-    public void dumpDocumentByDate(File outDir) throws IOException{
-        int month  = nytDoc.getPublicationMonth();
+    public void dumpDocumentByDate(File outDir) throws IOException {
+        int month = nytDoc.getPublicationMonth();
         int year = nytDoc.getPublicationYear();
         int day = nytDoc.getPublicationDayOfMonth();
 
-        File outputFile = new File(String.format("%s/%d/%d/%d/%s",outDir, year, month, day , nytFile.getName()));
+        File outputFile = new File(String.format("%s/%d/%d/%d/%s", outDir, year, month, day, nytFile.getName()));
         System.out.println("Dumping " + nytFile.getName());
         IOHelper.writeFile(outputFile, FileUtils.readFileToString(nytFile));
 
@@ -173,12 +177,13 @@ public class AnnotatedNytReader {
 
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
-        AnnotatedNytReader reader = new AnnotatedNytReader(new File("data"));
-        String serializedClassifier = "classifiers/english.muc.7class.distsim.crf.ser.gz";
+        String inputPath = args[0];
 
-        AbstractSequenceClassifier<CoreLabel> classifier = CRFClassifier.getClassifier(serializedClassifier);
+        AnnotatedNytReader reader = new AnnotatedNytReader(new File(inputPath));
 
-        ArrayListMultimap<Date, List<String>> time2EntityLists = ArrayListMultimap.create();
+//        String serializedClassifier = "classifiers/english.muc.7class.distsim.crf.ser.gz";
+//        AbstractSequenceClassifier<CoreLabel> classifier = CRFClassifier.getClassifier(serializedClassifier);
+//        ArrayListMultimap<Date, List<String>> time2EntityLists = ArrayListMultimap.create();
 
         while (reader.hasNextDocument()) {
             NYTCorpusDocument doc = reader.getNextDocument();
@@ -186,30 +191,11 @@ public class AnnotatedNytReader {
             List<String> descriptors = doc.getTaxonomicClassifiers();
             String body = doc.getBody();
 
-            String entity = "";
-            String lastLabel = "";
+            System.out.println("Taxonomy: " + taxo);
+            System.out.println("Descriptors: " + descriptors);
+            System.out.println(body);
 
-            List<String> entities = new ArrayList<String>();
-
-            List<List<CoreLabel>> res = classifier.classify(body);
-            for (List<CoreLabel> sent : res) {
-                for (CoreLabel word : sent) {
-                    String thisLabel = word.get(CoreAnnotations.AnswerAnnotation.class);
-                    if (!thisLabel.equals("O")) {
-                        if (lastLabel.equals(thisLabel)) {
-                            entity += " " + word.word();
-                        } else {
-                            if (lastLabel.equals("PERSON") || lastLabel.equals("ORGANIZATION")) {
-                                System.out.println(entity);
-                            }
-                            entities.add(entity);
-                            entity = word.word();
-
-                        }
-                    }
-                    lastLabel = thisLabel;
-                }
-            }
+            DebugUtils.pause();
         }
     }
 }

@@ -1,4 +1,4 @@
-package edu.cmu.cs.lti.cr.readers.annotated_nyt;
+package edu.cmu.cs.lti.util;
 
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
