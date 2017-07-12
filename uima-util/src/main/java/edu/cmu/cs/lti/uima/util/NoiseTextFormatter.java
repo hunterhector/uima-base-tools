@@ -79,7 +79,7 @@ public class NoiseTextFormatter {
         return this;
     }
 
-    public NoiseTextFormatter cleanEscapeCharecter() {
+    public NoiseTextFormatter cleanEscapeCharacter() {
         String unescapeText = StringEscapeUtils.unescapeXml(text);
         text = edu.cmu.cs.lti.utils.StringUtils.matchText(text, unescapeText);
         return this;
@@ -91,7 +91,7 @@ public class NoiseTextFormatter {
     }
 
     public String cleanAll(String language) {
-        cleanEscapeCharecter().cleanXMLCharacters().possibleStopBreaker(language).cleanForum().cleanNews()
+        cleanEscapeCharacter().cleanXMLCharacters().possibleStopBreaker(language).cleanForum().cleanNews()
                 .cleanXMLHeader().multiNewLineBreaker(language);
         if (text.length() != originalLength) {
             System.out.println(String.format(

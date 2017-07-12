@@ -65,7 +65,7 @@ public class LtpParser {
 
         String wordStr = Joiner.on("").join(allWords);
 
-        int[] offsets = StringUtils.matchOffset(paragraph, wordStr);
+        int[] offsets = StringUtils.translateOffset(paragraph, wordStr);
 
         int currentOffset = 0;
         for (String word : allWords) {

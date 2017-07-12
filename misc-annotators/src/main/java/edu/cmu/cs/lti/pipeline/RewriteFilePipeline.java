@@ -8,7 +8,6 @@ import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.collection.metadata.CpeDescriptorException;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
-import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.uimafit.factory.TypeSystemDescriptionFactory;
 import org.xml.sax.SAXException;
@@ -22,20 +21,10 @@ import java.io.IOException;
  *
  * @author Zhengzhong Liu
  */
-public class RenameFilePipeline {
-    public static void writeXmi(TypeSystemDescription typeSystemDescription, String parentDir, String inputBase,
-                                String outputParent)
-            throws UIMAException, IOException, CpeDescriptorException, SAXException {
-        System.out.println("Writing XMI");
-
-        CollectionReaderDescription reader = CustomCollectionReaderFactory.createRecursiveXmiReader(
-                typeSystemDescription, parentDir, inputBase);
-
-        new BasicPipeline(reader, outputParent, "xmi").run();
-    }
-
+public class RewriteFilePipeline {
     public static void writeJson(TypeSystemDescription typeSystemDescription, String parentDir,
-                                 String inputBase, String outputPath) throws UIMAException, IOException {
+                                 String inputBase, String spottedSource, String outputPath)
+            throws UIMAException, IOException, CpeDescriptorException, SAXException {
         System.out.println("Writing JSON");
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createRecursiveXmiReader(
                 typeSystemDescription, parentDir, inputBase);
@@ -43,23 +32,26 @@ public class RenameFilePipeline {
         String jsonOut = FileUtils.joinPaths(outputPath);
         AnalysisEngineDescription jsonWriter = AnalysisEngineFactory.createEngineDescription(
                 CoreferenceJSONWriter.class, typeSystemDescription,
-                CoreferenceJSONWriter.PARAM_OUTPUT_PATH, jsonOut
+                CoreferenceJSONWriter.PARAM_OUTPUT_PATH, jsonOut,
+                CoreferenceJSONWriter.PARAM_SOURCE_TAGGED_TEXT_FOLDER, spottedSource
         );
 
-        SimplePipeline.runPipeline(reader, jsonWriter);
+        new BasicPipeline(reader, 8, jsonWriter).run();
+
+//        SimplePipeline.runPipeline(reader, jsonWriter);
     }
 
     public static void main(String[] argv) throws UIMAException, IOException, CpeDescriptorException, SAXException {
         String parentDir = argv[0];
         String inputBase = argv[1];
-        String outputDir = argv[2];
+        String spottedSourceDir = argv[2];
 
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
                 .createTypeSystemDescription("TypeSystem");
 
-        String jsonOut = FileUtils.joinPaths(outputDir, "all.json");
+        String jsonOut = FileUtils.joinPaths(parentDir, "all.json");
 
-        writeXmi(typeSystemDescription, parentDir, inputBase, outputDir);
-//        writeJson(typeSystemDescription, outputDir, middleBase, jsonOut);
+//        writeXmi(typeSystemDescription, parentDir, inputBase, outputDir);
+        writeJson(typeSystemDescription, parentDir, inputBase, spottedSourceDir, jsonOut);
     }
 }
