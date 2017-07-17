@@ -177,7 +177,7 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
         fileFilter = new AbstractFileFilter() {
             @Override
             public boolean accept(File file) {
-                String baseName = FilenameUtils.getBaseName(file.getName());
+                String baseName = getBaseName(file.getName());
                 boolean trueExtension = extension == null || file.getName().endsWith(extension);
                 boolean blackList = finalUseBlackList && ignoringBaseNames.contains(baseName);
                 boolean passWhiteList = !finalUseWhiteList || acceptableBasenames.contains(baseName);
@@ -204,6 +204,14 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
 
         logger.info(String.format("%d files ignored, %d files will be read.",
                 numFilesIgnored.get(), numFilesToRead.get()));
+    }
+
+    private String getBaseName(String filename) {
+        if (extension != null) {
+            return filename.replaceAll(extension + "$", "");
+        } else {
+            return FilenameUtils.getBaseName(filename);
+        }
     }
 
     protected String defaultFileSuffix() {

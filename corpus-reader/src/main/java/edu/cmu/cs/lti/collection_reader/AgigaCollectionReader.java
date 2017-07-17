@@ -77,6 +77,20 @@ public class AgigaCollectionReader extends AbstractCollectionReader {
 
         logger.info("Number of original document collection: " + files.size());
 
+        // Just prefer to run NYT first.
+        files.sort((o1, o2) -> {
+            String name1 = o1.getName();
+            String name2 = o2.getName();
+
+            if (name1.startsWith("nyt") && !name2.startsWith("nyt")) {
+                return -1;
+            } else if (!name1.startsWith("nyt") && name2.startsWith("nyt")) {
+                return 1;
+            } else {
+                return o1.compareTo(o2);
+            }
+        });
+
         if (files.size() > 0) {
             try {
                 readNewGzFile();

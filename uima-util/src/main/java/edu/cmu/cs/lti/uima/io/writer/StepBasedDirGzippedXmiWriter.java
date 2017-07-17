@@ -13,6 +13,7 @@ import org.xml.sax.SAXException;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * This analysis engine outputs gzipped CAS in the XMI format.
@@ -24,6 +25,7 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
 
     private static final String DEFAULT_FILE_SUFFIX = ".xmi.gz";
 
+
     @ConfigurationParameter(name = PARAM_OUTPUT_FILE_NUMBERS, mandatory = false)
     /**
      * This is a list of documents that you want to generate XMI output. If it is
@@ -31,18 +33,18 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
      */
     private List<String> outputDocumentNumberList;
 
-    private int docCounter;
+    private AtomicInteger docCounter;
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
-        docCounter = 0;
+        docCounter = new AtomicInteger(0);
     }
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         if (!CollectionUtils.isEmpty(outputDocumentNumberList)) {
-            if (!outputDocumentNumberList.contains(Integer.toString(docCounter))) {
+            if (!outputDocumentNumberList.contains(Integer.toString(docCounter.get()))) {
                 return;
             }
         }
@@ -55,10 +57,12 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
 
         File outputFile;
         if (outputFileName == null) {
-            outputFile = new File(outputDir, "doc" + (docCounter++) + DEFAULT_FILE_SUFFIX);
+            outputFile = new File(outputDir, "doc" + (docCounter.get()) + DEFAULT_FILE_SUFFIX);
         } else {
             outputFile = new File(outputDir, outputFileName);
         }
+
+        docCounter.incrementAndGet();
 
         // serialize XCAS and write to output file
         try {
