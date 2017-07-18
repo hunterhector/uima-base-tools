@@ -42,21 +42,6 @@ public class TagmeStyleJSONReader extends AbstractCollectionReader {
         }
     }
 
-//    private String cleanText(String text) {
-//        StringBuilder cleanedText = new StringBuilder(text);
-//        int invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
-//
-//        while (invalid > -1) {
-////            logger.info("Removing invalid character at " + invalid);
-////            cleanedText.delete(invalid, invalid + 1);
-//            // Replacing invalid characters with spaces.
-//            cleanedText.replace(invalid, invalid +1, " ");
-//            invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
-//        }
-//
-//        return cleanedText.toString();
-//    }
-
     @Override
     public void getNext(JCas jCas) throws IOException, CollectionException {
         JsonObject jsonObj = new JsonParser().parse(nextLine).getAsJsonObject();

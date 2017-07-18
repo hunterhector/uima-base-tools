@@ -269,10 +269,13 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
     private void annotateEnglish(JCas aJCas, int textOffset) {
         Annotation document = new Annotation(aJCas.getDocumentText());
-        logger.info(String.format("Annotate %s with English CoreNLP.", UimaConvenience.getDocumentName(aJCas)));
+        if (!keepQuiet) {
+            logger.info(String.format("Annotate %s with English CoreNLP.", UimaConvenience.getDocumentName(aJCas)));
+        }
         pipeline.annotate(document);
-        logger.info("Annotation done, applying to JCas.");
-        endProcessInfo(aJCas);
+        if (!keepQuiet) {
+            endProcessInfo(aJCas);
+        }
 
         // Adding token level annotations.
         Map<Span, StanfordEntityMention> spanMentionMap = new HashMap<Span, StanfordEntityMention>();

@@ -186,6 +186,25 @@ public class CustomAnalysisEngineFactory {
      *
      * @param parentOutputDirPath
      * @param baseOutputDirName
+     * @return
+     * @throws ResourceInitializationException
+     */
+    public static AnalysisEngineDescription createGzippedXmiWriter(String parentOutputDirPath,
+                                                                   String baseOutputDirName)
+            throws ResourceInitializationException {
+        return AnalysisEngineFactory.createEngineDescription(
+                StepBasedDirGzippedXmiWriter.class,
+                StepBasedDirGzippedXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, parentOutputDirPath,
+                StepBasedDirGzippedXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME, baseOutputDirName,
+                AbstractLoggingAnnotator.MULTI_THREAD, true
+        );
+    }
+
+    /**
+     * Creates a gzipped XMI writer without specifying a particular output view.
+     *
+     * @param parentOutputDirPath
+     * @param baseOutputDirName
      * @param stepNumber
      * @param outputFileSuffix
      * @return

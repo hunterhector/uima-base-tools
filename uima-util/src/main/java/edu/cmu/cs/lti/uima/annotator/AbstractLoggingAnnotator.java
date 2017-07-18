@@ -27,8 +27,8 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @ConfigurationParameter(name = PARAM_KEEP_QUIET, mandatory = false)
-    private Boolean keepQuiet;
+    @ConfigurationParameter(name = PARAM_KEEP_QUIET, defaultValue = "false")
+    protected Boolean keepQuiet;
 
     @ConfigurationParameter(name = PARAM_LOGGING_OUT_FILE, mandatory = false)
     private String loggingFileName;
