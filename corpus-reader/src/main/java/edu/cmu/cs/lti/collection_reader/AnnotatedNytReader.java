@@ -93,8 +93,6 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
         String dateLine = document.getDateline();
 
         String dayOfWeek = document.getDayOfWeek();
-        int month = document.getPublicationMonth();
-        int day = document.getPublicationDayOfMonth();
 
         List<String> generalOnlineDescriptors = document.getGeneralOnlineDescriptors();
         List<String> onlineDescriptors = document.getOnlineDescriptors();
@@ -115,8 +113,6 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
 
         List<String> authoredWorks = document.getOnlineTitles();
         List<String> typesOfMaterial = document.getTypesOfMaterial();
-
-        Integer columnNumber = document.getColumnNumber();
 
         List<String> leadParagraphs = getParagraphs(document.getLeadParagraph());
 
@@ -159,8 +155,6 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
         metadata.setOnlineHeadline(onlineHeadline);
         metadata.setNormalizedByline(normalizedByline);
         metadata.setDayOfWeek(dayOfWeek);
-        metadata.setMonth(month);
-        metadata.setDay(day);
 
         metadata.setBiographicalCategories(FSCollectionFactory.createStringList(jCas, biographicalCategories));
         metadata.setGeneralOnlineDescriptors(FSCollectionFactory.createStringList(jCas, generalOnlineDescriptors));
@@ -176,10 +170,21 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
         metadata.setOnlineOrganizations(FSCollectionFactory.createStringList(jCas, onlineOrganizations));
         metadata.setAuthoredWorks(FSCollectionFactory.createStringList(jCas, authoredWorks));
         metadata.setTypeOfMaterials(FSCollectionFactory.createStringList(jCas, typesOfMaterial));
+
+
+        Integer month = document.getPublicationMonth();
+        Integer day = document.getPublicationDayOfMonth();
+        Integer columnNumber = document.getColumnNumber();
+
+        if (month != null) {
+            metadata.setMonth(month);
+        }
+        if (day != null) {
+            metadata.setDay(day);
+        }
         if (columnNumber != null) {
             metadata.setColumnNumber(columnNumber);
         }
-
 
         Article article = new Article(jCas, 0, documentText.length());
         article.setArticleDate(dateLine);
