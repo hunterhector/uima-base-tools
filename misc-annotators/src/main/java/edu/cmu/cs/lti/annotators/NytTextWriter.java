@@ -11,7 +11,6 @@ import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
-import org.apache.commons.io.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -27,8 +26,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.xml.sax.SAXException;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,9 +43,16 @@ public class NytTextWriter extends AbstractLoggingAnnotator {
     @ConfigurationParameter(name = PARAM_OUTPUT_FILE)
     private File outputFile;
 
+    private Writer writer;
+
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
+        try {
+            writer = new BufferedWriter(new FileWriter(outputFile));
+        } catch (IOException e) {
+            throw new ResourceInitializationException(e);
+        }
     }
 
     @Override
@@ -72,8 +77,7 @@ public class NytTextWriter extends AbstractLoggingAnnotator {
         String jsonString = gson.toJson(root);
 
         try {
-            FileUtils.write(outputFile, jsonString + "\n");
-
+            writer.write(jsonString + "\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -95,7 +99,8 @@ public class NytTextWriter extends AbstractLoggingAnnotator {
         String paramInputDir = argv[0];
         String outputFile = argv[1];
 
-        CollectionReaderDescription reader = CustomCollectionReaderFactory.createXmiReader(paramInputDir, "tokenized");
+        CollectionReaderDescription reader = CustomCollectionReaderFactory.createGzippedXmiReader
+                (typeSystemDescription, paramInputDir);
 
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 NytTextWriter.class, typeSystemDescription,
