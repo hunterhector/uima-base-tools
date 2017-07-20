@@ -61,6 +61,10 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
     @ConfigurationParameter(name = PARAM_BASE_NAME_IGNORES, mandatory = false)
     protected File baseNameIgnores;
 
+    public static final String PARAM_FULL_PATH_IGNORES = "FullPathIgnores";
+    @ConfigurationParameter(name = PARAM_FULL_PATH_IGNORES, mandatory = false)
+    protected File fullPathIgnores;
+
     public static final String PARAM_DATA_PATH = "dataPath";
     @ConfigurationParameter(name = PARAM_DATA_PATH, mandatory = false)
     protected String dataPath;
@@ -125,11 +129,11 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
 
         // Setup ignores.
         Set<String> ignoringBaseNames = new HashSet<>();
-        boolean useBlackList = false;
+        boolean useBasenameBlackList = false;
         if (baseNameIgnores != null) {
             if (baseNameIgnores.exists()) {
                 logger.info("Base name ignore file is: " + baseNameIgnores);
-                useBlackList = true;
+                useBasenameBlackList = true;
                 try {
                     for (String s : FileUtils.readLines(baseNameIgnores)) {
                         ignoringBaseNames.add(s.trim());
@@ -143,6 +147,27 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
             }
         }
         logger.info(String.format("Number of black listed base name: %d.", ignoringBaseNames.size()));
+
+
+        Set<String> ignoringFullpaths = new HashSet<>();
+        boolean useFullpathBlackList = false;
+        if (fullPathIgnores != null) {
+            if (fullPathIgnores.exists()) {
+                logger.info("Full path ignore file is: " + fullPathIgnores);
+                useFullpathBlackList = true;
+                try {
+                    for (String s : FileUtils.readLines(fullPathIgnores)) {
+                        ignoringFullpaths.add(s.trim());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                logger.warn(String.format("Full path black list file [%s] cannot be found, will not use it",
+                        fullPathIgnores));
+            }
+        }
+        logger.info(String.format("Number of ignored full path: %d.", ignoringFullpaths.size()));
 
         // Setup accepts
         Set<String> acceptableBasenames = new HashSet<>();
@@ -172,21 +197,29 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
         AtomicInteger numFilesToRead = new AtomicInteger();
         AtomicInteger numFilesIgnored = new AtomicInteger();
 
-        boolean finalUseBlackList = useBlackList;
+        boolean finalUseBlackList = useBasenameBlackList;
         boolean finalUseWhiteList = useWhiteList;
+        boolean finalUseFullpathBlackList = useFullpathBlackList;
         fileFilter = new AbstractFileFilter() {
             @Override
             public boolean accept(File file) {
                 String baseName = getBaseName(file.getName());
+                String fullpathName = null;
+                try {
+                    fullpathName = file.getCanonicalPath();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 boolean trueExtension = extension == null || file.getName().endsWith(extension);
-                boolean blackList = finalUseBlackList && ignoringBaseNames.contains(baseName);
+                boolean basenameBlackList = finalUseBlackList && ignoringBaseNames.contains(baseName);
+                boolean fullPathBlackList = finalUseFullpathBlackList && ignoringFullpaths.contains(fullpathName);
                 boolean passWhiteList = !finalUseWhiteList || acceptableBasenames.contains(baseName);
 
-                if (blackList) {
+                if (basenameBlackList || fullPathBlackList) {
                     numFilesIgnored.incrementAndGet();
                 }
 
-                boolean accept = passWhiteList && !blackList && trueExtension;
+                boolean accept = passWhiteList && !basenameBlackList && !fullPathBlackList && trueExtension;
 
                 if (accept) {
                     if (file.isFile()) {

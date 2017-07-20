@@ -33,7 +33,8 @@ public class NytTextPipeline {
                 AnnotatedNytReader.class, typeSystemDescription,
                 AnnotatedNytReader.PARAM_DATA_PATH, paramInputDir,
                 AnnotatedNytReader.PARAM_FILE_EXTENSION, ".tgz",
-                AnnotatedNytReader.PARAM_RECURSIVE, true
+                AnnotatedNytReader.PARAM_RECURSIVE, true,
+                AnnotatedNytReader.PARAM_FULL_PATH_IGNORES, "/media/hdd/hdd0/data/Annotated_NYT_uima/ignored_files.txt"
         );
 
         AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
@@ -46,7 +47,5 @@ public class NytTextPipeline {
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createGzippedXmiWriter(
                 outputDir, "tokenized");
         SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer);
-
-
     }
 }

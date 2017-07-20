@@ -116,7 +116,7 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
         List<String> authoredWorks = document.getOnlineTitles();
         List<String> typesOfMaterial = document.getTypesOfMaterial();
 
-        int columnNumber = document.getColumnNumber();
+        Integer columnNumber = document.getColumnNumber();
 
         List<String> leadParagraphs = getParagraphs(document.getLeadParagraph());
 
@@ -176,7 +176,9 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
         metadata.setOnlineOrganizations(FSCollectionFactory.createStringList(jCas, onlineOrganizations));
         metadata.setAuthoredWorks(FSCollectionFactory.createStringList(jCas, authoredWorks));
         metadata.setTypeOfMaterials(FSCollectionFactory.createStringList(jCas, typesOfMaterial));
-        metadata.setColumnNumber(columnNumber);
+        if (columnNumber != null) {
+            metadata.setColumnNumber(columnNumber);
+        }
 
 
         Article article = new Article(jCas, 0, documentText.length());
