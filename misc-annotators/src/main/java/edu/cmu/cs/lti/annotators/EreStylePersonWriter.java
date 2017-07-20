@@ -16,6 +16,7 @@ import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
+import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -79,16 +80,27 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
 
         Collection<Entity> entities = JCasUtil.select(aJCas, Entity.class);
 
-        index = 0;
-        for (Entity entity : entities) {
-            entity.setId("ent-" + index);
-            index++;
-        }
-
-        List<Entity> personalEntities = new ArrayList<>();
+        Set<EntityMention> nonSingletons = new HashSet<>();
+        Map<String, Collection<EntityMention>> personalEntities = new HashMap<>();
+        int eid = 0;
         for (Entity entity : entities) {
             if (isPersonalEntity(entity)) {
-                personalEntities.add(entity);
+                Collection<EntityMention> mentions = FSCollectionFactory.create(entity.getEntityMentions(),
+                        EntityMention.class);
+                personalEntities.put("ent-" + eid, mentions);
+                eid++;
+            }
+        }
+
+        for (EntityMention entityMention : entityMentions) {
+            if (nonSingletons.contains(entityMention)) {
+                // only check for singleton here.
+                continue;
+            }
+            String type = getEntityMentionType(entityMention);
+            if (type != null && type.equals("PERSON")) {
+                personalEntities.put("ent-" + eid, Collections.singletonList(entityMention));
+                eid++;
             }
         }
 
@@ -108,7 +120,17 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
         }
     }
 
-    private Document createXml(List<Entity> uimaEntities, String docid) {
+    private String getEntityMentionString(EntityMention mention) {
+        int numTokens = JCasUtil.selectCovered(StanfordCorenlpToken.class, mention).size();
+        if (numTokens > 5) {
+            StanfordCorenlpToken head = UimaNlpUtils.findHeadFromStanfordAnnotation(mention);
+            return head.getCoveredText().replaceAll("\n", " ");
+        } else {
+            return mention.getCoveredText().replaceAll("\n", " ");
+        }
+    }
+
+    private Document createXml(Map<String, Collection<EntityMention>> uimaEntities, String docid) {
         Document doc = new Document();
         Element root = new Element("deft_ere");
         root.setAttribute("doc_id", docid);
@@ -116,22 +138,21 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
 
         Element entities = new Element("entities");
 
-        for (Entity uimaEntity : uimaEntities) {
+        for (Map.Entry<String, Collection<EntityMention>> entityEntry : uimaEntities.entrySet()) {
             Element entity = new Element("entity");
-            entity.setAttribute("id", uimaEntity.getId());
+            entity.setAttribute("id", entityEntry.getKey());
             entity.setAttribute("type", "PER");
             entity.setAttribute("specificity", "specific");
 
-            for (int i = 0; i < uimaEntity.getEntityMentions().size(); i++) {
-                EntityMention uimaMention = uimaEntity.getEntityMentions(i);
+            for (EntityMention uimaMention : entityEntry.getValue()) {
                 Element entityMention = new Element("entity_mention");
                 entityMention.setAttribute("id", uimaMention.getId());
                 entityMention.setAttribute("source", docid);
                 entityMention.setAttribute("offset", String.valueOf(uimaMention.getBegin()));
                 entityMention.setAttribute("length", String.valueOf(uimaMention.getEnd() - uimaMention.getBegin()));
                 Element mentionText = new Element("mention_text");
-                entity.addContent(entityMention.addContent(mentionText.addContent(uimaMention.getCoveredText()
-                        .replaceAll("\n", " "))));
+                entity.addContent(entityMention.addContent(mentionText.addContent(
+                        getEntityMentionString(uimaMention))));
             }
             entities.addContent(entity);
         }
@@ -176,39 +197,11 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
         Map<String, Integer> typeCount = new HashMap<>();
         for (int i = 0; i < entity.getEntityMentions().size(); i++) {
             EntityMention mention = entity.getEntityMentions(i);
-            String entityType = mention.getEntityType();
-            if (entityType == null) {
-                StanfordCorenlpToken headword = UimaNlpUtils.findHeadFromStanfordAnnotation(mention);
-                if (headword != null) {
-                    String lemma = headword.getLemma();
-                    if (personalNouns.contains(lemma.toLowerCase())) {
-                        entityType = "PERSON";
-//                        logger.info("Mention is " + mention.getCoveredText());
-//                        logger.info("Head lemma is " + lemma);
-                    } else if (lemma.equals("I")) {
-                        // The only capital comparison.
-                        entityType = "PERSON";
-                    }
-                }
-
-                if (language.equals("zh")) {
-                    CharacterAnnotation headCharacter = UimaNlpUtils.findHeadCharacterFromZparAnnotation(mention);
-                    if (headCharacter != null) {
-                        String head = headCharacter.getCoveredText();
-//                        logger.info("The head character is " + head);
-                        if (personalNouns.contains(head)) {
-//                            logger.info("Mention is " + mention.getCoveredText());
-//                            logger.info("Head character is " + head);
-                            entityType = "PERSON";
-                        }
-                    }
-                }
-            }
+            String entityType = getEntityMentionType(mention);
 
             if (entityType != null) {
                 increment(typeCount, entityType);
             }
-
         }
 
         List<Map.Entry<String, Integer>> counts = typeCount.entrySet().stream().sorted(Map.Entry.comparingByValue
@@ -220,6 +213,38 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
             }
         }
         return false;
+    }
+
+    private String getEntityMentionType(EntityMention mention) {
+        String entityType = mention.getEntityType();
+        if (entityType == null) {
+            StanfordCorenlpToken headword = UimaNlpUtils.findHeadFromStanfordAnnotation(mention);
+            if (headword != null) {
+                String lemma = headword.getLemma();
+                if (personalNouns.contains(lemma.toLowerCase())) {
+                    entityType = "PERSON";
+//                        logger.info("Mention is " + mention.getCoveredText());
+//                        logger.info("Head lemma is " + lemma);
+                } else if (lemma.equals("I")) {
+                    // The only capital comparison.
+                    entityType = "PERSON";
+                }
+            }
+
+            if (language.equals("zh")) {
+                CharacterAnnotation headCharacter = UimaNlpUtils.findHeadCharacterFromZparAnnotation(mention);
+                if (headCharacter != null) {
+                    String head = headCharacter.getCoveredText();
+//                        logger.info("The head character is " + head);
+                    if (personalNouns.contains(head)) {
+//                            logger.info("Mention is " + mention.getCoveredText());
+//                            logger.info("Head character is " + head);
+                        entityType = "PERSON";
+                    }
+                }
+            }
+        }
+        return entityType;
     }
 
     private void increment(Map<String, Integer> counts, String key) {

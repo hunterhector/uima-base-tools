@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.pipeline;
 
+import edu.cmu.cs.lti.annotators.NytTextWriter;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.collection_reader.AnnotatedNytReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
@@ -13,6 +14,7 @@ import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.xml.sax.SAXException;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -29,13 +31,14 @@ public class NytTextPipeline {
 
         String paramInputDir = argv[0];
         String outputDir = argv[1];
+        String ignoreFile = argv[2];
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 AnnotatedNytReader.class, typeSystemDescription,
                 AnnotatedNytReader.PARAM_DATA_PATH, paramInputDir,
                 AnnotatedNytReader.PARAM_FILE_EXTENSION, ".tgz",
                 AnnotatedNytReader.PARAM_RECURSIVE, true,
-                AnnotatedNytReader.PARAM_FULL_PATH_IGNORES, "/media/hdd/hdd0/data/Annotated_NYT_uima/ignored_files.txt"
+                AnnotatedNytReader.PARAM_FULL_PATH_IGNORES, ignoreFile
         );
 
         AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
@@ -48,6 +51,11 @@ public class NytTextPipeline {
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createGzippedXmiWriter(
                 outputDir, "tokenized");
 //        SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer);
-        new BasicPipeline(reader, true, true, 5, stanfordAnalyzer, writer).run();
+        AnalysisEngineDescription textWriter = AnalysisEngineFactory.createEngineDescription(
+                NytTextWriter.class, typeSystemDescription,
+                NytTextWriter.PARAM_OUTPUT_FILE, new File(outputDir, "nyt.json")
+        );
+
+        new BasicPipeline(reader, true, true, 5, stanfordAnalyzer, writer, textWriter).run();
     }
 }
