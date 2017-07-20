@@ -95,10 +95,10 @@ public class BasicPipeline {
         this(reader, false, true, 10, workingDir, outputDir, processors);
     }
 
-    public static BasicPipeline getRobust(CollectionReaderDescription reader, String workingDir,
-                                          String outputDir, AnalysisEngineDescription... processors)
-            throws SAXException, UIMAException, CpeDescriptorException, IOException {
-        return new BasicPipeline(reader, true, true, 10, workingDir, outputDir, processors);
+    public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats, int numWorkers,
+                         AnalysisEngineDescription... processors) throws SAXException, UIMAException,
+            CpeDescriptorException, IOException {
+        this(reader, robust, withStats, numWorkers, null, null, processors);
     }
 
     public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats, int numWorkers,
@@ -133,6 +133,12 @@ public class BasicPipeline {
         executor = Executors.newFixedThreadPool(numWorkers + 2);
         availableCASes = new ArrayBlockingQueue<>(numWorkers);
         taskQueue = new ArrayBlockingQueue<>(numWorkers);
+    }
+
+    public static BasicPipeline getRobust(CollectionReaderDescription reader, String workingDir,
+                                          String outputDir, AnalysisEngineDescription... processors)
+            throws SAXException, UIMAException, CpeDescriptorException, IOException {
+        return new BasicPipeline(reader, true, true, 10, workingDir, outputDir, processors);
     }
 
     /**

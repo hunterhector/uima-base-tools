@@ -6,11 +6,12 @@ import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
+import org.apache.uima.collection.metadata.CpeDescriptorException;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
-import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 
@@ -22,7 +23,7 @@ import java.io.IOException;
  * @author Zhengzhong Liu
  */
 public class NytTextPipeline {
-    public static void main(String[] argv) throws UIMAException, IOException {
+    public static void main(String[] argv) throws UIMAException, IOException, CpeDescriptorException, SAXException {
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
                 .createTypeSystemDescription("TypeSystem");
 
@@ -46,6 +47,7 @@ public class NytTextPipeline {
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createGzippedXmiWriter(
                 outputDir, "tokenized");
-        SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer);
+//        SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer);
+        new BasicPipeline(reader, true, true, 5, stanfordAnalyzer, writer).run();
     }
 }
