@@ -130,6 +130,15 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
         }
     }
 
+    private ComponentAnnotation getEntityAnnotation(EntityMention mention) {
+        int numTokens = JCasUtil.selectCovered(StanfordCorenlpToken.class, mention).size();
+        if (numTokens > 5) {
+            return UimaNlpUtils.findHeadFromStanfordAnnotation(mention);
+        } else {
+            return mention;
+        }
+    }
+
     private Document createXml(Map<String, Collection<EntityMention>> uimaEntities, String docid) {
         Document doc = new Document();
         Element root = new Element("deft_ere");
@@ -145,14 +154,16 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
             entity.setAttribute("specificity", "specific");
 
             for (EntityMention uimaMention : entityEntry.getValue()) {
+                ComponentAnnotation anno = getEntityAnnotation(uimaMention);
+
                 Element entityMention = new Element("entity_mention");
                 entityMention.setAttribute("id", uimaMention.getId());
                 entityMention.setAttribute("source", docid);
-                entityMention.setAttribute("offset", String.valueOf(uimaMention.getBegin()));
-                entityMention.setAttribute("length", String.valueOf(uimaMention.getEnd() - uimaMention.getBegin()));
+                entityMention.setAttribute("offset", String.valueOf(anno.getBegin()));
+                entityMention.setAttribute("length", String.valueOf(anno.getEnd() - anno.getBegin()));
                 Element mentionText = new Element("mention_text");
                 entity.addContent(entityMention.addContent(mentionText.addContent(
-                        getEntityMentionString(uimaMention))));
+                        anno.getCoveredText().replaceAll("\n", " "))));
             }
             entities.addContent(entity);
         }
