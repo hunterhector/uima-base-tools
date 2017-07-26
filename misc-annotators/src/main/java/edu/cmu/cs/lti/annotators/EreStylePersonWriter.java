@@ -1,5 +1,8 @@
 package edu.cmu.cs.lti.annotators;
 
+import com.google.common.collect.ArrayListMultimap;
+import edu.cmu.cs.lti.model.Span;
+import edu.cmu.cs.lti.model.UimaConst;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
@@ -30,6 +33,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -54,6 +59,10 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
 
     private Set<String> personalNouns;
 
+    private Pattern nwAuthorPattern = Pattern.compile("<AUTHOR>(.*?)</AUTHOR>");
+
+    private Pattern dfAuthorPattern = Pattern.compile("<post\\sauthor=\"(.*?)\"\\s");
+
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
@@ -67,27 +76,96 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
         }
     }
 
+    class EreEntity {
+        List<EreMention> mentions;
+        String id;
+        String type = "PER";
+        String specificity = "specific";
+
+        public EreEntity(String id) {
+            this.mentions = new ArrayList<>();
+            this.id = id;
+        }
+
+        public EreEntity(List<EreMention> mentions, String id) {
+            this.mentions = new ArrayList<>(mentions);
+            this.id = id;
+        }
+
+        public String toString() {
+            return String.format("ID:%s, type: %s", id, type);
+        }
+    }
+
+    class EreMention {
+        String id;
+        int offset;
+        int length;
+        int end;
+        String noun_type;
+        String text;
+
+        public EreMention(EntityMention mention) {
+            this.id = mention.getId();
+            ComponentAnnotation anno = getEntityAnnotation(mention);
+            this.length = anno.getEnd() - anno.getBegin();
+            this.offset = anno.getBegin();
+            this.end = anno.getEnd();
+            this.noun_type = detectNounType(mention);
+            this.text = anno.getCoveredText().replace("\n", " ");
+        }
+
+        public EreMention(Span mentionSpan, String documentText, String mentionId) {
+            this.id = mentionId;
+            this.length = mentionSpan.getEnd() - mentionSpan.getBegin();
+            this.end = mentionSpan.getEnd();
+            this.offset = mentionSpan.getBegin();
+            this.noun_type = "NAM";
+            this.text = documentText.substring(mentionSpan.getBegin(), mentionSpan.getEnd()).replaceAll("\n", " ");
+        }
+
+        public String toString() {
+            return String.format("%s: %s [%d:%d], type: %s", id, text, offset, end, noun_type);
+        }
+    }
+
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-        Collection<StanfordEntityMention> entityMentions = JCasUtil.select(aJCas, StanfordEntityMention
-                .class);
+        Collection<EntityMention> entityMentions = JCasUtil.select(aJCas, EntityMention.class);
+        String docid = FilenameUtils.getBaseName(UimaConvenience.getDocId(aJCas));
 
-        int index = 0;
-        for (StanfordEntityMention entityMention : entityMentions) {
-            entityMention.setId("m-" + index);
-            index++;
+        int mentionIndex = 0;
+        for (EntityMention entityMention : entityMentions) {
+            entityMention.setId("m-" + mentionIndex);
+            mentionIndex++;
         }
 
         Collection<Entity> entities = JCasUtil.select(aJCas, Entity.class);
 
+        List<EreEntity> ereEntities = new ArrayList<>();
+
+        Map<Span, EreEntity> entityLookup = new HashMap<>();
+
         Set<EntityMention> nonSingletons = new HashSet<>();
-        Map<String, Collection<EntityMention>> personalEntities = new HashMap<>();
+
         int eid = 0;
         for (Entity entity : entities) {
             if (isPersonalEntity(entity)) {
                 Collection<EntityMention> mentions = FSCollectionFactory.create(entity.getEntityMentions(),
                         EntityMention.class);
-                personalEntities.put("ent-" + eid, mentions);
+
+                nonSingletons.addAll(mentions);
+
+                List<EreMention> ereMentions = mentions.stream().map(EreMention::new).collect(Collectors.toList());
+
+                EreEntity ereEntity = new EreEntity(ereMentions, "ent-" + eid);
+
+                for (EreMention ereMention : ereMentions) {
+                    entityLookup.put(Span.of(ereMention.offset, ereMention.end), ereEntity);
+                }
+
+                ereEntities.add(ereEntity);
+
                 eid++;
             }
         }
@@ -99,16 +177,46 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
             }
             String type = getEntityMentionType(entityMention);
             if (type != null && type.equals("PERSON")) {
-                personalEntities.put("ent-" + eid, Collections.singletonList(entityMention));
+                EreMention ereMention = new EreMention(entityMention);
+                EreEntity ereEntity = new EreEntity(Collections.singletonList(ereMention), "ent-" + eid);
+                ereEntities.add(ereEntity);
+                entityLookup.put(Span.of(ereMention.offset, ereMention.end), ereEntity);
                 eid++;
             }
         }
 
-        String docid = UimaConvenience.getDocId(aJCas);
+        ArrayListMultimap<String, Span> authorEntities = findAuthorsWithRegex(aJCas);
+        String documentText = aJCas.getDocumentText();
+        for (String authorName : authorEntities.keySet()) {
+            List<Span> authors = authorEntities.get(authorName);
 
-        String normalizedDocId = FilenameUtils.getBaseName(docid);
+            EreEntity ereEntity = null;
 
-        Document personalEntityDoc = createXml(personalEntities, normalizedDocId);
+            for (Span authorSpan : authors) {
+                if (entityLookup.containsKey(authorSpan)) {
+                    ereEntity = entityLookup.get(authorSpan);
+                }
+            }
+
+            if (ereEntity == null) {
+                ereEntity = new EreEntity("ent-" + eid);
+                eid++;
+            }
+
+            for (Span authorSpan : authors) {
+                if (entityLookup.containsKey(authorSpan)) {
+                    continue;
+                }
+
+                EreMention authorMention = new EreMention(authorSpan, documentText, "m-" + mentionIndex);
+                ereEntity.mentions.add(authorMention);
+                mentionIndex++;
+            }
+
+            ereEntities.add(ereEntity);
+        }
+
+        Document personalEntityDoc = createXml(ereEntities, docid);
 
         XMLOutputter outter = new XMLOutputter();
         outter.setFormat(Format.getPrettyFormat());
@@ -120,15 +228,6 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
         }
     }
 
-    private String getEntityMentionString(EntityMention mention) {
-        int numTokens = JCasUtil.selectCovered(StanfordCorenlpToken.class, mention).size();
-        if (numTokens > 5) {
-            StanfordCorenlpToken head = UimaNlpUtils.findHeadFromStanfordAnnotation(mention);
-            return head.getCoveredText().replaceAll("\n", " ");
-        } else {
-            return mention.getCoveredText().replaceAll("\n", " ");
-        }
-    }
 
     private ComponentAnnotation getEntityAnnotation(EntityMention mention) {
         int numTokens = JCasUtil.selectCovered(StanfordCorenlpToken.class, mention).size();
@@ -139,7 +238,7 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
         }
     }
 
-    private Document createXml(Map<String, Collection<EntityMention>> uimaEntities, String docid) {
+    private Document createXml(List<EreEntity> ereEntities, String docid) {
         Document doc = new Document();
         Element root = new Element("deft_ere");
         root.setAttribute("doc_id", docid);
@@ -147,30 +246,63 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
 
         Element entities = new Element("entities");
 
-        for (Map.Entry<String, Collection<EntityMention>> entityEntry : uimaEntities.entrySet()) {
+        for (EreEntity ereEntity : ereEntities) {
             Element entity = new Element("entity");
-            entity.setAttribute("id", entityEntry.getKey());
-            entity.setAttribute("type", "PER");
-            entity.setAttribute("specificity", "specific");
+            entity.setAttribute("id", ereEntity.id);
+            entity.setAttribute("type", ereEntity.type);
+            entity.setAttribute("specificity", ereEntity.specificity);
 
-            for (EntityMention uimaMention : entityEntry.getValue()) {
-                ComponentAnnotation anno = getEntityAnnotation(uimaMention);
-
+            for (EreMention ereMention : ereEntity.mentions) {
                 Element entityMention = new Element("entity_mention");
-                entityMention.setAttribute("id", uimaMention.getId());
+                entityMention.setAttribute("id", ereMention.id);
                 entityMention.setAttribute("source", docid);
-                entityMention.setAttribute("offset", String.valueOf(anno.getBegin()));
-                entityMention.setAttribute("length", String.valueOf(anno.getEnd() - anno.getBegin()));
+                entityMention.setAttribute("offset", String.valueOf(ereMention.offset));
+                entityMention.setAttribute("length", String.valueOf(ereMention.end - ereMention.offset));
+                entityMention.setAttribute("noun_type", ereMention.noun_type);
                 Element mentionText = new Element("mention_text");
-                entity.addContent(entityMention.addContent(mentionText.addContent(
-                        anno.getCoveredText().replaceAll("\n", " "))));
+                entity.addContent(entityMention.addContent(mentionText.addContent(ereMention.text)));
             }
             entities.addContent(entity);
         }
-
         root.addContent(entities);
 
         return doc;
+    }
+
+    private ArrayListMultimap<String, Span> findAuthorsWithRegex(JCas aJCas) {
+        JCas originalView = JCasUtil.getView(aJCas, UimaConst.inputViewName, aJCas);
+
+        String text = originalView.getDocumentText();
+
+        Matcher nwMatcher = nwAuthorPattern.matcher(text);
+        ArrayListMultimap<String, Span> results = ArrayListMultimap.create();
+
+        while (nwMatcher.find()) {
+//            logger.info(nwMatcher.group(1) + " " + nwMatcher.start(1) + " " + nwMatcher.end(1));
+            results.put(nwMatcher.group(1), Span.of(nwMatcher.start(1), nwMatcher.end(1)));
+        }
+
+//        logger.info(text);
+        Matcher dfMatcher = dfAuthorPattern.matcher(text);
+        while (dfMatcher.find()) {
+//            logger.info(dfMatcher.group(1) + " " + dfMatcher.start(1) + " " + dfMatcher.end(1));
+            results.put(dfMatcher.group(1), Span.of(dfMatcher.start(1), dfMatcher.end(1)));
+        }
+
+        return results;
+    }
+
+    private String detectNounType(EntityMention mention) {
+        StanfordCorenlpToken mentionHead = UimaNlpUtils.findHeadFromStanfordAnnotation(mention);
+        if (mentionHead.getPos().startsWith("PR") || mentionHead.getPos().startsWith("W")) {
+            return "PRO";
+        } else {
+            if (mention.getEntityType() != null) {
+                return "NAM";
+            } else {
+                return "NOM";
+            }
+        }
     }
 
     private void loadPersonalWords() throws IOException {
@@ -196,7 +328,8 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
         } else {
             // Treat the rest as english.
             additionalPersonalWords = new String[]{"me", "myself", "you", "yourself", "he", "him", "himself", "she",
-                    "her", "herself", "we", "us", "ourselves", "yourselves", "they", "them", "their", "themselves"};
+                    "her", "herself", "we", "us", "ourselves", "yourselves", "they", "them", "their", "themselves",
+                    "who", "whose"};
         }
 
         for (String englishPronoun : additionalPersonalWords) {
@@ -255,6 +388,7 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
                 }
             }
         }
+
         return entityType;
     }
 
@@ -277,12 +411,20 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
 
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createXmiReader(typeSystemDescription,
                 inputDir);
+
+        AnalysisEngineDescription whEntities = AnalysisEngineFactory.createEngineDescription(WhRcModResoluter.class,
+                typeSystemDescription);
+
         AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
                 EreStylePersonWriter.class, typeSystemDescription,
                 EreStylePersonWriter.PARAM_OUTPUT_PATH, outputDir,
                 EreStylePersonWriter.PARAM_NOUN_WORDS_FILE, nounList,
                 EreStylePersonWriter.PARAM_LANGUAGE, language
         );
-        SimplePipeline.runPipeline(reader, writer);
+        if (language.equals("en")) {
+            SimplePipeline.runPipeline(reader, whEntities, writer);
+        } else {
+            SimplePipeline.runPipeline(reader, writer);
+        }
     }
 }
