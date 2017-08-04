@@ -3,7 +3,9 @@ package edu.cmu.cs.lti.pipeline;
 import edu.cmu.cs.lti.annotators.NytTextWriter;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.collection_reader.AnnotatedNytReader;
+import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
+import edu.cmu.cs.lti.utils.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
@@ -11,6 +13,7 @@ import org.apache.uima.collection.metadata.CpeDescriptorException;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
+import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.xml.sax.SAXException;
 
@@ -51,11 +54,17 @@ public class NytTextPipeline {
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createGzippedXmiWriter(
                 outputDir, "tokenized");
 //        SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer);
+
+        CollectionReaderDescription xmiReader = CustomCollectionReaderFactory.createGzippedXmiReader(
+                typeSystemDescription, FileUtils.joinPaths(outputDir, "tokenized"));
+
         AnalysisEngineDescription textWriter = AnalysisEngineFactory.createEngineDescription(
                 NytTextWriter.class, typeSystemDescription,
                 NytTextWriter.PARAM_OUTPUT_FILE, new File(outputDir, "nyt.json")
         );
 
-        new BasicPipeline(reader, true, true, 5, stanfordAnalyzer, writer, textWriter).run();
+        SimplePipeline.runPipeline(xmiReader, textWriter);
+
+//        new BasicPipeline(reader, true, true, 5, stanfordAnalyzer, writer, textWriter).run();
     }
 }

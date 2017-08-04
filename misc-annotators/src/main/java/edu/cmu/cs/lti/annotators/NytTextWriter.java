@@ -53,6 +53,7 @@ public class NytTextWriter extends AbstractLoggingAnnotator {
         } catch (IOException e) {
             throw new ResourceInitializationException(e);
         }
+        logger.info("Writer initialized.");
     }
 
     @Override
@@ -81,7 +82,17 @@ public class NytTextWriter extends AbstractLoggingAnnotator {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
+    @Override
+    public void collectionProcessComplete() throws AnalysisEngineProcessException {
+        super.collectionProcessComplete();
+        try {
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        logger.info("Writer done.");
     }
 
     private String asTokenized(ArticleComponent component) {

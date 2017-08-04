@@ -115,13 +115,13 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
             this.text = anno.getCoveredText().replace("\n", " ");
         }
 
-        public EreMention(Span mentionSpan, String documentText, String mentionId) {
+        public EreMention(Span mentionSpan, String mentionText, String mentionId) {
             this.id = mentionId;
             this.length = mentionSpan.getEnd() - mentionSpan.getBegin();
             this.end = mentionSpan.getEnd();
             this.offset = mentionSpan.getBegin();
             this.noun_type = "NAM";
-            this.text = documentText.substring(mentionSpan.getBegin(), mentionSpan.getEnd()).replaceAll("\n", " ");
+            this.text = mentionText.replaceAll("\n", " ");
         }
 
         public String toString() {
@@ -186,7 +186,6 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
         }
 
         ArrayListMultimap<String, Span> authorEntities = findAuthorsWithRegex(aJCas);
-        String documentText = aJCas.getDocumentText();
         for (String authorName : authorEntities.keySet()) {
             List<Span> authors = authorEntities.get(authorName);
 
@@ -208,8 +207,9 @@ public class EreStylePersonWriter extends AbstractLoggingAnnotator {
                     continue;
                 }
 
-                EreMention authorMention = new EreMention(authorSpan, documentText, "m-" + mentionIndex);
+                EreMention authorMention = new EreMention(authorSpan, authorName, "m-" + mentionIndex);
                 ereEntity.mentions.add(authorMention);
+
                 mentionIndex++;
             }
 
