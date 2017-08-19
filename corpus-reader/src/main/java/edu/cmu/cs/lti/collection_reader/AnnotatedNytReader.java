@@ -10,7 +10,6 @@ import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
@@ -21,6 +20,7 @@ import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.fit.util.FSCollectionFactory;
+import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
@@ -40,6 +40,7 @@ import java.util.List;
  * Time: 4:35 PM
  */
 public class AnnotatedNytReader extends AbstractCollectionReader {
+    public static final String ABSTRACT_VIEW_NAME = "abstract";
 
     private NYTCorpusDocumentParser parser = new NYTCorpusDocumentParser();
 
@@ -102,6 +103,8 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
         List<String> descriptors = document.getDescriptors();
         List<String> taxoClassifiers = document.getTaxonomicClassifiers();
 
+        int guid = document.getGuid();
+
         List<String> names = document.getNames();
 
         List<String> locations = document.getLocations();
@@ -117,6 +120,7 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
         List<String> leadParagraphs = getParagraphs(document.getLeadParagraph());
 
         List<String> bodyParagraphs = getParagraphs(document.getBody());
+
 
         int numberLeading = leadParagraphs.size();
 
@@ -143,6 +147,17 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
         int bodyStart = titleLength + titleBodySep.length() - 1;
 
         jCas.setDocumentText(documentText);
+
+        // Add the abstract to another view.
+        JCas abstractView = JCasUtil.getView(jCas, ABSTRACT_VIEW_NAME, true);
+        if (articleAbstract != null) {
+            abstractView.setDocumentText(articleAbstract);
+            setArticle(abstractView, articleAbstract, guid);
+        } else {
+            // Some documents do not have abstract.
+            abstractView.setDocumentText("");
+            setArticle(abstractView, "", guid);
+        }
 
         Headline uimaHeadline = new Headline(jCas, 0, titleLength);
         Body body = new Body(jCas, bodyStart, documentText.length());
@@ -171,7 +186,6 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
         metadata.setAuthoredWorks(FSCollectionFactory.createStringList(jCas, authoredWorks));
         metadata.setTypeOfMaterials(FSCollectionFactory.createStringList(jCas, typesOfMaterial));
 
-
         Integer month = document.getPublicationMonth();
         Integer day = document.getPublicationDayOfMonth();
         Integer columnNumber = document.getColumnNumber();
@@ -186,20 +200,25 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
             metadata.setColumnNumber(columnNumber);
         }
 
-        Article article = new Article(jCas, 0, documentText.length());
+        Article article = setArticle(jCas, documentText, guid);
         article.setArticleDate(dateLine);
         article.setHeadLine(headline);
         article.setLanguage("en");
         article.setMetadata(metadata);
-        article.setArticleName(FilenameUtils.getBaseName(fileName));
 
         UimaAnnotationUtils.finishAnnotation(uimaHeadline, COMPONENT_ID, 0, jCas);
         UimaAnnotationUtils.finishAnnotation(body, COMPONENT_ID, 0, jCas);
-        UimaAnnotationUtils.finishAnnotation(article, COMPONENT_ID, 0, jCas);
         UimaAnnotationUtils.finishAnnotation(leadingParagraph, COMPONENT_ID, 0, jCas);
 
         UimaAnnotationUtils.setSourceDocumentInformation(jCas, fileUrl, documentText.length(), fileOffset, false);
         readNextContent();
+    }
+
+    private Article setArticle(JCas jCas, String documentText, int guid) {
+        Article article = new Article(jCas, 0, documentText.length());
+        article.setArticleName(String.valueOf(guid));
+        UimaAnnotationUtils.finishAnnotation(article, COMPONENT_ID, 0, jCas);
+        return article;
     }
 
     private List<String> getParagraphs(String text) {

@@ -3,11 +3,9 @@ package edu.cmu.cs.lti.annotators;
 import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import edu.cmu.cs.lti.collection_reader.AnnotatedNytReader;
 import edu.cmu.cs.lti.pipeline.BasicPipeline;
-import edu.cmu.cs.lti.script.type.ArticleComponent;
-import edu.cmu.cs.lti.script.type.Body;
-import edu.cmu.cs.lti.script.type.Headline;
-import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
+import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
@@ -38,18 +36,20 @@ import java.util.List;
  * @author Zhengzhong Liu
  */
 public class NytTextWriter extends AbstractLoggingAnnotator {
-
     public static final String PARAM_OUTPUT_FILE = "outputFile";
     @ConfigurationParameter(name = PARAM_OUTPUT_FILE)
     private File outputFile;
 
-    private Writer writer;
+    private Writer mainWriter;
+
+//    private Writer abstractWriter;
 
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
         try {
-            writer = new BufferedWriter(new FileWriter(outputFile));
+            mainWriter = new BufferedWriter(new FileWriter(outputFile));
+//            abstractWriter = new BufferedWriter(new FileWriter(abstractOutputFile));
         } catch (IOException e) {
             throw new ResourceInitializationException(e);
         }
@@ -58,10 +58,25 @@ public class NytTextWriter extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
+        // The annotated NYT use a GUID field for unique identification, which is saved as article name.
+        String docid = UimaConvenience.getDocumentName(aJCas);
+        JCas abstractView = JCasUtil.getView(aJCas, AnnotatedNytReader.ABSTRACT_VIEW_NAME, null);
+        String abstractText = getAbstract(abstractView);
+        writeMainText(aJCas, docid, abstractText);
+    }
+
+    private String getAbstract(JCas abstractView) {
+        Article article = JCasUtil.selectSingle(abstractView, Article.class);
+        if (abstractView.getDocumentText().length() == 0) {
+            // Empty abstract.
+            return "N/A";
+        }
+        return asTokenized(article);
+    }
+
+    private void writeMainText(JCas aJCas, String docid, String abstractText) {
         Headline headline = JCasUtil.selectSingle(aJCas, Headline.class);
         Body body = JCasUtil.selectSingle(aJCas, Body.class);
-
-        String docid = UimaConvenience.getDocId(aJCas);
 
         JsonObject root = new JsonObject();
 
@@ -70,15 +85,17 @@ public class NytTextWriter extends AbstractLoggingAnnotator {
         if (tokenizedHeadline.trim().isEmpty()) {
             root.addProperty("title", "N/A");
         } else {
-            root.addProperty("title", asTokenized(headline));
+            root.addProperty("title", tokenizedHeadline);
         }
+        root.addProperty("abstract", abstractText);
         root.addProperty("bodyText", asTokenized(body));
+        root.addProperty("docid", docid);
 
         Gson gson = new Gson();
         String jsonString = gson.toJson(root);
 
         try {
-            writer.write(jsonString + "\n");
+            mainWriter.write(jsonString + "\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -88,14 +105,14 @@ public class NytTextWriter extends AbstractLoggingAnnotator {
     public void collectionProcessComplete() throws AnalysisEngineProcessException {
         super.collectionProcessComplete();
         try {
-            writer.close();
+            mainWriter.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
         logger.info("Writer done.");
     }
 
-    private String asTokenized(ArticleComponent component) {
+    private String asTokenized(ComponentAnnotation component) {
         List<String> words = new ArrayList<>();
         for (StanfordCorenlpToken token : JCasUtil.selectCovered(StanfordCorenlpToken.class, component)) {
             words.add(token.getCoveredText());

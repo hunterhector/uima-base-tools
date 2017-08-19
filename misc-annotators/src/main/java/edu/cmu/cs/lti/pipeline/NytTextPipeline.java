@@ -48,7 +48,8 @@ public class NytTextPipeline {
                 StanfordCoreNlpAnnotator.class, typeSystemDescription,
                 StanfordCoreNlpAnnotator.PARAM_LANGUAGE, "en",
                 StanfordCoreNlpAnnotator.PARAM_SPLIT_ONLY, true,
-                StanfordCoreNlpAnnotator.PARAM_KEEP_QUIET, true
+                StanfordCoreNlpAnnotator.PARAM_KEEP_QUIET, true,
+                StanfordCoreNlpAnnotator.PARAM_ADDITIONAL_VIEWS, AnnotatedNytReader.ABSTRACT_VIEW_NAME
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createGzippedXmiWriter(
@@ -63,7 +64,8 @@ public class NytTextPipeline {
                 NytTextWriter.PARAM_OUTPUT_FILE, new File(outputDir, "nyt.json")
         );
 
-        SimplePipeline.runPipeline(xmiReader, textWriter);
+//        SimplePipeline.runPipeline(xmiReader, textWriter);
+        SimplePipeline.runPipeline(reader, stanfordAnalyzer, writer, textWriter);
 
 //        new BasicPipeline(reader, true, true, 5, stanfordAnalyzer, writer, textWriter).run();
     }
