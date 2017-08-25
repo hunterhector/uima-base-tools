@@ -20,10 +20,6 @@ public class StepBasedDirXmiCollectionReader extends AbstractCollectionReader {
 
     private int currentDocIndex;
 
-    protected String defaultFileSuffix() {
-        return "xmi";
-    }
-
     /**
      * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
      */

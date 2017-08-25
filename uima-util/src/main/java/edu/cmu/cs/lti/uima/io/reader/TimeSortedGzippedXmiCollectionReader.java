@@ -2,7 +2,6 @@ package edu.cmu.cs.lti.uima.io.reader;
 
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.util.NewsNameComparators;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.collection.CollectionException;
@@ -28,18 +27,13 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractCollectionRead
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    @Override
-    protected String defaultFileSuffix() {
-        return "xmi.gz";
-    }
-
     /**
      * @see org.apache.uima.collection.CollectionReader_ImplBase#initialize()
      */
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
 
-        Collections.sort(this.files, NewsNameComparators.getGigawordDateComparator(inputFileSuffix, "yyyymm"));
+        Collections.sort(this.files, NewsNameComparators.getGigawordDateComparator(extension, "yyyymm"));
 
         currentDocIndex = 0;
     }
@@ -56,13 +50,13 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractCollectionRead
      * @see org.apache.uima.collection.CollectionReader#getNext(org.apache.uima.cas.CAS)
      */
     public void getNext(JCas jCas) throws IOException, CollectionException {
-        try {
-            if (!StringUtils.isEmpty(inputViewName)) {
-                jCas = jCas.getView(inputViewName);
-            }
-        } catch (Exception e) {
-            throw new CollectionException(e);
-        }
+//        try {
+//            if (!StringUtils.isEmpty(inputViewName)) {
+//                jCas = jCas.getView(inputViewName);
+//            }
+//        } catch (Exception e) {
+//            throw new CollectionException(e);
+//        }
 
         File currentFile = files.get(currentDocIndex);
         currentDocIndex++;

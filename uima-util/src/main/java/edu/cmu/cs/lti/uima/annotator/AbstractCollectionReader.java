@@ -77,13 +77,15 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
     @ConfigurationParameter(name = PARAM_BASE_INPUT_DIR_NAME, mandatory = false)
     private String baseInputDirName;
 
-    public static final String PARAM_FILE_EXTENSION = "extension";
-    @ConfigurationParameter(name = PARAM_FILE_EXTENSION, mandatory = false)
+    public static final String PARAM_EXTENSION = "extensionFilter";
+    @ConfigurationParameter(name = PARAM_EXTENSION, mandatory = false,
+            description = "If set, only files matching the extension will be read. " +
+                    "Base names will be obtained by removing the extension.")
     protected String extension;
 
-    public static final String PARAM_INPUT_FILE_SUFFIX = "InputFileSuffix";
-    @ConfigurationParameter(name = PARAM_INPUT_FILE_SUFFIX, mandatory = false)
-    protected String inputFileSuffix;
+//    public static final String PARAM_INPUT_FILE_SUFFIX = "InputFileSuffix";
+//    @ConfigurationParameter(name = PARAM_INPUT_FILE_SUFFIX, mandatory = false)
+//    protected String inputFileSuffix;
 
     public static final String PARAM_FAIL_UNKNOWN = "FailOnUnknownType";
     @ConfigurationParameter(name = PARAM_FAIL_UNKNOWN, defaultValue = "false")
@@ -111,9 +113,9 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
             goldStandardViewName = DEFAULT_GOLD_STANDARD_NAME;
         }
 
-        if (inputFileSuffix == null) {
-            inputFileSuffix = defaultFileSuffix();
-        }
+//        if (inputFileSuffix == null) {
+//            inputFileSuffix = defaultFileSuffix();
+//        }
 
         if (dataPath == null) {
             if (parentInputDirPath == null || baseInputDirName == null) {
@@ -246,9 +248,4 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
             return FilenameUtils.getBaseName(filename);
         }
     }
-
-    protected String defaultFileSuffix() {
-        return "xmi";
-    }
-
 }

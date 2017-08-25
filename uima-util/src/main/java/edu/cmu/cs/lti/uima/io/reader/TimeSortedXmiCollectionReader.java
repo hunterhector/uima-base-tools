@@ -43,14 +43,9 @@ public class TimeSortedXmiCollectionReader extends AbstractCollectionReader {
     private int mCurrentIndex;
 
     @Override
-    protected String defaultFileSuffix() {
-        return "xmi";
-    }
-
-    @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
-        Collections.sort(this.files, NewsNameComparators.getFileOffsetComparator(inputFileSuffix));
+        Collections.sort(this.files, NewsNameComparators.getFileOffsetComparator(extension));
     }
 
     /**

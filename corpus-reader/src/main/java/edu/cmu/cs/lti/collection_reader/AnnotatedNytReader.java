@@ -303,7 +303,7 @@ public class AnnotatedNytReader extends AbstractCollectionReader {
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 AnnotatedNytReader.class, typeSystemDescription,
                 AnnotatedNytReader.PARAM_DATA_PATH, paramInputDir,
-                AnnotatedNytReader.PARAM_FILE_EXTENSION, ".tgz",
+                AnnotatedNytReader.PARAM_EXTENSION, ".tgz",
                 AnnotatedNytReader.PARAM_RECURSIVE, true
         );
 

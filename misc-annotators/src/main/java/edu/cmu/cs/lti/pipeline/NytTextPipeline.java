@@ -39,7 +39,7 @@ public class NytTextPipeline {
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 AnnotatedNytReader.class, typeSystemDescription,
                 AnnotatedNytReader.PARAM_DATA_PATH, paramInputDir,
-                AnnotatedNytReader.PARAM_FILE_EXTENSION, ".tgz",
+                AnnotatedNytReader.PARAM_EXTENSION, ".tgz",
                 AnnotatedNytReader.PARAM_RECURSIVE, true,
                 AnnotatedNytReader.PARAM_FULL_PATH_IGNORES, ignoreFile
         );

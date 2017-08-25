@@ -45,7 +45,7 @@ public class CustomCollectionReaderFactory {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
                 XmiCollectionReader.class, typeSystemDescription,
-                XmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
+                XmiCollectionReader.PARAM_DATA_PATH, inputDirName,
                 XmiCollectionReader.PARAM_FAIL_UNKNOWN, false);
     }
 
@@ -65,7 +65,7 @@ public class CustomCollectionReaderFactory {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
                 XmiCollectionReader.class, typeSystemDescription,
-                XmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
+                XmiCollectionReader.PARAM_DATA_PATH, inputDirName,
                 XmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
     }
 
@@ -255,7 +255,7 @@ public class CustomCollectionReaderFactory {
                 CrossValidationReader.PARAM_MODE_EVAL, takeEvalSplit,
                 CrossValidationReader.PARAM_SEED, randomSeed,
                 CrossValidationReader.PARAM_SLICE, slice,
-                CrossValidationReader.PARAM_INPUT_FILE_SUFFIX, extension
+                CrossValidationReader.PARAM_EXTENSION, extension
         );
     }
 
@@ -292,7 +292,7 @@ public class CustomCollectionReaderFactory {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
                 GzippedXmiCollectionReader.class,
-                GzippedXmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
+                GzippedXmiCollectionReader.PARAM_DATA_PATH, inputDirName,
                 GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
     }
 
@@ -309,7 +309,7 @@ public class CustomCollectionReaderFactory {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
                 GzippedXmiCollectionReader.class, typeSystemDescription,
-                GzippedXmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
+                GzippedXmiCollectionReader.PARAM_DATA_PATH, inputDirName,
                 GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
     }
 
@@ -325,7 +325,7 @@ public class CustomCollectionReaderFactory {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
                 GzippedXmiCollectionReader.class, typeSystemDescription,
-                GzippedXmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
+                GzippedXmiCollectionReader.PARAM_DATA_PATH, inputDirName,
                 GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, false);
     }
 
@@ -342,7 +342,7 @@ public class CustomCollectionReaderFactory {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
                 GzippedXmiCollectionReader.class, typeSystemDescription,
-                GzippedXmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
+                GzippedXmiCollectionReader.PARAM_DATA_PATH, inputDirName,
                 GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, false,
                 GzippedXmiCollectionReader.PARAM_RECURSIVE, true);
     }
@@ -362,7 +362,7 @@ public class CustomCollectionReaderFactory {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
                 GzippedXmiCollectionReader.class, typeSystemDescription,
-                GzippedXmiCollectionReader.PARAM_INPUT_DIR, inputDirName,
+                GzippedXmiCollectionReader.PARAM_DATA_PATH, inputDirName,
                 GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown,
                 GzippedXmiCollectionReader.PARAM_RECURSIVE, true);
     }
