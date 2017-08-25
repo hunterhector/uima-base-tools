@@ -31,7 +31,6 @@ public class EventMentionRemover extends AbstractLoggingAnnotator {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final String PARAM_TARGET_VIEWS = "targetViewNames";
-
     @ConfigurationParameter(name = PARAM_TARGET_VIEWS, mandatory = false)
     private String[] targetViewNames;
 
