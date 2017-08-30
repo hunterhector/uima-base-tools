@@ -73,7 +73,9 @@ public class BasicPipeline {
 
     private final boolean robust;
 
-    private ExecutorService executor;
+    //    private ExecutorService executor;
+    private ThreadPoolExecutor executor;
+
     private BlockingQueue<CAS> availableCASes;
 
     private int numInputFiles;
@@ -130,7 +132,7 @@ public class BasicPipeline {
         analysisEngineDescs = engineDescriptions;
 
         // Number of threads for the workers, one additional for producer, one additional for dispatcher.
-        executor = Executors.newFixedThreadPool(numWorkers + 2);
+        executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numWorkers + 2);
         availableCASes = new ArrayBlockingQueue<>(numWorkers);
         taskQueue = new ArrayBlockingQueue<>(numWorkers);
     }
@@ -293,7 +295,8 @@ public class BasicPipeline {
                             return engine.process(cas);
                         }
                     }
-                } catch (AnalysisEngineProcessException | RuntimeException e) {
+                } catch (Throwable e) {
+                    // Aggressively catch everything.
                     e.printStackTrace();
                     if (robust) {
                         logger.info("Ignoring errors.");
@@ -406,6 +409,7 @@ public class BasicPipeline {
 
     private void showProgress(List<AtomicInteger> processedCounters) {
         StringBuilder sb = new StringBuilder();
+        sb.append(String.format("Number of active threads: %d.\n", executor.getActiveCount()));
         sb.append("Showing current annotation progress.");
         for (int i = 0; i < processedCounters.size(); i++) {
             AtomicInteger counter = processedCounters.get(i);
@@ -414,7 +418,6 @@ public class BasicPipeline {
                     counter.get()));
         }
         logger.info(sb.toString());
-
     }
 
     /**

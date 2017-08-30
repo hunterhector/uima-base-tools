@@ -62,7 +62,8 @@ public class NytPreprocessPipeline {
                 StanfordCoreNlpAnnotator.PARAM_LANGUAGE, "en",
                 StanfordCoreNlpAnnotator.PARAM_KEEP_QUIET, true,
                 StanfordCoreNlpAnnotator.PARAM_ADDITIONAL_VIEWS, AnnotatedNytReader.ABSTRACT_VIEW_NAME,
-                StanfordCoreNlpAnnotator.MULTI_THREAD, true
+                StanfordCoreNlpAnnotator.MULTI_THREAD, true,
+                StanfordCoreNlpAnnotator.PARAM_PARSER_MAXLEN, 40
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createGzippedXmiWriter(
