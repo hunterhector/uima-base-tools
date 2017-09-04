@@ -90,6 +90,26 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
         return count;
     }
 
+    private int[] loadTokenMapping(int spaceTokenSize, List<StanfordCorenlpToken> tokens) {
+        int[] tokenIndexMap = new int[spaceTokenSize];
+
+        int tokenId = 0;
+        int spaceTokenId = 0;
+        for (StanfordCorenlpToken token : tokens) {
+            int size = token.getCoveredText().split(" ").length;
+            for (int i = 0; i < size; i++) {
+                tokenIndexMap[spaceTokenId] = tokenId;
+                spaceTokenId++;
+            }
+            tokenId++;
+        }
+
+        for (int i = spaceTokenId; i < tokenIndexMap.length; i++) {
+            tokenIndexMap[i] = -1;
+        }
+        return tokenIndexMap;
+    }
+
     private List<EntityAnnotation> loadResults(JsonObject document,
                                                List<String> fields,
                                                boolean useToken) throws IOException {
@@ -111,7 +131,6 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
 
     private EntityAnnotation addSpot(JsonElement spot, int offset) {
         JsonObject spotObj = spot.getAsJsonObject();
-//        logger.info("Found spot : " + spot.toString());
         JsonArray locs = spotObj.get("loc").getAsJsonArray();
         int begin = locs.get(0).getAsInt();
         int end = locs.get(1).getAsInt();
@@ -121,19 +140,23 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
     }
 
     private int setAnnotationsFromToken(JCas aJCas, List<EntityAnnotation> annotations,
-                                        List<StanfordCorenlpToken> tokens) {
+                                        List<StanfordCorenlpToken> tokens, int[] tokenMapping) {
         int numAdded = 0;
         for (EntityAnnotation entityAnnotation : annotations) {
-            if (entityAnnotation.getEnd() - 1 < tokens.size()) {
-                int begin = tokens.get(entityAnnotation.getBegin()).getBegin();
-                int end = tokens.get(entityAnnotation.getEnd() - 1).getEnd();
+            int uimaTokenBegin = tokenMapping[entityAnnotation.getBegin()];
+            int uimaTokenEnd = tokenMapping[entityAnnotation.getEnd() - 1];
+
+            if (uimaTokenBegin >= 0 && uimaTokenEnd >= 0) {
+                int begin = tokens.get(uimaTokenBegin).getBegin();
+                int end = tokens.get(uimaTokenEnd).getEnd();
                 GroundedEntity groundedEntity = new GroundedEntity(aJCas, begin, end);
                 groundedEntity.setKnowledgeBaseId(entityAnnotation.entityId);
                 UimaAnnotationUtils.finishAnnotation(groundedEntity, COMPONENT_ID, 0, aJCas);
-
-//                logger.info(String.format("Adding annotation %s [%d:%d].", groundedEntity.getCoveredText(), begin,
-//                        end));
                 numAdded++;
+            } else {
+                logger.info(String.format("Missing annotation %s at token span [%d:%d].", entityAnnotation.entityId,
+                        entityAnnotation.getBegin(), entityAnnotation.getEnd()));
+                DebugUtils.pause();
             }
         }
         return numAdded;
@@ -147,6 +170,9 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
                 GroundedEntity groundedEntity = new GroundedEntity(aJCas, begin, end);
                 groundedEntity.setKnowledgeBaseId(entityAnnotation.entityId);
                 UimaAnnotationUtils.finishAnnotation(groundedEntity, COMPONENT_ID, 0, aJCas);
+//                logger.info(String.format("Added entity %s at [%d:%d].", groundedEntity.getCoveredText(), begin,
+// end));
+//                DebugUtils.pause();
             }
         }
     }
@@ -156,8 +182,6 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
         String baseName = UimaConvenience.getArticleName(aJCas);
         File tagmeResultFile = new File(linkerResultFolder, baseName);
 
-        ArrayList<StanfordCorenlpToken> defaultTokens = new ArrayList<>(
-                JCasUtil.select(aJCas, StanfordCorenlpToken.class));
 
         List<String> defaultFields = new ArrayList<>();
         defaultFields.add("title");
@@ -168,15 +192,21 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
                 JsonObject jsonDoc = parseResultFile(tagmeResultFile);
 
                 List<EntityAnnotation> annotations = loadResults(jsonDoc, defaultFields, useToken);
-                logger.info(String.format("Found %d annotations from default view.", annotations.size()));
 
                 if (useToken) {
-                    int numberAdded = setAnnotationsFromToken(aJCas, annotations, defaultTokens);
+                    ArrayList<StanfordCorenlpToken> defaultTokens = new ArrayList<>(
+                            JCasUtil.select(aJCas, StanfordCorenlpToken.class));
                     int defaultJsonTokenCount = countTokensInJson(jsonDoc, defaultFields);
-                    if (defaultTokens.size() != defaultJsonTokenCount) {
-                        logger.warn(String.format("Unmatched tokens in default view: JSON (%d) and XMI (%d).",
-                                defaultJsonTokenCount, defaultTokens.size()));
-                    }
+
+                    int[] tokenMapping = loadTokenMapping(defaultJsonTokenCount, defaultTokens);
+
+//                    if (defaultTokens.size() != defaultJsonTokenCount) {
+//                        logger.warn(String.format("Unmatched tokens in default view: JSON (%d) and XMI (%d) in doc
+// %s",
+//                                defaultJsonTokenCount, defaultTokens.size(), UimaConvenience.getArticleName(aJCas)));
+//                    }
+
+                    int numberAdded = setAnnotationsFromToken(aJCas, annotations, defaultTokens, tokenMapping);
                     if (numberAdded != annotations.size()) {
                         logger.warn(String.format("Number annotations added %d is not the same as annotations " +
                                 "read %d in default view.", numberAdded, annotations.size()));
@@ -190,20 +220,26 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
                     List<EntityAnnotation> viewAnnotations = loadResults(jsonDoc, additionalFields, useToken);
                     JCas view = JCasUtil.getView(aJCas, additionalViewName, false);
 
-                    ArrayList<StanfordCorenlpToken> viewTokens = new ArrayList<>(
+                    List<StanfordCorenlpToken> viewTokens = new ArrayList<>(
                             JCasUtil.select(view, StanfordCorenlpToken.class));
 
                     if (useToken) {
-                        int numberAdded = setAnnotationsFromToken(view, viewAnnotations, viewTokens);
                         int viewJsonTokenCount = countTokensInJson(jsonDoc, additionalFields);
-                        if (viewTokens.size() != viewJsonTokenCount) {
-                            logger.warn(String.format("Unmatched tokens in view [%s]: JSON (%d) and XMI (%d).",
-                                    additionalViewName, viewJsonTokenCount, viewTokens.size()));
-                        }
+//                        if (viewTokens.size() != viewJsonTokenCount) {
+//                            logger.warn(String.format("Unmatched tokens in view [%s]: JSON (%d) and XMI (%d) in doc
+// %s",
+//                                    additionalViewName, viewJsonTokenCount, viewTokens.size(), UimaConvenience
+//                                            .getArticleName(aJCas)));
+//                        }
+
+                        int[] tokenMapping = loadTokenMapping(viewJsonTokenCount, viewTokens);
+
+                        int numberAdded = setAnnotationsFromToken(view, viewAnnotations, viewTokens, tokenMapping);
                         if (numberAdded != viewAnnotations.size()) {
                             logger.warn(String.format("Number annotations added %d is not the same as annotations " +
                                     "read %d in view %s.", numberAdded, viewAnnotations.size(), additionalViewName));
                         }
+
                     } else {
                         setAnnotations(view, viewAnnotations);
                     }
@@ -212,7 +248,5 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        DebugUtils.pause();
     }
 }
