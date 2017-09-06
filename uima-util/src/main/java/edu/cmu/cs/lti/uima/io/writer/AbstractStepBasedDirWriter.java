@@ -1,9 +1,12 @@
 package edu.cmu.cs.lti.uima.io.writer;
 
 import com.google.common.base.Joiner;
+import edu.cmu.cs.lti.script.type.UimaMeta;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.util.JCasUtil;
+import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import java.io.File;
@@ -30,6 +33,8 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
 
     public static final String PARAM_SRC_DOC_INFO_VIEW_NAME = "SourceDocumentInfoViewName";
 
+    public static final String PARAM_SKIP_INDICATED_DOCUMENTS = "skipIndicatedDocuments";
+
     @ConfigurationParameter(name = PARAM_PARENT_OUTPUT_DIR_PATH, mandatory = true)
     private String parentOutputDirPath;
 
@@ -45,6 +50,9 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
     @ConfigurationParameter(name = PARAM_SRC_DOC_INFO_VIEW_NAME, mandatory = false)
     /** The view where you extract source document information */
     protected String srcDocInfoViewName;
+
+    @ConfigurationParameter(name = PARAM_SKIP_INDICATED_DOCUMENTS, mandatory = false)
+    protected boolean skipIndicatedDocuemnts;
 
     protected File outputDir;
 
@@ -68,6 +76,20 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
             logger.info("Writing documents to " + outputDir.getCanonicalPath());
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    protected boolean checkSkipIndicator(JCas aJCas) {
+        try {
+            UimaMeta meta = JCasUtil.selectSingle(aJCas, UimaMeta.class);
+            if (meta.getSkipOutput()) {
+                return true;
+            } else {
+                return false;
+            }
+        } catch (IllegalArgumentException e) {
+            // If the meta is not set, we won't skip anything.
+            return false;
         }
     }
 

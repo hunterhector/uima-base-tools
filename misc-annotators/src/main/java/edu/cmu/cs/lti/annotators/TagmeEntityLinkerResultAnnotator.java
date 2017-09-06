@@ -7,13 +7,13 @@ import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
-import edu.cmu.cs.lti.utils.DebugUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.StringArray;
 import org.apache.uima.resource.ResourceInitializationException;
 
 import java.io.File;
@@ -48,15 +48,19 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
 
     class EntityAnnotation {
         String entityId;
+        String wikiname;
         int begin;
         int end;
         int offset;
+        double score;
 
-        public EntityAnnotation(String entityId, int begin, int end, int offset) {
+        public EntityAnnotation(String entityId, String wikiname, int begin, int end, int offset, double score) {
             this.entityId = entityId;
             this.begin = begin;
             this.end = end;
             this.offset = offset;
+            this.wikiname = wikiname;
+            this.score = score;
         }
 
         private int getBegin() {
@@ -134,9 +138,11 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
         JsonArray locs = spotObj.get("loc").getAsJsonArray();
         int begin = locs.get(0).getAsInt();
         int end = locs.get(1).getAsInt();
-        String entityId = spotObj.get("entities").getAsJsonArray().get(0).getAsJsonObject().get("id").getAsString();
-        EntityAnnotation entityAnnotation = new EntityAnnotation(entityId, begin, end, offset);
-        return entityAnnotation;
+        String wikiname = spotObj.get("wiki_name").getAsString();
+        JsonObject linkedResult = spotObj.get("entities").getAsJsonArray().get(0).getAsJsonObject();
+        String entityId = linkedResult.get("id").getAsString();
+        double score = linkedResult.get("score").getAsDouble();
+        return new EntityAnnotation(entityId, wikiname, begin, end, offset, score);
     }
 
     private int setAnnotationsFromToken(JCas aJCas, List<EntityAnnotation> annotations,
@@ -149,32 +155,46 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
             if (uimaTokenBegin >= 0 && uimaTokenEnd >= 0) {
                 int begin = tokens.get(uimaTokenBegin).getBegin();
                 int end = tokens.get(uimaTokenEnd).getEnd();
-                GroundedEntity groundedEntity = new GroundedEntity(aJCas, begin, end);
-                groundedEntity.setKnowledgeBaseId(entityAnnotation.entityId);
-                UimaAnnotationUtils.finishAnnotation(groundedEntity, COMPONENT_ID, 0, aJCas);
+                setAnnotations(aJCas, entityAnnotation, begin, end);
                 numAdded++;
             } else {
-                logger.info(String.format("Missing annotation %s at token span [%d:%d].", entityAnnotation.entityId,
-                        entityAnnotation.getBegin(), entityAnnotation.getEnd()));
-                DebugUtils.pause();
+                logger.info(String.format("Missing annotation %s at token span [%d:%d], calculated span is [%d:%d].",
+                        entityAnnotation.entityId, entityAnnotation.getBegin(), entityAnnotation.getEnd(),
+                        uimaTokenBegin, uimaTokenEnd));
             }
         }
         return numAdded;
     }
 
-    private void setAnnotations(JCas aJCas, List<EntityAnnotation> annotations) {
+    private void setAnnotationsFromCharacters(JCas aJCas, List<EntityAnnotation> annotations) {
         for (EntityAnnotation entityAnnotation : annotations) {
             if (entityAnnotation.getEnd() < aJCas.getDocumentText().length()) {
                 int begin = entityAnnotation.getBegin();
                 int end = entityAnnotation.getEnd();
-                GroundedEntity groundedEntity = new GroundedEntity(aJCas, begin, end);
-                groundedEntity.setKnowledgeBaseId(entityAnnotation.entityId);
-                UimaAnnotationUtils.finishAnnotation(groundedEntity, COMPONENT_ID, 0, aJCas);
-//                logger.info(String.format("Added entity %s at [%d:%d].", groundedEntity.getCoveredText(), begin,
-// end));
-//                DebugUtils.pause();
+                setAnnotations(aJCas, entityAnnotation, begin, end);
             }
         }
+    }
+
+    private void setAnnotations(JCas aJCas, EntityAnnotation entityAnnotation, int begin, int end) {
+        GroundedEntity groundedEntity = new GroundedEntity(aJCas, begin, end);
+        groundedEntity.setKnowledgeBaseId(entityAnnotation.entityId);
+
+        StringArray kbNames = new StringArray(aJCas, 2);
+        StringArray kbValues = new StringArray(aJCas, 2);
+
+        kbNames.set(0, "freebase");
+        kbValues.set(0, entityAnnotation.entityId);
+
+        kbNames.set(1, "wikipedia");
+        kbValues.set(1, entityAnnotation.wikiname);
+
+        groundedEntity.setKnowledgeBaseNames(kbNames);
+        groundedEntity.setKnowledgeBaseValues(kbValues);
+
+        groundedEntity.setConfidence(entityAnnotation.score);
+
+        UimaAnnotationUtils.finishAnnotation(groundedEntity, COMPONENT_ID, 0, aJCas);
     }
 
     @Override
@@ -200,19 +220,13 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
 
                     int[] tokenMapping = loadTokenMapping(defaultJsonTokenCount, defaultTokens);
 
-//                    if (defaultTokens.size() != defaultJsonTokenCount) {
-//                        logger.warn(String.format("Unmatched tokens in default view: JSON (%d) and XMI (%d) in doc
-// %s",
-//                                defaultJsonTokenCount, defaultTokens.size(), UimaConvenience.getArticleName(aJCas)));
-//                    }
-
                     int numberAdded = setAnnotationsFromToken(aJCas, annotations, defaultTokens, tokenMapping);
                     if (numberAdded != annotations.size()) {
                         logger.warn(String.format("Number annotations added %d is not the same as annotations " +
-                                "read %d in default view.", numberAdded, annotations.size()));
+                                "read %d in default view from doc %s.", numberAdded, annotations.size(), baseName));
                     }
                 } else {
-                    setAnnotations(aJCas, annotations);
+                    setAnnotationsFromCharacters(aJCas, annotations);
                 }
 
                 for (String additionalViewName : additionalViews) {
@@ -225,23 +239,18 @@ public class TagmeEntityLinkerResultAnnotator extends AbstractLoggingAnnotator {
 
                     if (useToken) {
                         int viewJsonTokenCount = countTokensInJson(jsonDoc, additionalFields);
-//                        if (viewTokens.size() != viewJsonTokenCount) {
-//                            logger.warn(String.format("Unmatched tokens in view [%s]: JSON (%d) and XMI (%d) in doc
-// %s",
-//                                    additionalViewName, viewJsonTokenCount, viewTokens.size(), UimaConvenience
-//                                            .getArticleName(aJCas)));
-//                        }
 
                         int[] tokenMapping = loadTokenMapping(viewJsonTokenCount, viewTokens);
 
                         int numberAdded = setAnnotationsFromToken(view, viewAnnotations, viewTokens, tokenMapping);
                         if (numberAdded != viewAnnotations.size()) {
                             logger.warn(String.format("Number annotations added %d is not the same as annotations " +
-                                    "read %d in view %s.", numberAdded, viewAnnotations.size(), additionalViewName));
+                                            "read %d in view %s from doc %s.",
+                                    numberAdded, viewAnnotations.size(), additionalViewName, baseName));
                         }
 
                     } else {
-                        setAnnotations(view, viewAnnotations);
+                        setAnnotationsFromCharacters(view, viewAnnotations);
                     }
                 }
             }

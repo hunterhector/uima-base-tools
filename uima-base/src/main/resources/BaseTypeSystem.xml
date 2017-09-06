@@ -11,7 +11,7 @@
         <typeDescription>
             <name>edu.cmu.cs.lti.script.type.Article</name>
             <description/>
-            <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+            <supertypeName>edu.cmu.cs.lti.script.type.ArticleComponent</supertypeName>
             <features>
                 <featureDescription>
                     <name>articleName</name>
@@ -35,6 +35,16 @@
                 <featureDescription>
                     <name>metadata</name>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Metadata</rangeTypeName>
+                </featureDescription>
+            </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.UimaMeta</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.ComponentTOP</supertypeName>
+            <features>
+                <featureDescription>
+                    <name>skipOutput</name>
+                    <rangeTypeName>uima.cas.Boolean</rangeTypeName>
                 </featureDescription>
             </features>
         </typeDescription>
@@ -1484,11 +1494,28 @@
                 </featureDescription>
                 <featureDescription>
                     <name>knowledgeBaseId</name>
+                    <description>The main knowledge base id. There are alternative knowledge base entires in
+                        knowledgeBaseValues.
+                    </description>
                     <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>confidence</name>
+                    <rangeTypeName>uima.cas.Double</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
                     <name>knowledgeBaseType</name>
                     <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>knowledgeBaseNames</name>
+                    <description>List of knowledge bases to be linked to.</description>
+                    <rangeTypeName>uima.cas.StringArray</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>knowledgeBaseValues</name>
+                    <description>List of knowledge bases linked target, corresponding to knowledgeBaseNames</description>
+                    <rangeTypeName>uima.cas.StringArray</rangeTypeName>
                 </featureDescription>
             </features>
         </typeDescription>

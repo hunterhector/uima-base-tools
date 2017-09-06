@@ -54,7 +54,6 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
         }
         String outputFileName = CasSerialization.getOutputFileNameFromSource(aJCas, outputFileSuffix);
 
-
         File outputFile;
         if (outputFileName == null) {
             outputFile = new File(outputDir, "doc" + (docCounter.get()) + DEFAULT_FILE_SUFFIX);
@@ -66,6 +65,10 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
 
         // serialize XCAS and write to output file
         try {
+            if (skipIndicatedDocuemnts && checkSkipIndicator(aJCas)) {
+                // Do not write skipped documents.
+                return;
+            }
             CasSerialization.writeAsGzip(aJCas.getCas(), outputFile);
         } catch (IOException | SAXException e) {
             throw new AnalysisEngineProcessException(e);

@@ -45,15 +45,10 @@ import java.util.*;
 
 /**
  * This class uses the Stanford Corenlp Pipeline to annotate POS, NER, Parsing
- * and entity coreference
- * <p>
- * The current issue is that it does not split on DATETIME and TITLE correctly.
- * <p>
- * We recently added Chinese support.
+ * and entity coreference.
  *
  * @author Zhengzhong Liu, Hector
  * @author Jun Araki
- * @author Da Teng
  */
 public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     public final static String PARAM_USE_SUTIME = "UseSUTime";
@@ -92,6 +87,14 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     @ConfigurationParameter(name = PARAM_NUM_THREADS, defaultValue = "1")
     private int numThreads;
 
+    public static final String PARAM_SKIP_ANNOTATED = "skipAnnotated";
+    @ConfigurationParameter(name = PARAM_SKIP_ANNOTATED, defaultValue = "false")
+    private boolean skipAnnotated;
+
+    public static final String PARAM_WRITE_NEW_ANNOTATED = "writeNewAnnotated";
+    @ConfigurationParameter(name = PARAM_WRITE_NEW_ANNOTATED, defaultValue = "false", description = "Use together " +
+            "with skipAnnotated, this will set a flag to true only for documents that are newly annotated.")
+    private boolean writeNewAnnotatedOnly;
 
     private StanfordCoreNLP pipeline;
 
@@ -109,8 +112,14 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
         logger.info("Language is " + language);
 
+        if (skipAnnotated) {
+            logger.info("Skipping annotated documents.");
+        }
+
+        Properties props = null;
+
         if (language.equals("en")) {
-            Properties props = new Properties();
+            props = new Properties();
             if (splitOnly) {
                 props.setProperty("annotators", "tokenize, ssplit, pos, lemma");
             } else {
@@ -141,11 +150,6 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             if (parserMaxLen != null) {
                 logger.info("Parser will have a max length of " + parserMaxLen);
                 props.setProperty("parse.maxlen", String.valueOf(parserMaxLen));
-            }
-
-            if (numThreads > 1) {
-                logger.info("Setting multiple threads for StanfordCoreNLP: " + numThreads);
-                props.setProperty("threads", String.valueOf(numThreads));
             }
 
             props.setProperty("dcoref.maxdist", String.valueOf(corefMaxLookback));
@@ -179,7 +183,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 ));
             }
 
-            Properties props = StringUtils.argsToProperties(args);
+            props = StringUtils.argsToProperties(args);
             if (splitOnly) {
                 props.setProperty("annotators", "segment, ssplit, pos, lemma");
             }
@@ -187,10 +191,6 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             props.setProperty("segment.verbose", "false");
             props.setProperty("coref.verbose", "false");
 
-            if (numThreads > 1) {
-                logger.info("Setting multiple threads for StanfordCoreNLP: " + numThreads);
-                props.setProperty("threads", String.valueOf(numThreads));
-            }
 
             pipeline = new StanfordCoreNLP(props);
 
@@ -215,10 +215,24 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
             hf = new ChineseSemanticHeadFinder();
         }
+
+        if (numThreads > 1) {
+            logger.info("Setting multiple threads for StanfordCoreNLP: " + numThreads);
+            props.setProperty("threads", String.valueOf(numThreads));
+        }
     }
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
+        if (skipAnnotated && checkAnnotated(aJCas)) {
+            // Skip documents that are annotated.
+            if (writeNewAnnotatedOnly) {
+                // Skip writing them out as well.
+                setSkip(aJCas);
+            }
+            return;
+        }
+
         if (language.equals("en")) {
             annotateEnglish(aJCas, 0);
             for (JCas view : getAdditionalViews(aJCas)) {
@@ -230,6 +244,14 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 annotateChinese(view, 0);
             }
         }
+    }
+
+    private boolean checkAnnotated(JCas aJCas) {
+        Collection<StanfordCorenlpToken> tokens = JCasUtil.select(aJCas, StanfordCorenlpToken.class);
+        if (tokens.size() > 0) {
+            return true;
+        }
+        return false;
     }
 
     private void annotateChinese(JCas aJCas, int textOffset) {

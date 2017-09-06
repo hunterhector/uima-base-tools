@@ -4,9 +4,12 @@ import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.FileAppender;
+import edu.cmu.cs.lti.script.type.UimaMeta;
+import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import org.apache.uima.UimaContext;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.slf4j.Logger;
@@ -85,5 +88,16 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
 
     protected String progressInfo(JCas aJCas, String message) {
         return message + " " + UimaConvenience.getDocumentName(aJCas);
+    }
+
+    protected void setSkip(JCas aJCas) {
+        UimaMeta meta;
+        try {
+            meta = JCasUtil.selectSingle(aJCas, UimaMeta.class);
+        } catch (IllegalArgumentException e) {
+            meta = new UimaMeta(aJCas);
+            UimaAnnotationUtils.finishTop(meta, COMPONENT_ID, 0, aJCas);
+        }
+        meta.setSkipOutput(true);
     }
 }

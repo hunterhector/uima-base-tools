@@ -113,10 +113,6 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
             goldStandardViewName = DEFAULT_GOLD_STANDARD_NAME;
         }
 
-//        if (inputFileSuffix == null) {
-//            inputFileSuffix = defaultFileSuffix();
-//        }
-
         if (dataPath == null) {
             if (parentInputDirPath == null || baseInputDirName == null) {
                 logger.error("Both data path, and parent/base pair path are null.");
