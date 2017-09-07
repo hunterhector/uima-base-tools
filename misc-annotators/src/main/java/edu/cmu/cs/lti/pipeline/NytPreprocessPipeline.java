@@ -4,8 +4,7 @@ import edu.cmu.cs.lti.annotators.AnnotationRemover;
 import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
 import edu.cmu.cs.lti.annotators.TagmeEntityLinkerResultAnnotator;
 import edu.cmu.cs.lti.collection_reader.AnnotatedNytReader;
-import edu.cmu.cs.lti.script.type.StanfordCorenlpSentence;
-import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
+import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.GzippedXmiCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.AbstractStepBasedDirWriter;
@@ -54,7 +53,6 @@ public class NytPreprocessPipeline {
                 AnnotationRemover.MULTI_THREAD, true
         );
 
-
         AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 StanfordCoreNlpAnnotator.class, typeSystemDescription,
                 StanfordCoreNlpAnnotator.PARAM_LANGUAGE, "en",
@@ -68,6 +66,51 @@ public class NytPreprocessPipeline {
                 workingDir, "parsed");
 
         new BasicPipeline(reader, true, true, 7, remover, stanfordAnalyzer, parsedWriter).run();
+    }
+
+    private static void forceParse(TypeSystemDescription typeSystemDescription, String workingDir) throws UIMAException,
+            SAXException, CpeDescriptorException, IOException {
+        CollectionReaderDescription parsedReader = CollectionReaderFactory.createReaderDescription(
+                GzippedXmiCollectionReader.class, typeSystemDescription,
+                GzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, workingDir,
+                GzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, "temp",
+                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz"
+        );
+
+        AnalysisEngineDescription remover = AnalysisEngineFactory.createEngineDescription(
+                AnnotationRemover.class, typeSystemDescription,
+                AnnotationRemover.PARAM_TARGET_VIEWS, new String[]{CAS.NAME_DEFAULT_SOFA, AnnotatedNytReader
+                        .ABSTRACT_VIEW_NAME},
+                AnnotationRemover.PARAM_TARGET_ANNOTATIONS, new Class[]{
+                        StanfordCorenlpSentence.class,
+                        StanfordCorenlpToken.class,
+                        StanfordEntityMention.class,
+                        Entity.class,
+                        StanfordTreeAnnotation.class
+                },
+                AnnotationRemover.MULTI_THREAD, true
+        );
+
+        AnalysisEngineDescription parser = AnalysisEngineFactory.createEngineDescription(
+                StanfordCoreNlpAnnotator.class, typeSystemDescription,
+                StanfordCoreNlpAnnotator.PARAM_LANGUAGE, "en",
+                StanfordCoreNlpAnnotator.PARAM_KEEP_QUIET, true,
+                StanfordCoreNlpAnnotator.PARAM_ADDITIONAL_VIEWS, AnnotatedNytReader.ABSTRACT_VIEW_NAME,
+                StanfordCoreNlpAnnotator.MULTI_THREAD, true,
+                StanfordCoreNlpAnnotator.PARAM_PARSER_MAXLEN, 40,
+                StanfordCoreNlpAnnotator.PARAM_SKIP_ANNOTATED, true,
+                StanfordCoreNlpAnnotator.PARAM_WRITE_NEW_ANNOTATED, true
+        );
+
+        AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
+                StepBasedDirGzippedXmiWriter.class,
+                StepBasedDirGzippedXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, workingDir,
+                StepBasedDirGzippedXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME, "temp_out",
+                AbstractLoggingAnnotator.MULTI_THREAD, true,
+                AbstractStepBasedDirWriter.PARAM_SKIP_INDICATED_DOCUMENTS, true
+        );
+
+        new BasicPipeline(parsedReader, true, true, 7, remover, parser, writer).run();
     }
 
     private static void reparse(TypeSystemDescription typeSystemDescription, String workingDir) throws UIMAException,
@@ -138,6 +181,8 @@ public class NytPreprocessPipeline {
         // Some files may failed during first parsing, we rerun to fix them.
 //        reparse(typeSystemDescription, workingDir);
 
-        tag(typeSystemDescription, workingDir, "parsed", "tagged", entityResultDir);
+//        forceParse(typeSystemDescription, workingDir);
+
+//        tag(typeSystemDescription, workingDir, "parsed", "tagged", entityResultDir);
     }
 }

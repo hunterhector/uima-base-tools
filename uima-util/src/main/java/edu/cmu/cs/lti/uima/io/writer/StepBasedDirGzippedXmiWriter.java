@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * This analysis engine outputs gzipped CAS in the XMI format.
  *
- * @author Jun Araki
+ * @author Zhengzhong Liu
  */
 public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
     public static final String PARAM_OUTPUT_FILE_NUMBERS = "OutputFileNumbers";
@@ -35,10 +35,13 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
 
     private AtomicInteger docCounter;
 
+    private AtomicInteger skippedDocument;
+
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
         super.initialize(context);
         docCounter = new AtomicInteger(0);
+        skippedDocument = new AtomicInteger(0);
     }
 
     @Override
@@ -67,11 +70,18 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
         try {
             if (skipIndicatedDocuemnts && checkSkipIndicator(aJCas)) {
                 // Do not write skipped documents.
+                skippedDocument.incrementAndGet();
                 return;
             }
             CasSerialization.writeAsGzip(aJCas.getCas(), outputFile);
         } catch (IOException | SAXException e) {
             throw new AnalysisEngineProcessException(e);
         }
+    }
+
+    @Override
+    public void collectionProcessComplete() throws AnalysisEngineProcessException {
+        super.collectionProcessComplete();
+        logger.info("Number of documents skipped: " + skippedDocument.get());
     }
 }
