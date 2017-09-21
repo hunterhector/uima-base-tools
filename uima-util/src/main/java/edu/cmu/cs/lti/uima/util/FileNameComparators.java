@@ -12,7 +12,7 @@ import java.util.Date;
  * Date: 10/1/14
  * Time: 1:04 PM
  */
-public class NewsNameComparators {
+public class FileNameComparators {
     public static Comparator<File> getGigawordDateComparator(final String inputFileSuffix, final String dateFormatStr) {
         return new Comparator<File>() {
             @Override

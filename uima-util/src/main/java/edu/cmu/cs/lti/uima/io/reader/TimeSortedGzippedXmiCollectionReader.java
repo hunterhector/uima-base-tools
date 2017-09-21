@@ -1,7 +1,7 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
-import edu.cmu.cs.lti.uima.util.NewsNameComparators;
+import edu.cmu.cs.lti.uima.util.FileNameComparators;
 import org.apache.uima.UimaContext;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.collection.CollectionException;
@@ -33,7 +33,7 @@ public class TimeSortedGzippedXmiCollectionReader extends AbstractCollectionRead
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
 
-        Collections.sort(this.files, NewsNameComparators.getGigawordDateComparator(extension, "yyyymm"));
+        Collections.sort(this.files, FileNameComparators.getGigawordDateComparator(extension, "yyyymm"));
 
         currentDocIndex = 0;
     }

@@ -15,10 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -76,6 +73,8 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
     public static final String PARAM_BASE_INPUT_DIR_NAME = "BaseInputDirectoryName";
     @ConfigurationParameter(name = PARAM_BASE_INPUT_DIR_NAME, mandatory = false)
     private String baseInputDirName;
+
+    public static Comparator<File> inputComparator;
 
     public static final String PARAM_EXTENSION = "extensionFilter";
     @ConfigurationParameter(name = PARAM_EXTENSION, mandatory = false,
@@ -232,6 +231,11 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
 
         this.files = new ArrayList<>(FileUtils.listFiles(new File(dataPath), fileFilter, dirFilter));
         fileIndex = 0;
+
+        if (inputComparator != null) {
+            this.files.sort(inputComparator);
+            logger.info("Sorted input files before reading.");
+        }
 
         logger.info(String.format("%d files ignored, %d files will be read.",
                 numFilesIgnored.get(), numFilesToRead.get()));

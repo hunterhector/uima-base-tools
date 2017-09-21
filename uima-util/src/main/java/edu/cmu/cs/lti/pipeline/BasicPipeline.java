@@ -288,6 +288,12 @@ public class BasicPipeline {
 
             Function<CAS, ProcessTrace> func = cas -> {
                 try {
+                    if (cas == null) {
+                        // Does this happen? Why?
+                        logger.info("Get a null cas somehow");
+                        return null;
+                    }
+
                     if (multiThread) {
                         return engine.process(cas);
                     } else {

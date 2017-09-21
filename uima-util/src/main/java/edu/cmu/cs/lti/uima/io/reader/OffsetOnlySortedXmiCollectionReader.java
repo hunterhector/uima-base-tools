@@ -19,7 +19,7 @@
 
 package edu.cmu.cs.lti.uima.io.reader;
 
-import edu.cmu.cs.lti.uima.util.NewsNameComparators;
+import edu.cmu.cs.lti.uima.util.FileNameComparators;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
@@ -97,7 +97,7 @@ public class OffsetOnlySortedXmiCollectionReader extends CollectionReader_ImplBa
             }
         }
 
-        Collections.sort(mFiles, NewsNameComparators.getFileOffsetComparator(inputFileSuffix));
+        Collections.sort(mFiles, FileNameComparators.getFileOffsetComparator(inputFileSuffix));
     }
 
     /**
