@@ -21,6 +21,8 @@
         <module>zpar</module>
         <module>ltp-parser</module>
         <module>caevo</module>
+        <module>cogcomp-nlp</module>
+
     </modules>
     <build>
         <plugins>
@@ -92,6 +94,11 @@
                 <groupId>org.apache.uima</groupId>
                 <artifactId>uimafit-cpe</artifactId>
                 <version>2.1.0</version>
+            </dependency>
+            <dependency>
+                <groupId>org.uimafit</groupId>
+                <artifactId>uimafit</artifactId>
+                <version>1.4.0</version>
             </dependency>
             <dependency>
                 <groupId>edu.stanford.nlp</groupId>
