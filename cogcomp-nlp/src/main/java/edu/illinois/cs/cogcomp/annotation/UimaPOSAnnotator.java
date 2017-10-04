@@ -1,18 +1,17 @@
 package edu.illinois.cs.cogcomp.annotation;
 
 import edu.cmu.cs.lti.annotators.SRLAnnotator;
+import edu.cmu.cs.lti.script.type.StanfordCorenlpSentence;
 import edu.cmu.cs.lti.script.type.StanfordCorenlpToken;
 import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.Constituent;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TokenLabelView;
-import edu.illinois.cs.cogcomp.core.utilities.configuration.ResourceManager;
 import edu.illinois.cs.cogcomp.pos.POSAnnotator;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,16 +21,11 @@ import java.util.List;
  *
  * @author Zhengzhong Liu
  */
-public class UimaPOSAnnotator extends Annotator {
-    private final Logger logger = LoggerFactory.getLogger(UimaPOSAnnotator.class);
+public class UimaPOSAnnotator extends UimaSentenceAnnotator {
     private static final String NAME = POSAnnotator.class.getCanonicalName();
 
     public UimaPOSAnnotator() {
-        super(ViewNames.POS, new String[0], false);
-    }
-
-    @Override
-    public void initialize(ResourceManager rm) {
+        super(ViewNames.POS);
     }
 
     @Override
@@ -42,8 +36,15 @@ public class UimaPOSAnnotator extends Annotator {
         List<Constituent> tokens = record.getView(ViewNames.TOKENS).getConstituents();
         TokenLabelView posView = new TokenLabelView(ViewNames.POS, NAME, record, 1.0);
 
+        int sentenceId = getNextSentenceId(docid);
+
+        ArrayList<StanfordCorenlpSentence> sentences = new ArrayList<>(
+                JCasUtil.select(aJCas, StanfordCorenlpSentence.class));
+
+        StanfordCorenlpSentence sentence = sentences.get(sentenceId);
+
         int tcounter = 0;
-        for (StanfordCorenlpToken uimaToken : JCasUtil.select(aJCas, StanfordCorenlpToken.class)) {
+        for (StanfordCorenlpToken uimaToken : JCasUtil.selectCovered(StanfordCorenlpToken.class, sentence)) {
             Constituent token = tokens.get(tcounter);
             Constituent label = new Constituent(uimaToken.getPos(), ViewNames.POS, record,
                     token.getStartSpan(), token.getEndSpan());
@@ -51,5 +52,9 @@ public class UimaPOSAnnotator extends Annotator {
             tcounter++;
         }
         record.addView(viewName, posView);
+
+        if (sentenceId == sentences.size() - 1) {
+            removeDoc(docid);
+        }
     }
 }

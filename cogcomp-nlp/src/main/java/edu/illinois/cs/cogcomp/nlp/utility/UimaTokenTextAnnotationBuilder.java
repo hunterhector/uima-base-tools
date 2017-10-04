@@ -11,6 +11,8 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation
 import edu.illinois.cs.cogcomp.nlp.tokenizer.Tokenizer;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.LinkedList;
@@ -24,6 +26,8 @@ import java.util.List;
  * @author Zhengzhong Liu
  */
 public class UimaTokenTextAnnotationBuilder implements TextAnnotationBuilder {
+    private final Logger logger = LoggerFactory.getLogger(UimaTokenTextAnnotationBuilder.class);
+
     private static final String NAME = UimaTokenTextAnnotationBuilder.class.getSimpleName();
     private static final String DEFAULT_TEXT_ID = "dummyTextId";
     private static final String DEFAULT_CORPUS_ID = "dummyCorpusId";
@@ -59,6 +63,7 @@ public class UimaTokenTextAnnotationBuilder implements TextAnnotationBuilder {
                 tokens.add(token.getCoveredText());
             }
             sentenceEndTokenIndex += uimaTokens.size();
+
             sentenceEndTokenOffsets[sentIndex++] = sentenceEndTokenIndex;
         }
 

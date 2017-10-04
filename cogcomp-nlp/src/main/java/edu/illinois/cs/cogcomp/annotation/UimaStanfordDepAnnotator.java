@@ -8,10 +8,10 @@ import edu.illinois.cs.cogcomp.core.datastructures.ViewNames;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation;
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TreeView;
 import edu.illinois.cs.cogcomp.core.datastructures.trees.Tree;
-import edu.illinois.cs.cogcomp.core.utilities.configuration.ResourceManager;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,16 +21,10 @@ import java.util.List;
  *
  * @author Zhengzhong Liu
  */
-public class UimaStanfordDepAnnotator extends Annotator {
+public class UimaStanfordDepAnnotator extends UimaSentenceAnnotator {
     public UimaStanfordDepAnnotator() {
-        super(ViewNames.PARSE_STANFORD, new String[0], false);
+        super(ViewNames.PARSE_STANFORD);
     }
-
-    @Override
-    public void initialize(ResourceManager rm) {
-
-    }
-
 
     private Tree<String> convertFromStanfordTree(ParseTreeAnnotation uimaTree) {
         Tree<String> tree = new Tree<>(uimaTree.getPennTreeLabel());
@@ -66,17 +60,15 @@ public class UimaStanfordDepAnnotator extends Annotator {
         String docid = textAnnotation.getId();
         JCas aJCas = SRLAnnotator.docCas.get(docid);
 
-        System.out.println(String.format("Text annotation contains %d sentences.", textAnnotation
-                .getNumberOfSentences()));
+        int sentenceId = getNextSentenceId(docid);
+        ArrayList<StanfordCorenlpSentence> sentences = new ArrayList<>(
+                JCasUtil.select(aJCas, StanfordCorenlpSentence.class));
+        StanfordCorenlpSentence sentence = sentences.get(sentenceId);
 
-        System.out.println("The sentence is " + textAnnotation.getSentence(0).text);
+        StanfordTreeAnnotation parseTree = getTree(sentence);
+        Tree<String> tree = convertFromStanfordTree(parseTree);
+        treeView.setParseTree(0, tree);
 
-        int sentenceId = 0;
-        for (StanfordCorenlpSentence sentence : JCasUtil.select(aJCas, StanfordCorenlpSentence.class)) {
-            StanfordTreeAnnotation parseTree = getTree(sentence);
-            Tree<String> tree = convertFromStanfordTree(parseTree);
-            treeView.setParseTree(sentenceId++, tree);
-        }
         textAnnotation.addView(viewName, treeView);
     }
 }

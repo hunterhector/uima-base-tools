@@ -12,6 +12,8 @@ import edu.illinois.cs.cogcomp.core.datastructures.textannotation.TextAnnotation
 import edu.illinois.cs.cogcomp.core.datastructures.textannotation.View;
 import edu.illinois.cs.cogcomp.core.utilities.configuration.Configurator;
 import edu.illinois.cs.cogcomp.core.utilities.configuration.ResourceManager;
+import edu.illinois.cs.cogcomp.ner.NERAnnotator;
+import edu.illinois.cs.cogcomp.ner.NerAnnotatorManager;
 import edu.illinois.cs.cogcomp.nlp.utility.UimaTokenTextAnnotationBuilder;
 import edu.illinois.cs.cogcomp.pipeline.main.SentencePipeline;
 import edu.illinois.cs.cogcomp.srl.SemanticRoleLabeler;
@@ -79,7 +81,10 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
         // IllinoisLemmatizer
         viewGenerators.put(ViewNames.LEMMA, new UimaLemmaAnnotator());
         // NERAnnotator
-        viewGenerators.put(ViewNames.NER_CONLL, new UimaNerAnnotator());
+        NERAnnotator nerConll = NerAnnotatorManager.buildNerAnnotator(rm, ViewNames.NER_CONLL);
+//        viewGenerators.put(ViewNames.NER_CONLL, new UimaNerAnnotator());
+        viewGenerators.put(ViewNames.NER_CONLL, nerConll);
+
         // ChunkerAnnotator, use the original UIUC chunker.
         viewGenerators.put(ViewNames.SHALLOW_PARSE, new ChunkerAnnotator());
         // ParserAnnotator
@@ -106,6 +111,8 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
         String docid = UimaConvenience.getArticleName(aJCas);
 
         docCas.putIfAbsent(docid, aJCas);
+
+        UimaConvenience.printProcessLog(aJCas);
 
         try {
             TextAnnotation ta = pipeline.createAnnotatedTextAnnotation("Corpus",
