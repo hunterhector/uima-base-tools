@@ -227,7 +227,14 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
             }
         };
 
-        IOFileFilter dirFilter = recursive ? TrueFileFilter.INSTANCE : null;
+        IOFileFilter dirFilter;
+
+        if (recursive) {
+            dirFilter = TrueFileFilter.INSTANCE;
+            logger.info("Find reader setting to recursive.");
+        } else {
+            dirFilter = null;
+        }
 
         this.files = new ArrayList<>(FileUtils.listFiles(new File(dataPath), fileFilter, dirFilter));
         fileIndex = 0;
