@@ -72,8 +72,9 @@ public class UimaStanfordDepAnnotator extends UimaSentenceAnnotator {
         TreeView treeView = new TreeView(ViewNames.PARSE_STANFORD, "UimaStanfordDepAnnotator", textAnnotation, 1d);
         String docid = textAnnotation.getId();
         JCas aJCas = SRLAnnotator.docCas.get(docid);
-
         int sentenceId = getNextSentenceId(docid);
+//        logger.info(String.format("Adding %s view for doc %s, sentence %d.", viewName, docid, sentenceId));
+
         ArrayList<StanfordCorenlpSentence> sentences = new ArrayList<>(
                 JCasUtil.select(aJCas, StanfordCorenlpSentence.class));
         StanfordCorenlpSentence sentence = sentences.get(sentenceId);

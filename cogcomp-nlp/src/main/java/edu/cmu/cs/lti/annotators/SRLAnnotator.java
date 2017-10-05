@@ -30,6 +30,7 @@ import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.collection.CollectionReaderDescription;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
@@ -39,6 +40,7 @@ import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.uimafit.util.FSCollectionFactory;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -53,6 +55,9 @@ import java.util.concurrent.ConcurrentMap;
  * @author Zhengzhong Liu
  */
 public class SRLAnnotator extends AbstractLoggingAnnotator {
+    public static final String PARAM_CACHE_FILE = "cacheFile";
+    @ConfigurationParameter(name = PARAM_CACHE_FILE)
+    private String cacheFile;
 
     private BasicAnnotatorService pipeline;
 
@@ -65,6 +70,7 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
 
         docCas = new ConcurrentHashMap<>();
 
+        logger.info("Cache file is " + cacheFile);
         try {
             logger.info("Adding view builders.");
             pipeline = addViewBuilders();
@@ -79,7 +85,10 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
         UimaTokenTextAnnotationBuilder tokenBuilder = new UimaTokenTextAnnotationBuilder();
 
         Map<String, Annotator> viewGenerators = new HashMap<>();
-        ResourceManager rm = new AnnotatorServiceConfigurator().getDefaultConfig();
+
+        Properties defaultProperties = new AnnotatorServiceConfigurator().getDefaultConfig().getProperties();
+        defaultProperties.setProperty(AnnotatorServiceConfigurator.CACHE_DIR.key, cacheFile);
+        ResourceManager rm = new ResourceManager(defaultProperties);
 
         // POSAnnotator
         viewGenerators.put(ViewNames.POS, new UimaPOSAnnotator());
@@ -113,15 +122,6 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
         nomProps.setProperty(SrlConfigurator.SRL_TYPE.key, nomType);
         ResourceManager nomRm = new ResourceManager(nomProps);
         rm = Configurator.mergeProperties(rm, nomRm);
-
-        // We need DEPENDENCY view for this, we don't want to process too much for now.
-//        // SRL_PREP
-//        PrepSRLAnnotator prepSRLAnnotator = new PrepSRLAnnotator();
-//        viewGenerators.put(ViewNames.SRL_PREP, prepSRLAnnotator);
-
-//        // SRL_COMMA
-//        CommaLabeler commaLabeler = new CommaLabeler();
-//        viewGenerators.put(ViewNames.SRL_COMMA, commaLabeler);
 
         try {
             SemanticRoleLabeler nomSrl = new SemanticRoleLabeler(rm, false);
@@ -212,7 +212,6 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
         String baseInput = args[1]; //"01_event_tuples"
 
         String paramBaseOutputDirName = "srl_parsed";
-
         String typeSystemDescriptor = "TypeSystem";
 
         // Instantiate the analysis engine.
@@ -227,7 +226,9 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
         );
 
         AnalysisEngineDescription parser = AnalysisEngineFactory.createEngineDescription(
-                SRLAnnotator.class, typeSystemDescription);
+                SRLAnnotator.class, typeSystemDescription,
+                SRLAnnotator.PARAM_CACHE_FILE, new File(parentInput, "cogcomp_cache")
+        );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
                 parentInput, paramBaseOutputDirName);

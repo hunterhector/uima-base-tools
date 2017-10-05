@@ -32,11 +32,11 @@ public class UimaPOSAnnotator extends UimaSentenceAnnotator {
     protected void addView(TextAnnotation record) throws AnnotatorException {
         String docid = record.getId();
         JCas aJCas = SRLAnnotator.docCas.get(docid);
-
         List<Constituent> tokens = record.getView(ViewNames.TOKENS).getConstituents();
         TokenLabelView posView = new TokenLabelView(ViewNames.POS, NAME, record, 1.0);
 
         int sentenceId = getNextSentenceId(docid);
+//        logger.info(String.format("Adding %s view for doc %s, sentence %d.", viewName, docid, sentenceId));
 
         ArrayList<StanfordCorenlpSentence> sentences = new ArrayList<>(
                 JCasUtil.select(aJCas, StanfordCorenlpSentence.class));
@@ -52,6 +52,8 @@ public class UimaPOSAnnotator extends UimaSentenceAnnotator {
             tcounter++;
         }
         record.addView(viewName, posView);
+
+//        logger.info(viewName + " view is found : " + record.hasView(viewName));
 
         if (sentenceId == sentences.size() - 1) {
             removeDoc(docid);

@@ -31,8 +31,10 @@ public class UimaNerAnnotator extends UimaSentenceAnnotator {
         SpanLabelView nerView = new SpanLabelView(getViewName(), ta);
         String docid = ta.getId();
         JCas aJCas = SRLAnnotator.docCas.get(docid);
-
         int sentenceId = getNextSentenceId(docid);
+
+//        logger.info(String.format("Adding %s view for doc %s, sentence %d.", viewName, docid, sentenceId));
+
         ArrayList<StanfordCorenlpSentence> sentences = new ArrayList<>(
                 JCasUtil.select(aJCas, StanfordCorenlpSentence.class));
         StanfordCorenlpSentence sentence = sentences.get(sentenceId);
@@ -43,12 +45,9 @@ public class UimaNerAnnotator extends UimaSentenceAnnotator {
         }
 
         for (EntityMention mention : JCasUtil.selectCovered(EntityMention.class, sentence)) {
-            logger.info("Adding mention " + mention.getCoveredText());
-
             List<StanfordCorenlpToken> mentionTokens = JCasUtil.selectCovered(StanfordCorenlpToken.class, mention);
             int s = mentionTokens.get(0).getIndex();
             int e = mentionTokens.get(mentionTokens.size() - 1).getIndex();
-            logger.info("Start is " + s + " end is " + e);
             nerView.addSpanLabel(s, e, mention.getEntityType(), 1d);
         }
         ta.addView(viewName, nerView);

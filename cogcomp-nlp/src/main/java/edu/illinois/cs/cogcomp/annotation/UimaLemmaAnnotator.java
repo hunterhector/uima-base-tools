@@ -31,8 +31,10 @@ public class UimaLemmaAnnotator extends UimaSentenceAnnotator {
     protected void addView(TextAnnotation textAnnotation) throws AnnotatorException {
         String docid = textAnnotation.getId();
         JCas aJCas = SRLAnnotator.docCas.get(docid);
-
         int sentenceId = getNextSentenceId(docid);
+
+//        logger.info(String.format("Adding %s view for doc %s, sentence %d.", viewName, docid, sentenceId));
+
         ArrayList<StanfordCorenlpSentence> sentences = new ArrayList<>(
                 JCasUtil.select(aJCas, StanfordCorenlpSentence.class));
         StanfordCorenlpSentence sentence = sentences.get(sentenceId);
