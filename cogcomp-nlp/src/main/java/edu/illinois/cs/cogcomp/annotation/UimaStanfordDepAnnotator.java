@@ -43,14 +43,27 @@ public class UimaStanfordDepAnnotator extends UimaSentenceAnnotator {
     }
 
     private StanfordTreeAnnotation getTree(StanfordCorenlpSentence sentence) {
+        List<StanfordTreeAnnotation> possibleTrees = new ArrayList<>();
+
         List<StanfordTreeAnnotation> trees = JCasUtil.selectCovered(StanfordTreeAnnotation.class, sentence);
         for (StanfordTreeAnnotation tree : trees) {
             if (tree.getBegin() == sentence.getBegin() && tree.getEnd() == sentence.getEnd()) {
-                if (tree.getPennTreeLabel().equals("ROOT")) {
-                    return tree;
-                }
+                possibleTrees.add(tree);
             }
         }
+
+        // Find the root if possible.
+        for (StanfordTreeAnnotation possibleTree : possibleTrees) {
+            if (possibleTree.getPennTreeLabel().equals("ROOT")) {
+                return possibleTree;
+            }
+        }
+
+        // Otherwise use the first one.
+        if (possibleTrees.size() > 0) {
+            return possibleTrees.get(0);
+        }
+
         return null;
     }
 
@@ -66,8 +79,11 @@ public class UimaStanfordDepAnnotator extends UimaSentenceAnnotator {
         StanfordCorenlpSentence sentence = sentences.get(sentenceId);
 
         StanfordTreeAnnotation parseTree = getTree(sentence);
-        Tree<String> tree = convertFromStanfordTree(parseTree);
-        treeView.setParseTree(0, tree);
+
+        if (parseTree != null) {
+            Tree<String> tree = convertFromStanfordTree(parseTree);
+            treeView.setParseTree(0, tree);
+        }
 
         textAnnotation.addView(viewName, treeView);
     }

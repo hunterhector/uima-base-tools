@@ -99,6 +99,19 @@
             <supertypeName>edu.cmu.cs.lti.script.type.SemanticArgument</supertypeName>
         </typeDescription>
         <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.UiucSrlPredicate</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.Word</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.UiucSrlRelation</name>
+            <description/>
+            <supertypeName>edu.cmu.cs.lti.script.type.SemanticRelation</supertypeName>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.UiucSrlArgument</name>
+            <supertypeName>edu.cmu.cs.lti.script.type.SemanticArgument</supertypeName>
+        </typeDescription>
+        <typeDescription>
             <name>edu.cmu.cs.lti.script.type.SemaforLabel</name>
             <description/>
             <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
