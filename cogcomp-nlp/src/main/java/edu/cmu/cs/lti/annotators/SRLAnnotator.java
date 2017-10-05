@@ -155,6 +155,11 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
     }
 
     private void getSRLFromView(TextAnnotation ta, JCas aJCas, String viewName) {
+        if (!ta.hasView(viewName)) {
+            logger.warn(String.format("Cannot set view %s for document %s.", viewName,
+                    UimaConvenience.getArticleName(aJCas)));
+            return;
+        }
         View srlView = ta.getView(viewName);
 
         ArrayListMultimap<UiucSrlPredicate, Relation> predArgs = ArrayListMultimap.create();
