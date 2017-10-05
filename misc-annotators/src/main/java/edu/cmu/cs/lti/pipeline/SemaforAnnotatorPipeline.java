@@ -1,9 +1,7 @@
 package edu.cmu.cs.lti.pipeline;
 
-import edu.cmu.cs.lti.annotators.StanfordCoreNlpAnnotator;
-import edu.cmu.cs.lti.collection_reader.LDCXmlCollectionReader;
 import edu.cmu.cs.lti.script.annotators.SemaforAnnotator;
-import edu.cmu.cs.lti.utils.FileUtils;
+import edu.cmu.cs.lti.uima.io.reader.GzippedXmiCollectionReader;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
@@ -25,32 +23,41 @@ public class SemaforAnnotatorPipeline {
         TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
                 .createTypeSystemDescription("TypeSystem");
 
-        String inputDir = args[0];
-        String outputDir = args[1];
+        String workingDir = args[0];
+        String baseInput = args[1];
+        String baseOutput = args[2];
 
         String semaforModelDirectory = "../models/semafor_malt_model_20121129";
 
+//        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+//                LDCXmlCollectionReader.class, typeSystemDescription,
+//                LDCXmlCollectionReader.PARAM_DATA_PATH, workingDir,
+//                LDCXmlCollectionReader.PARAM_LANGUAGE, "en"
+//        );
+
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
-                LDCXmlCollectionReader.class, typeSystemDescription,
-                LDCXmlCollectionReader.PARAM_DATA_PATH, inputDir,
-                LDCXmlCollectionReader.PARAM_LANGUAGE, "en"
+                GzippedXmiCollectionReader.class, typeSystemDescription,
+                GzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, workingDir,
+                GzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInput,
+                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz",
+                GzippedXmiCollectionReader.PARAM_RECURSIVE, true
         );
 
-        AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
-                StanfordCoreNlpAnnotator.class, typeSystemDescription,
-                StanfordCoreNlpAnnotator.PARAM_WHITESPACE_TOKENIZE, false,
-                StanfordCoreNlpAnnotator.PARAM_PARSER_MAXLEN, 70,
-                StanfordCoreNlpAnnotator.PARAM_NUMERIC_CLASSIFIER, false,
-                StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, false,
-                StanfordCoreNlpAnnotator.PARAM_SHIFT_REDUCE, true
-        );
+//        AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
+//                StanfordCoreNlpAnnotator.class, typeSystemDescription,
+//                StanfordCoreNlpAnnotator.PARAM_WHITESPACE_TOKENIZE, false,
+//                StanfordCoreNlpAnnotator.PARAM_PARSER_MAXLEN, 70,
+//                StanfordCoreNlpAnnotator.PARAM_NUMERIC_CLASSIFIER, false,
+//                StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, false,
+//                StanfordCoreNlpAnnotator.PARAM_SHIFT_REDUCE, true
+//        );
 
         AnalysisEngineDescription semaforAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 SemaforAnnotator.class, typeSystemDescription,
-                SemaforAnnotator.SEMAFOR_MODEL_PATH, semaforModelDirectory,
-                SemaforAnnotator.PARAM_JSON_OUTPUT_REDIRECT, FileUtils.joinPaths(outputDir, "json")
+                SemaforAnnotator.SEMAFOR_MODEL_PATH, semaforModelDirectory
+//                SemaforAnnotator.PARAM_JSON_OUTPUT_REDIRECT, FileUtils.joinPaths(workingDir, baseOutput, "json")
         );
 
-        new BasicPipeline(reader, false, true, 10, outputDir, "xmi", stanfordAnalyzer, semaforAnalyzer).run();
+        new BasicPipeline(reader, true, true, 15, workingDir, baseOutput + "/xmi", true, semaforAnalyzer).run();
     }
 }

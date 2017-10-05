@@ -52,6 +52,10 @@ import java.util.concurrent.ConcurrentMap;
  * Date: 9/25/17
  * Time: 10:25 PM
  *
+ * Right now there are two problems with this annotator:
+ * 1. we provided required views, but sometimes we have view not found error.
+ * 2. The ILP procedure seems to be really slow on sentences.
+ *
  * @author Zhengzhong Liu
  */
 public class SRLAnnotator extends AbstractLoggingAnnotator {
@@ -103,18 +107,18 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
         // ParserAnnotator
         viewGenerators.put(ViewNames.PARSE_STANFORD, new UimaStanfordDepAnnotator());
 
-        // SRL_VERB
-        Properties verbProps = new Properties();
-        String verbType = SRLType.Verb.name();
-        verbProps.setProperty(SrlConfigurator.SRL_TYPE.key, verbType);
-        ResourceManager verbRm = new ResourceManager(verbProps);
-        rm = Configurator.mergeProperties(rm, verbRm);
-        try {
-            SemanticRoleLabeler verbSrl = new SemanticRoleLabeler(rm, false);
-            viewGenerators.put(ViewNames.SRL_VERB, verbSrl);
-        } catch (Exception e) {
-            throw new AnnotatorException("SRL verb cannot init: " + e.getMessage());
-        }
+//        // SRL_VERB
+//        Properties verbProps = new Properties();
+//        String verbType = SRLType.Verb.name();
+//        verbProps.setProperty(SrlConfigurator.SRL_TYPE.key, verbType);
+//        ResourceManager verbRm = new ResourceManager(verbProps);
+//        rm = Configurator.mergeProperties(rm, verbRm);
+//        try {
+//            SemanticRoleLabeler verbSrl = new SemanticRoleLabeler(rm, false);
+//            viewGenerators.put(ViewNames.SRL_VERB, verbSrl);
+//        } catch (Exception e) {
+//            throw new AnnotatorException("SRL verb cannot init: " + e.getMessage());
+//        }
 
         // SRL_NOM
         Properties nomProps = new Properties();
@@ -136,15 +140,14 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         String docid = UimaConvenience.getArticleName(aJCas);
+        UimaConvenience.printProcessLog(aJCas, logger);
 
         docCas.putIfAbsent(docid, aJCas);
-
-        UimaConvenience.printProcessLog(aJCas, logger);
 
         try {
             TextAnnotation ta = pipeline.createAnnotatedTextAnnotation("Corpus",
                     docid, aJCas.getDocumentText());
-            getSRLFromView(ta, aJCas, ViewNames.SRL_VERB);
+//            getSRLFromView(ta, aJCas, ViewNames.SRL_VERB);
             getSRLFromView(ta, aJCas, ViewNames.SRL_NOM);
         } catch (AnnotatorException e) {
             e.printStackTrace();

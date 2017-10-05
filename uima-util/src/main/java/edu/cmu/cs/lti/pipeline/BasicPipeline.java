@@ -1,8 +1,10 @@
 package edu.cmu.cs.lti.pipeline;
 
 import edu.cmu.cs.lti.uima.annotator.AbstractAnnotator;
+import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
+import edu.cmu.cs.lti.uima.io.writer.StepBasedDirGzippedXmiWriter;
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.uima.UIMAException;
@@ -15,6 +17,7 @@ import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReader;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.collection.metadata.CpeDescriptorException;
+import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.ResourceMetaData;
@@ -58,13 +61,7 @@ public class BasicPipeline {
     private AnalysisEngineDescription[] analysisEngineDescs;
     private AnalysisEngine[] engines;
 
-    private boolean withOutput;
-
-    private File fullOutputDir;
-
     private boolean withStats;
-
-    private ProcessTrace performanceTrace = null;
 
     // Must be at least 1.
     private final int numWorkers;
@@ -106,6 +103,13 @@ public class BasicPipeline {
     public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats, int numWorkers,
                          String workingDir, String outputDir, AnalysisEngineDescription... processors) throws
             UIMAException, CpeDescriptorException, SAXException, IOException {
+        this(reader, robust, withStats, numWorkers, workingDir, outputDir, false, processors);
+    }
+
+    public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats, int numWorkers,
+                         String workingDir, String outputDir, boolean zipOutput,
+                         AnalysisEngineDescription... processors) throws
+            UIMAException, CpeDescriptorException, SAXException, IOException {
         readerDescription = reader;
         AnalysisEngineDescription[] engineDescriptions;
 
@@ -116,15 +120,16 @@ public class BasicPipeline {
         }
 
         if (workingDir != null && outputDir != null) {
-            AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(workingDir, outputDir);
+            File fullOutputDir = new File(workingDir, outputDir);
+            AnalysisEngineDescription writer =
+                    zipOutput ?
+                            getGzippedWriter(workingDir, outputDir) :
+                            CustomAnalysisEngineFactory.createXmiWriter(workingDir, outputDir);
             engineDescriptions = ArrayUtils.add(processors, writer);
-
+            logger.info(String.format("Running with output writing to [%s] in %s mode", fullOutputDir,
+                    zipOutput ? "zipped" : "normal"));
             outputReader = CustomCollectionReaderFactory.createXmiReader(workingDir, outputDir);
-            withOutput = true;
-
-            fullOutputDir = new File(workingDir, outputDir);
         } else {
-            withOutput = false;
             engineDescriptions = processors;
         }
 
@@ -135,6 +140,16 @@ public class BasicPipeline {
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numWorkers + 2);
         availableCASes = new ArrayBlockingQueue<>(numWorkers);
         taskQueue = new ArrayBlockingQueue<>(numWorkers);
+    }
+
+    private AnalysisEngineDescription getGzippedWriter(String parentOutput, String baseOutput) throws
+            ResourceInitializationException {
+        return AnalysisEngineFactory.createEngineDescription(
+                StepBasedDirGzippedXmiWriter.class,
+                StepBasedDirGzippedXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, parentOutput,
+                StepBasedDirGzippedXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME, baseOutput,
+                AbstractLoggingAnnotator.MULTI_THREAD, true
+        );
     }
 
     public static BasicPipeline getRobust(CollectionReaderDescription reader, String workingDir,
@@ -203,7 +218,7 @@ public class BasicPipeline {
      */
     public void process() throws ExecutionException, InterruptedException {
         Future<Integer> docsProcessed = runProducer();
-        performanceTrace = runCasConsumers(engines);
+        ProcessTrace performanceTrace = runCasConsumers(engines);
 
         numInputFiles = docsProcessed.get();
 //        allFilesRead = true;
