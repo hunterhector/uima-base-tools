@@ -207,9 +207,10 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
      * @throws org.apache.uima.UIMAException
      */
     public static void main(String[] args) throws UIMAException, IOException {
-        String parentInput = args[0]; //"data";
+        String parentInput = args[0];
         // Parameters for the writer
-        String baseInput = args[1]; //"01_event_tuples"
+        String baseInput = args[1];
+        String cacheFile = args[2];
 
         String paramBaseOutputDirName = "srl_parsed";
         String typeSystemDescriptor = "TypeSystem";
@@ -227,7 +228,7 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
 
         AnalysisEngineDescription parser = AnalysisEngineFactory.createEngineDescription(
                 SRLAnnotator.class, typeSystemDescription,
-                SRLAnnotator.PARAM_CACHE_FILE, new File(parentInput, "cogcomp_cache")
+                SRLAnnotator.PARAM_CACHE_FILE, new File(parentInput, cacheFile)
         );
 
         AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
