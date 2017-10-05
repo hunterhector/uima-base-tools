@@ -6,7 +6,7 @@ import edu.cmu.cs.lti.script.type.UiucSrlPredicate;
 import edu.cmu.cs.lti.script.type.UiucSrlRelation;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.GzippedXmiCollectionReader;
-import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
+import edu.cmu.cs.lti.uima.io.writer.StepBasedDirGzippedXmiWriter;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.illinois.cs.cogcomp.annotation.*;
@@ -139,7 +139,7 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
 
         docCas.putIfAbsent(docid, aJCas);
 
-        UimaConvenience.printProcessLog(aJCas);
+        UimaConvenience.printProcessLog(aJCas, logger);
 
         try {
             TextAnnotation ta = pipeline.createAnnotatedTextAnnotation("Corpus",
@@ -212,7 +212,7 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
         String baseInput = args[1];
         String cacheFile = args[2];
 
-        String paramBaseOutputDirName = "srl_parsed";
+        String outputDirName = "srl_parsed";
         String typeSystemDescriptor = "TypeSystem";
 
         // Instantiate the analysis engine.
@@ -223,7 +223,8 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
                 GzippedXmiCollectionReader.class, typeSystemDescription,
                 GzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInput,
                 GzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInput,
-                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz"
+                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz",
+                GzippedXmiCollectionReader.PARAM_RECURSIVE, true
         );
 
         AnalysisEngineDescription parser = AnalysisEngineFactory.createEngineDescription(
@@ -231,8 +232,15 @@ public class SRLAnnotator extends AbstractLoggingAnnotator {
                 SRLAnnotator.PARAM_CACHE_FILE, new File(parentInput, cacheFile)
         );
 
-        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
-                parentInput, paramBaseOutputDirName);
+//        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
+//                parentInput, paramBaseOutputDirName);
+
+        AnalysisEngineDescription writer = AnalysisEngineFactory.createEngineDescription(
+                StepBasedDirGzippedXmiWriter.class,
+                StepBasedDirGzippedXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, parentInput,
+                StepBasedDirGzippedXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME, outputDirName,
+                AbstractLoggingAnnotator.MULTI_THREAD, true
+        );
 
         SimplePipeline.runPipeline(reader, parser, writer);
     }

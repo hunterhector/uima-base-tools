@@ -68,7 +68,7 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
 
         // serialize XCAS and write to output file
         try {
-            if (skipIndicatedDocuemnts && checkSkipIndicator(aJCas)) {
+            if (skipIndicatedDocuments && checkSkipIndicator(aJCas)) {
                 // Do not write skipped documents.
                 skippedDocument.incrementAndGet();
                 return;

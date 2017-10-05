@@ -52,7 +52,7 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
     protected String srcDocInfoViewName;
 
     @ConfigurationParameter(name = PARAM_SKIP_INDICATED_DOCUMENTS, mandatory = false)
-    protected boolean skipIndicatedDocuemnts;
+    protected boolean skipIndicatedDocuments;
 
     protected File outputDir;
 
