@@ -27,30 +27,23 @@ public class SemaforAnnotatorPipeline {
         String baseInput = args[1];
         String baseOutput = args[2];
 
-        String semaforModelDirectory = "../models/semafor_malt_model_20121129";
+        String fileFilter = null;
+        if (args.length > 3) {
+            fileFilter = args[3];
+        }
 
-//        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
-//                LDCXmlCollectionReader.class, typeSystemDescription,
-//                LDCXmlCollectionReader.PARAM_DATA_PATH, workingDir,
-//                LDCXmlCollectionReader.PARAM_LANGUAGE, "en"
-//        );
+
+        String semaforModelDirectory = "../models/semafor_malt_model_20121129";
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
                 GzippedXmiCollectionReader.class, typeSystemDescription,
                 GzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, workingDir,
                 GzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInput,
                 GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz",
+                GzippedXmiCollectionReader.PARAM_BASE_NAME_FILE_FILTER, fileFilter,
                 GzippedXmiCollectionReader.PARAM_RECURSIVE, true
         );
 
-//        AnalysisEngineDescription stanfordAnalyzer = AnalysisEngineFactory.createEngineDescription(
-//                StanfordCoreNlpAnnotator.class, typeSystemDescription,
-//                StanfordCoreNlpAnnotator.PARAM_WHITESPACE_TOKENIZE, false,
-//                StanfordCoreNlpAnnotator.PARAM_PARSER_MAXLEN, 70,
-//                StanfordCoreNlpAnnotator.PARAM_NUMERIC_CLASSIFIER, false,
-//                StanfordCoreNlpAnnotator.PARAM_USE_SUTIME, false,
-//                StanfordCoreNlpAnnotator.PARAM_SHIFT_REDUCE, true
-//        );
 
         AnalysisEngineDescription semaforAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 SemaforAnnotator.class, typeSystemDescription,
