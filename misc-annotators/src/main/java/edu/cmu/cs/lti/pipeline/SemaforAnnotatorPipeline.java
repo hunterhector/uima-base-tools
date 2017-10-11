@@ -32,7 +32,6 @@ public class SemaforAnnotatorPipeline {
             fileFilter = args[3];
         }
 
-
         String semaforModelDirectory = "../models/semafor_malt_model_20121129";
 
         CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
@@ -43,7 +42,6 @@ public class SemaforAnnotatorPipeline {
                 GzippedXmiCollectionReader.PARAM_BASE_NAME_FILE_FILTER, fileFilter,
                 GzippedXmiCollectionReader.PARAM_RECURSIVE, true
         );
-
 
         AnalysisEngineDescription semaforAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 SemaforAnnotator.class, typeSystemDescription,
