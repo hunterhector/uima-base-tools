@@ -21,8 +21,7 @@
         <module>zpar</module>
         <module>ltp-parser</module>
         <module>caevo</module>
-        <module>cogcomp-nlp</module>
-
+        <!--<module>cogcomp-nlp</module>-->
     </modules>
     <build>
         <plugins>

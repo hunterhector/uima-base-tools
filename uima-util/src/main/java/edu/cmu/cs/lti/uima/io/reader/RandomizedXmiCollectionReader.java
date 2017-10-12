@@ -2,7 +2,6 @@ package edu.cmu.cs.lti.uima.io.reader;
 
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.util.CasSerialization;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
@@ -19,13 +18,9 @@ import java.util.Random;
  * A simple collection reader that reads CASes in XMI format from a directory in the filesystem.
  */
 public class RandomizedXmiCollectionReader extends AbstractCollectionReader {
-    public static final String PARAM_INPUT_VIEW_NAME = "ViewName";
-
     public static final String PARAM_SEED = "seed";
     @ConfigurationParameter(name = PARAM_SEED, defaultValue = "17")
     private int initialSeed;
-
-    private String inputViewName;
 
     private int currentDocIndex;
 
@@ -35,13 +30,10 @@ public class RandomizedXmiCollectionReader extends AbstractCollectionReader {
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
-
         logger.info("Reading data with random seed " + initialSeed);
-
         // Randomize the files.
         Collections.sort(this.files);
         Collections.shuffle(this.files, new Random(initialSeed));
-
         currentDocIndex = 0;
     }
 
@@ -56,14 +48,6 @@ public class RandomizedXmiCollectionReader extends AbstractCollectionReader {
      * @see org.apache.uima.collection.CollectionReader#getNext(org.apache.uima.cas.CAS)
      */
     public void getNext(JCas jCas) throws IOException, CollectionException {
-        try {
-            if (!StringUtils.isEmpty(inputViewName)) {
-                jCas = jCas.getView(inputViewName);
-            }
-        } catch (Exception e) {
-            throw new CollectionException(e);
-        }
-
         CasSerialization.readXmi(jCas, files.get(currentDocIndex));
         currentDocIndex++;
     }

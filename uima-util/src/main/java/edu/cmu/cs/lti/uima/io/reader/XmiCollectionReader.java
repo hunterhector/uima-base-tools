@@ -1,16 +1,13 @@
 package edu.cmu.cs.lti.uima.io.reader;
 
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
+import edu.cmu.cs.lti.uima.util.CasSerialization;
 import org.apache.uima.UimaContext;
-import org.apache.uima.cas.impl.XmiCasDeserializer;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Progress;
-import org.xml.sax.SAXException;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 /**
@@ -42,24 +39,7 @@ public class XmiCollectionReader extends AbstractCollectionReader {
      * @see org.apache.uima.collection.CollectionReader#getNext(org.apache.uima.cas.CAS)
      */
     public void getNext(JCas jCas) throws IOException, CollectionException {
-//        try {
-//            if (!StringUtils.isEmpty(inputViewName)) {
-//                aCAS = aCAS.getView(inputViewName);
-//            }
-//        } catch (Exception e) {
-//            throw new CollectionException(e);
-//        }
-
-        File currentFile = files.get(currentDocIndex++);
-
-        FileInputStream inputStream = new FileInputStream(currentFile);
-        try {
-            XmiCasDeserializer.deserialize(inputStream, jCas.getCas(), !failOnUnknownType);
-        } catch (SAXException e) {
-            throw new CollectionException(e);
-        } finally {
-            inputStream.close();
-        }
+        CasSerialization.readXmi(jCas, files.get(currentDocIndex++));
     }
 
     /**

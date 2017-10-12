@@ -13,10 +13,8 @@ import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.uima.UimaContext;
-import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CASException;
 import org.apache.uima.collection.CollectionException;
-import org.apache.uima.fit.component.ViewCreatorAnnotator;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
@@ -33,7 +31,6 @@ import org.xml.sax.InputSource;
 
 import java.io.File;
 import java.io.FileReader;
-import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -52,25 +49,25 @@ import java.util.regex.Pattern;
 public class AceDataCollectionReader extends AbstractCollectionReader {
 
     public final static String PARAM_ACE_DATA_PATH = "aceDataPath";
-
-    public final static String PARAM_ACE_TYPES = "aceTypesToRead";
-
-    public final static String PARAM_ACE_DATA_STATUS = "aceDataStatus";
-
     @ConfigurationParameter(mandatory = true, description = "The path of the directory that contains the ACE data " +
             "with various formats, for exapmle ../ACE2005/ACE2005-TrainingData-V6.0/English ",
             name = PARAM_ACE_DATA_PATH)
     private String aceDatPath;
 
-    private File apfDtd;
-
+    public final static String PARAM_ACE_TYPES = "aceTypesToRead";
     @ConfigurationParameter(mandatory = false, description = "By default we read in all the types, it can be 'nw', " +
             "'bn', 'bc','wl','un',cts'", name = PARAM_ACE_TYPES)
     private Set<String> aceTypesToRead;
 
-    // this is assumed value for the ACE2005 training data
+    public final static String PARAM_ACE_DATA_STATUS = "aceDataStatus";
     @ConfigurationParameter(name = PARAM_ACE_DATA_STATUS, defaultValue = "timex2norm")
     private String inputAceDataStatus;
+
+    public final static String PARAM_SPLIT_FILE = "splitFile";
+    @ConfigurationParameter(name = PARAM_SPLIT_FILE)
+    private File splitFile;
+
+    private File apfDtd;
 
     // suffix of the file containing the plain text
     private final String textFileSuffix = ".sgm";
@@ -89,19 +86,36 @@ public class AceDataCollectionReader extends AbstractCollectionReader {
 
     private Pattern ampPattern = Pattern.compile(Pattern.quote("&amp;"));
 
-    private String[] tagsToRemove = {"docid", "doctype", "poster", "postdate", "endtime", "datetime"};
+    // These tags are not annotated by ACE, you can still find them in the original view.
+    private String[] tagsToRemove = {"docid", "doctype", "poster", "postdate", "endtime", "datetime", "speaker",
+            "headline"};
+
+    private Set<String> fileFilter = new HashSet<>();
 
     @Override
     public void initialize(UimaContext context) throws ResourceInitializationException {
-        super.initialize(context);
+//        super.initialize(context);
         File dataDirectory = new File(aceDatPath);
 
         logger.info("Reading data from : " + dataDirectory);
 
+        if (splitFile != null) {
+            try {
+                for (String s : FileUtils.readLines(splitFile)) {
+                    String[] parts = s.trim().split("/");
+                    fileFilter.add(parts[parts.length - 1]);
+                }
+            } catch (IOException e) {
+                throw new ResourceInitializationException(e);
+            }
+
+            logger.info(String.format("%d files contained in the filter.", fileFilter.size()));
+        }
+
         try {
             aceFilesByType = getContentDirectoryByType(dataDirectory);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new ResourceInitializationException(e);
         }
 
         apfDtd = new File(dataDirectory.getParent(), "dtd/apf.v5.1.1.dtd");
@@ -146,12 +160,16 @@ public class AceDataCollectionReader extends AbstractCollectionReader {
                 if (aceTypesToRead == null || aceTypesToRead.contains(type)) {
                     String contentDirPath = typeDir.getAbsolutePath() + "/" + inputAceDataStatus;
                     File contentDir = new File(contentDirPath);
+
                     if (directoryExist(contentDir)) {
-                        contentDirectories.put(type, contentDir.listFiles(new FilenameFilter() {
-                            @Override
-                            public boolean accept(File dir, String name) {
-                                return name.endsWith(textFileSuffix);
+                        contentDirectories.put(type, contentDir.listFiles((dir, name) -> {
+                            if (name.endsWith(textFileSuffix)) {
+                                String basename = StringUtils.removeEnd(name, textFileSuffix);
+                                if (fileFilter.contains(basename)) {
+                                    return true;
+                                }
                             }
+                            return false;
                         }));
                     }
                 }
@@ -178,7 +196,7 @@ public class AceDataCollectionReader extends AbstractCollectionReader {
         return null;
     }
 
-    private File getAPFFile(File sgmFile) {
+    public static File getAPFFile(File sgmFile) {
         String apfFileName = sgmFile.getPath();
         apfFileName = sgmFile.getPath().substring(0, apfFileName.length() - 3) + "apf.xml";
         if (new File(apfFileName).exists())
@@ -198,11 +216,8 @@ public class AceDataCollectionReader extends AbstractCollectionReader {
     }
 
     private String handleMetaTags(String sgmText) {
-//        logger.info("Origin length is " + sgmText.length());
         ArrayListMultimap<String, net.htmlparser.jericho.Element> tagsByName = ForumStructureParser.indexTagByName
                 (sgmText);
-
-//        logger.info(sgmText);
 
         for (String tagName : tagsToRemove) {
             if (tagsByName.containsKey(tagName)) {
@@ -211,23 +226,11 @@ public class AceDataCollectionReader extends AbstractCollectionReader {
                     int removeEnd = tag.getEndTag().getBegin();
                     int contentLength = tag.getContent().toString().length();
 
-//                    logger.info("["+sgmText.substring(0, removeBegin)+"]");
-//                    DebugUtils.pause();
-//                    logger.info("["+tag.getContent().toString()+"]");
-//                    DebugUtils.pause();
-//                    logger.info("["+sgmText.substring(removeEnd)+"]");
-//                    DebugUtils.pause();
-
                     sgmText = sgmText.substring(0, removeBegin) + StringUtils.repeat(" ", contentLength) +
                             sgmText.substring(removeEnd);
                 }
             }
         }
-
-//        logger.info("After it is " + sgmText.length());
-//
-//        logger.info(sgmText);
-//        DebugUtils.pause();
 
         return sgmText;
     }
@@ -258,15 +261,9 @@ public class AceDataCollectionReader extends AbstractCollectionReader {
 
             String sgmText = FileUtils.readFileToString(sgmFile);
 
-            if (inputViewName != null) {
-                try {
-                    JCas inputView = ViewCreatorAnnotator.createViewSafely(aJCas, inputViewName);
-                    inputView.setDocumentText(sgmText);
-                } catch (AnalysisEngineProcessException e) {
-                    throw new CollectionException(e);
-                }
-            }
-
+            // Create a view for input.
+            JCas inputView = aJCas.createView(inputViewName);
+            inputView.setDocumentText(sgmText);
 
             // Create a view to store golden standard information.
             JCas goldStandardView = aJCas.createView(goldStandardViewName);
@@ -308,15 +305,6 @@ public class AceDataCollectionReader extends AbstractCollectionReader {
             UimaAnnotationUtils.finishAnnotation(article, 0, documentText.length(), COMPONENT_ID, 0, aJCas);
             article.setArticleName(StringUtils.removeEnd(sgmFile.getName(), textFileSuffix));
             article.setLanguage(language);
-
-//            if (inputViewName != null) {
-//                try {
-//                    JCas inputView = ViewCreatorAnnotator.createViewSafely(aJCas, inputViewName);
-//                    inputView.setDocumentText(documentText);
-//                } catch (AnalysisEngineProcessException e) {
-//                    throw new CollectionException(e);
-//                }
-//            }
         } catch (CASException ce) {
             throw new CollectionException(ce);
         } catch (JDOMException e) {

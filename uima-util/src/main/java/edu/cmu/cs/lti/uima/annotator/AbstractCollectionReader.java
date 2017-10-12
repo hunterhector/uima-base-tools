@@ -33,7 +33,7 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
     public static final String PARAM_INPUT_VIEW_NAME = "inputViewName";
 
     @ConfigurationParameter(mandatory = false, description = "The view name for the golden standard view", name =
-            PARAM_GOLD_STANDARD_VIEW_NAME)
+            PARAM_GOLD_STANDARD_VIEW_NAME, defaultValue = UimaConst.goldViewName)
     protected String goldStandardViewName;
 
     @ConfigurationParameter(name = PARAM_INPUT_VIEW_NAME, defaultValue = UimaConst.inputViewName)
