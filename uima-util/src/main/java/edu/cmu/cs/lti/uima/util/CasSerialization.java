@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.uima.util;
 
+import com.google.common.base.Joiner;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.cas.CAS;
 import org.apache.uima.cas.impl.XmiCasDeserializer;
@@ -17,6 +18,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -63,7 +66,7 @@ public class CasSerialization {
 
         while (invalid > -1) {
             // Replacing invalid characters with spaces.
-            cleanedText.replace(invalid, invalid +1, " ");
+            cleanedText.replace(invalid, invalid + 1, " ");
             invalid = XMLUtils.checkForNonXmlCharacters(cleanedText.toString());
         }
 
@@ -128,7 +131,7 @@ public class CasSerialization {
     /**
      * Retrieve the input file name from the source document information.
      *
-     * @param view   The view that contains the Article or SourceDocumentInformation annotation.
+     * @param view             The view that contains the Article or SourceDocumentInformation annotation.
      * @param outputFileSuffix The file suffix to output.
      * @return A filename that based on the input file. Null if input if cannot find input file name.
      * @throws AnalysisEngineProcessException
@@ -144,4 +147,21 @@ public class CasSerialization {
         }
         return null;
     }
+
+    public static String getGigawordDirSegments(String docName) {
+        Pattern pattern = Pattern.compile("([A-Za-z]{3})_[A-Za-z]{3}_(\\d{4})(\\d{2})(\\d{2}).*");
+//        Pattern pattern = Pattern.compile("([A-Za-z]{3})_[A-Za-z]{3}");
+        Matcher matcher = pattern.matcher(docName);
+        if (matcher.matches()) {
+            String[] segments = new String[]{matcher.group(1), matcher.group(2), matcher.group(3), matcher.group(4)};
+            return Joiner.on("/").join(segments) + "/";
+        } else {
+            return "";
+        }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(getGigawordDirSegments("APW_ENG_19941127.0103.xmi.gz"));
+    }
+
 }

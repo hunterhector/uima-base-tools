@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.xml.sax.SAXException;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -108,8 +107,35 @@ public class BasicPipeline {
 
     public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats, int numWorkers,
                          String workingDir, String outputDir, boolean zipOutput,
-                         AnalysisEngineDescription... processors) throws
-            UIMAException, CpeDescriptorException, SAXException, IOException {
+                         AnalysisEngineDescription... processors)
+            throws UIMAException, CpeDescriptorException, SAXException, IOException {
+        this(reader, robust, withStats, numWorkers, getWriter(workingDir, outputDir, zipOutput), workingDir, outputDir,
+                processors
+        );
+    }
+
+    private static AnalysisEngineDescription getWriter(String workingDir, String outputDir, boolean zipOutput)
+            throws ResourceInitializationException {
+        if (outputDir == null || workingDir == null) {
+            return null;
+        }
+
+        if (zipOutput) {
+            return AnalysisEngineFactory.createEngineDescription(
+                    StepBasedDirGzippedXmiWriter.class,
+                    StepBasedDirGzippedXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, workingDir,
+                    StepBasedDirGzippedXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME, outputDir,
+                    AbstractLoggingAnnotator.MULTI_THREAD, true
+            );
+        } else {
+            return CustomAnalysisEngineFactory.createXmiWriter(workingDir, outputDir);
+        }
+    }
+
+    public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats, int numWorkers,
+                         AnalysisEngineDescription outputWriter, String workingDir, String outputDir,
+                         AnalysisEngineDescription... processors)
+            throws UIMAException, CpeDescriptorException, SAXException, IOException {
         readerDescription = reader;
         AnalysisEngineDescription[] engineDescriptions;
 
@@ -119,22 +145,16 @@ public class BasicPipeline {
             logger.info("Set to robust mode, will ignore all exceptions and continue.");
         }
 
-        if (workingDir != null && outputDir != null) {
-            File fullOutputDir = new File(workingDir, outputDir);
-            AnalysisEngineDescription writer =
-                    zipOutput ?
-                            getGzippedWriter(workingDir, outputDir) :
-                            CustomAnalysisEngineFactory.createXmiWriter(workingDir, outputDir);
-            engineDescriptions = ArrayUtils.add(processors, writer);
-            logger.info(String.format("Running with output writing to [%s] in %s mode", fullOutputDir,
-                    zipOutput ? "zipped" : "normal"));
-            outputReader = CustomCollectionReaderFactory.createXmiReader(workingDir, outputDir);
-        } else {
+        if (outputWriter == null) {
             engineDescriptions = processors;
+        } else {
+            engineDescriptions = ArrayUtils.add(processors, outputWriter);
         }
 
         this.withStats = withStats;
         analysisEngineDescs = engineDescriptions;
+
+        outputReader = CustomCollectionReaderFactory.createRecursiveXmiReader(workingDir, outputDir);
 
         // Number of threads for the workers, one additional for producer, one additional for dispatcher.
         executor = (ThreadPoolExecutor) Executors.newFixedThreadPool(numWorkers + 2);
@@ -142,15 +162,6 @@ public class BasicPipeline {
         taskQueue = new ArrayBlockingQueue<>(numWorkers);
     }
 
-    private AnalysisEngineDescription getGzippedWriter(String parentOutput, String baseOutput) throws
-            ResourceInitializationException {
-        return AnalysisEngineFactory.createEngineDescription(
-                StepBasedDirGzippedXmiWriter.class,
-                StepBasedDirGzippedXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, parentOutput,
-                StepBasedDirGzippedXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME, baseOutput,
-                AbstractLoggingAnnotator.MULTI_THREAD, true
-        );
-    }
 
     public static BasicPipeline getRobust(CollectionReaderDescription reader, String workingDir,
                                           String outputDir, AnalysisEngineDescription... processors)

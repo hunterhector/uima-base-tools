@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * An abstract writer to generate output in a directory whose name is based on the current date and
@@ -54,6 +55,8 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
     @ConfigurationParameter(name = PARAM_SKIP_INDICATED_DOCUMENTS, mandatory = false)
     protected boolean skipIndicatedDocuments;
 
+    public static Function<String, String> dirSegFunction;
+
     protected File outputDir;
 
     @Override
@@ -76,6 +79,14 @@ public abstract class AbstractStepBasedDirWriter extends AbstractLoggingAnnotato
             logger.info("Writing documents to " + outputDir.getCanonicalPath());
         } catch (IOException e) {
             e.printStackTrace();
+        }
+    }
+
+    protected String getAdditionalDirPath(String filename) {
+        if (dirSegFunction != null) {
+            return dirSegFunction.apply(filename);
+        } else {
+            throw new IllegalArgumentException("Directory segment function is not provided.");
         }
     }
 

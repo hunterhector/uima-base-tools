@@ -27,7 +27,7 @@ public class RewriteFilePipeline {
             throws UIMAException, IOException, CpeDescriptorException, SAXException {
         System.out.println("Writing JSON");
         CollectionReaderDescription reader = CustomCollectionReaderFactory.createRecursiveXmiReader(
-                typeSystemDescription, parentDir, inputBase);
+                parentDir, inputBase);
 
         String jsonOut = FileUtils.joinPaths(outputPath);
         AnalysisEngineDescription jsonWriter = AnalysisEngineFactory.createEngineDescription(

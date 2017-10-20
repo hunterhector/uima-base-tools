@@ -2,6 +2,8 @@ package edu.cmu.cs.lti.pipeline;
 
 import edu.cmu.cs.lti.script.annotators.SemaforAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.GzippedXmiCollectionReader;
+import edu.cmu.cs.lti.uima.io.writer.StepBasedDirGzippedXmiWriter;
+import edu.cmu.cs.lti.uima.util.CasSerialization;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionReaderDescription;
@@ -49,6 +51,9 @@ public class SemaforAnnotatorPipeline {
 //                SemaforAnnotator.PARAM_JSON_OUTPUT_REDIRECT, FileUtils.joinPaths(workingDir, baseOutput, "json")
         );
 
-        new BasicPipeline(reader, true, true, 15, workingDir, baseOutput + "/xmi", true, semaforAnalyzer).run();
+        // A hack that let the writer to write out files based on the filename pattern.
+        StepBasedDirGzippedXmiWriter.dirSegFunction = CasSerialization::getGigawordDirSegments;
+
+        new BasicPipeline(reader, true, true, 15, workingDir, baseOutput, true, semaforAnalyzer).run();
     }
 }

@@ -25,12 +25,11 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
 
     private static final String DEFAULT_FILE_SUFFIX = ".xmi.gz";
 
-
-    @ConfigurationParameter(name = PARAM_OUTPUT_FILE_NUMBERS, mandatory = false)
     /**
      * This is a list of documents that you want to generate XMI output. If it is
      * null or empty, the writer works against all input.
      */
+    @ConfigurationParameter(name = PARAM_OUTPUT_FILE_NUMBERS, mandatory = false)
     private List<String> outputDocumentNumberList;
 
     private AtomicInteger docCounter;
@@ -55,13 +54,20 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
         if (StringUtils.isEmpty(outputFileSuffix)) {
             outputFileSuffix = DEFAULT_FILE_SUFFIX;
         }
+
         String outputFileName = CasSerialization.getOutputFileNameFromSource(aJCas, outputFileSuffix);
 
         File outputFile;
         if (outputFileName == null) {
             outputFile = new File(outputDir, "doc" + (docCounter.get()) + DEFAULT_FILE_SUFFIX);
         } else {
+            if (dirSegFunction != null) {
+                outputFileName = getAdditionalDirPath(outputFileName) + outputFileName;
+            }
             outputFile = new File(outputDir, outputFileName);
+            if (!outputFile.getParentFile().exists()) {
+                outputFile.getParentFile().mkdirs();
+            }
         }
 
         docCounter.incrementAndGet();
