@@ -28,6 +28,8 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
 
     public static final String PARAM_ADDITIONAL_VIEWS = "targetViewNames";
 
+    public static final String PARAM_SKIP_MAIN_VIEW = "skipMainView";
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     @ConfigurationParameter(name = PARAM_KEEP_QUIET, defaultValue = "false")
@@ -38,6 +40,10 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
 
     @ConfigurationParameter(name = PARAM_ADDITIONAL_VIEWS, mandatory = false)
     private String[] targetViews;
+
+    @ConfigurationParameter(name = PARAM_SKIP_MAIN_VIEW, defaultValue = "false")
+    protected boolean skipMainView;
+
 
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {

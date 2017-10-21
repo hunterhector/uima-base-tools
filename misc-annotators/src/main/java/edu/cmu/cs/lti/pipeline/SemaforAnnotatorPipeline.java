@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.pipeline;
 
+import edu.cmu.cs.lti.collection_reader.AnnotatedNytReader;
 import edu.cmu.cs.lti.script.annotators.SemaforAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.GzippedXmiCollectionReader;
 import org.apache.uima.UIMAException;
@@ -45,7 +46,9 @@ public class SemaforAnnotatorPipeline {
 
         AnalysisEngineDescription semaforAnalyzer = AnalysisEngineFactory.createEngineDescription(
                 SemaforAnnotator.class, typeSystemDescription,
-                SemaforAnnotator.SEMAFOR_MODEL_PATH, semaforModelDirectory
+                SemaforAnnotator.SEMAFOR_MODEL_PATH, semaforModelDirectory,
+                SemaforAnnotator.PARAM_ADDITIONAL_VIEWS, AnnotatedNytReader.ABSTRACT_VIEW_NAME,
+                SemaforAnnotator.PARAM_SKIP_MAIN_VIEW, true
 //                SemaforAnnotator.PARAM_JSON_OUTPUT_REDIRECT, FileUtils.joinPaths(workingDir, baseOutput, "json")
         );
 
