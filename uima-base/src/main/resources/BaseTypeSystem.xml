@@ -1040,11 +1040,10 @@
                     <rangeTypeName>uima.cas.Double</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
-                    <name>superFrameElementRoleNames</name>
-                    <description>store the super frame element names based on the frame relation table, current format
-                        "frameRelationType#superFrameName#superFEname"
+                    <name>superFrameElementRoleName</name>
+                    <description>store the top level super frame element names based on the frame relation table.
                     </description>
-                    <rangeTypeName>uima.cas.StringList</rangeTypeName>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
                     <name>argument</name>
@@ -1514,7 +1513,8 @@
                 </featureDescription>
                 <featureDescription>
                     <name>knowledgeBaseValues</name>
-                    <description>List of knowledge bases linked target, corresponding to knowledgeBaseNames</description>
+                    <description>List of knowledge bases linked target, corresponding to knowledgeBaseNames
+                    </description>
                     <rangeTypeName>uima.cas.StringArray</rangeTypeName>
                 </featureDescription>
             </features>
