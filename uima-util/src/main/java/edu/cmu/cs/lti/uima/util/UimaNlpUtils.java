@@ -29,6 +29,15 @@ public class UimaNlpUtils {
         return builder.toString();
     }
 
+    public static String getLemmatizedHead(Annotation a) {
+        StanfordCorenlpToken headword = findHeadFromStanfordAnnotation(a);
+        if (headword == null) {
+            return a.getCoveredText().replace("\t", " ").replace("\n", " ");
+        } else {
+            return headword.getLemma().toLowerCase();
+        }
+    }
+
     public static EntityMention createEntityMention(JCas jcas, int begin, int end, String componentId) {
         EntityMention mention = new EntityMention(jcas, begin, end);
         UimaAnnotationUtils.finishAnnotation(mention, componentId, null, jcas);

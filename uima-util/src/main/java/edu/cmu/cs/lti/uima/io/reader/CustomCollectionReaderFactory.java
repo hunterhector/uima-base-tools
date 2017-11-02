@@ -353,9 +353,8 @@ public class CustomCollectionReaderFactory {
      * @throws ResourceInitializationException
      */
     public static CollectionReaderDescription createRecursiveGzippedXmiReader(TypeSystemDescription
-                                                                                      typeSystemDescription, String
-                                                                                      inputDirName, Boolean
-                                                                                      failOnUnkown)
+                                                                                      typeSystemDescription,
+                                                                              String inputDirName, Boolean failOnUnkown)
             throws ResourceInitializationException {
         // Instantiate a collection reader to get XMI as input.
         return CollectionReaderFactory.createReaderDescription(
