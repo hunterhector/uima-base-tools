@@ -1,6 +1,7 @@
 package edu.cmu.cs.lti.uima.io.writer;
 
 import edu.cmu.cs.lti.uima.util.CasSerialization;
+import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.uima.UimaContext;
@@ -62,7 +63,10 @@ public class StepBasedDirGzippedXmiWriter extends AbstractStepBasedDirWriter {
             outputFile = new File(outputDir, "doc" + (docCounter.get()) + DEFAULT_FILE_SUFFIX);
         } else {
             if (dirSegFunction != null) {
-                outputFileName = getAdditionalDirPath(outputFileName) + outputFileName;
+                String articleName = UimaConvenience.getArticleName(aJCas);
+                if (articleName != null) {
+                    outputFileName = getAdditionalDirPath(articleName) + outputFileName;
+                }
             }
             outputFile = new File(outputDir, outputFileName);
             if (!outputFile.getParentFile().exists()) {
