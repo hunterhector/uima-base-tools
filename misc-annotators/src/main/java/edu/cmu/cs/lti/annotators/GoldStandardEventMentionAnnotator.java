@@ -83,7 +83,7 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
         }
     }
 
-    private void removeAllEventRelated(JCas toView){
+    private void removeAllEventRelated(JCas toView) {
         for (EventMentionRelation relation : UimaConvenience.getAnnotationList(toView, EventMentionRelation.class)) {
             relation.removeFromIndexes();
         }
@@ -196,6 +196,8 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
 
 
     private EventMention copyMention(JCas toView, EventMention sourceMention, String mentionType) {
+        UimaConvenience.printProcessLog(toView);
+
         EventMention targetMention = new EventMention(toView, sourceMention.getBegin(), sourceMention.getEnd());
 
         copyRegions(toView, sourceMention, targetMention);
@@ -204,9 +206,8 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
         }
 
         if (copyRealis) {
-            if (sourceMention.getRealisType() != null) {
-                targetMention.setRealisType(sourceMention.getRealisType());
-            } else {
+            targetMention.setRealisType(sourceMention.getRealisType());
+            if (sourceMention.getRealisType() == null) {
                 // If the gold standard didn't provide a realis type, we make it up.
                 sourceMention.setRealisType("Actual");
                 targetMention.setRealisType("Actual");
@@ -219,7 +220,9 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
 
     private EventMentionSpan copyMentionSpan(JCas toView, EventMentionSpan sourceSpan,
                                              Map<EventMention, EventMention> from2toMentionMap) {
-        EventMentionSpan ems = new EventMentionSpan(toView, sourceSpan.getBegin(), sourceSpan.getEnd());
+        UimaConvenience.printProcessLog(toView);
+
+        EventMentionSpan targetSpan = new EventMentionSpan(toView, sourceSpan.getBegin(), sourceSpan.getEnd());
 
         List<EventMention> targetMentions = new ArrayList<>();
 
@@ -230,13 +233,23 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
             headWord = targetMention.getHeadWord();
         }
 
-        ems.setEventMentions(FSCollectionFactory.createFSList(toView, targetMentions));
-        ems.setEventType(sourceSpan.getEventType());
-        ems.setRealisType(sourceSpan.getRealisType());
-        ems.setHeadWord(headWord);
+        targetSpan.setEventMentions(FSCollectionFactory.createFSList(toView, targetMentions));
 
-        UimaAnnotationUtils.finishAnnotation(ems, COMPONENT_ID, sourceSpan.getId(), toView);
-        return ems;
+        if (copyMentionType) {
+            targetSpan.setEventType(sourceSpan.getEventType());
+        }
+
+        if (copyRealis) {
+            targetSpan.setRealisType(sourceSpan.getRealisType());
+            if (sourceSpan.getRealisType() == null) {
+                sourceSpan.setRealisType("Actual");
+                targetSpan.setRealisType("Actual");
+            }
+        }
+        targetSpan.setHeadWord(headWord);
+
+        UimaAnnotationUtils.finishAnnotation(targetSpan, COMPONENT_ID, sourceSpan.getId(), toView);
+        return targetSpan;
     }
 
 
