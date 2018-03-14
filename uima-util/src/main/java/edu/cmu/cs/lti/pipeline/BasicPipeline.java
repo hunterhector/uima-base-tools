@@ -232,14 +232,15 @@ public class BasicPipeline {
         ProcessTrace performanceTrace = runCasConsumers(engines);
 
         numInputFiles = docsProcessed.get();
-//        allFilesRead = true;
+
+
         logger.info("Number documents submitted: " + numInputFiles);
 
         // Waiting for the last batch of jobs to terminate.
         logger.info("Waiting for jobs to terminate.");
 
-        logger.info("number of task in queue: " + taskQueue.size());
-        logger.info("number of available case: " + availableCASes.size());
+        logger.debug("number of task in queue: " + taskQueue.size());
+        logger.debug("number of available case: " + availableCASes.size());
 
         executor.awaitTermination(30, TimeUnit.MINUTES);
 
@@ -360,7 +361,7 @@ public class BasicPipeline {
                     while (true) {
                         // If there are no new jobs and all current jobs are done, we shut down the executor.
                         if (noNewJobs.booleanValue()) {
-                            logger.info(String.format("Jobs submitted : %s.", noNewJobs.booleanValue()));
+                            logger.debug(String.format("Jobs submitted : %s.", noNewJobs.booleanValue()));
                             boolean jobFinished = counts[counts.length - 1].get() >= numInputFiles;
                             if (jobFinished) {
                                 executor.shutdown();
@@ -369,7 +370,7 @@ public class BasicPipeline {
 //                                logger.info(String.format("Level larger : %s",
 //                                        counts[counts.length - 1].get() >= numInputFiles));
 //                                logger.info(String.format("Job finished : %s", jobFinished));
-                                logger.info("Shut down executor, do not take more jobs.");
+                                logger.debug("Shut down executor, do not take more jobs.");
                                 break;
                             }
                         }

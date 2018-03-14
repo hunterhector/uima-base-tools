@@ -82,10 +82,6 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
                     "Base names will be obtained by removing the extension.")
     protected String extension;
 
-//    public static final String PARAM_INPUT_FILE_SUFFIX = "InputFileSuffix";
-//    @ConfigurationParameter(name = PARAM_INPUT_FILE_SUFFIX, mandatory = false)
-//    protected String inputFileSuffix;
-
     public static final String PARAM_FAIL_UNKNOWN = "FailOnUnknownType";
     @ConfigurationParameter(name = PARAM_FAIL_UNKNOWN, defaultValue = "false")
     protected Boolean failOnUnknownType;
@@ -143,7 +139,10 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
                         baseNameIgnores));
             }
         }
-        logger.info(String.format("Number of black listed base name: %d.", ignoringBaseNames.size()));
+
+        if (ignoringBaseNames.size() > 0) {
+            logger.info(String.format("Number of black listed base name: %d.", ignoringBaseNames.size()));
+        }
 
 
         Set<String> ignoringFullpaths = new HashSet<>();
@@ -164,7 +163,9 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
                         fullPathIgnores));
             }
         }
-        logger.info(String.format("Number of ignored full path: %d.", ignoringFullpaths.size()));
+        if (ignoringFullpaths.size() > 0) {
+            logger.info(String.format("Number of ignored full path: %d.", ignoringFullpaths.size()));
+        }
 
         // Setup accepts
         Set<String> acceptableBasenames = new HashSet<>();
@@ -186,7 +187,7 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
                         baseNameFileFilter));
             }
         } else {
-            logger.info("No white listed file found.");
+//            logger.info("No white listed file found.");
         }
 
         IOFileFilter fileFilter;
@@ -231,7 +232,7 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
 
         if (recursive) {
             dirFilter = TrueFileFilter.INSTANCE;
-            logger.info("Find reader setting to recursive.");
+            logger.debug("Find reader setting to recursive.");
         } else {
             dirFilter = null;
         }
@@ -241,7 +242,7 @@ public abstract class AbstractCollectionReader extends JCasCollectionReader_Impl
 
         if (inputComparator != null) {
             this.files.sort(inputComparator);
-            logger.info("Sorted input files before reading.");
+            logger.debug("Sorted input files before reading.");
         }
 
         logger.info(String.format("%d files ignored, %d files will be read.",

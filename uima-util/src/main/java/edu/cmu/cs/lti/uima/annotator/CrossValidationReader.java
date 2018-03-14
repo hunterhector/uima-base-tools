@@ -52,7 +52,6 @@ public class CrossValidationReader extends AbstractCollectionReader {
 
         logger.info("Starting cross validation reader for " + (modeEval ? "evaluation" : "training"));
 
-
         if (files.size() < splitsCnt) {
             throw new IllegalArgumentException(String.format("Number of files [%d] smaller than split count [%d].",
                     files.size(), splitsCnt));
