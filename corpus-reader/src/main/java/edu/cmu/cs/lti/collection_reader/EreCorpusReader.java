@@ -4,10 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
-import edu.cmu.cs.lti.uima.util.ForumStructureParser;
-import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
-import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
-import edu.cmu.cs.lti.uima.util.UimaConvenience;
+import edu.cmu.cs.lti.uima.util.*;
 import edu.cmu.cs.lti.util.NuggetFormat;
 import net.htmlparser.jericho.Element;
 import org.apache.commons.io.FileUtils;
@@ -156,7 +153,7 @@ public class EreCorpusReader extends AbstractCollectionReader {
 
         if (quotedAreaFile != null) {
             try {
-                quotesFromFile = getQuotesFromFile();
+                quotesFromFile = ReaderUtils.getQuotesFromFile(quotedAreaFile);
             } catch (IOException e) {
                 throw new ResourceInitializationException(e);
             }
@@ -251,17 +248,6 @@ public class EreCorpusReader extends AbstractCollectionReader {
         }
 
         fileIndex++;
-    }
-
-    private ArrayListMultimap<String, Span> getQuotesFromFile() throws IOException {
-        ArrayListMultimap<String, Span> quotedSpans = ArrayListMultimap.create();
-
-        for (String line : FileUtils.readLines(quotedAreaFile)) {
-            String[] fields = line.split("\t");
-            quotedSpans.put(fields[0], Span.of(Integer.valueOf(fields[1]), Integer.valueOf(fields[2])));
-        }
-
-        return quotedSpans;
     }
 
     private Span getCmpSpan(File sourceFile, File ereFile) {

@@ -47,6 +47,8 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
 
     private int numOmittedMentions = 0;
 
+    private int numTotalMentions = 0;
+
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
@@ -94,6 +96,8 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
             List<String> eventIds = annotations.getEventIds(textBoundById.getKey());
 
             String type = textBound.type;
+
+            numTotalMentions += 1;
 
             if (checkOmittedAnnotation(aJCas, textBound)) {
                 numOmittedMentions += 1;
@@ -221,6 +225,6 @@ public class AfterLinkGoldStandardAnnotator extends AbstractLoggingAnnotator {
     @Override
     public void collectionProcessComplete() throws AnalysisEngineProcessException {
         super.collectionProcessComplete();
-        logger.info(String.format("Number of omitted mentions : %d.", numOmittedMentions));
+        logger.info(String.format("Number of omitted mentions : %d (out of %d total)", numOmittedMentions, numTotalMentions));
     }
 }

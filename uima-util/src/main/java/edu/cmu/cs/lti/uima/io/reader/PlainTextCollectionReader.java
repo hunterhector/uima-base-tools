@@ -4,10 +4,7 @@ import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
-import edu.cmu.cs.lti.uima.util.CasSerialization;
-import edu.cmu.cs.lti.uima.util.ForumStructureParser;
-import edu.cmu.cs.lti.uima.util.NoiseTextFormatter;
-import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
+import edu.cmu.cs.lti.uima.util.*;
 import net.htmlparser.jericho.Element;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +24,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A collection reader for plain text documents.
@@ -49,7 +48,7 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
     private String inputDirPath;
 
     @ConfigurationParameter(name = PARAM_TEXT_SUFFIX, mandatory = false)
-    private String[] suffix;
+    private String suffix;
 
     @ConfigurationParameter(name = PARAM_DO_NOISE_FILTER, defaultValue = "true")
     private boolean doNoiseFilter;
@@ -58,9 +57,16 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
     @ConfigurationParameter(name = PARAM_REMOVE_QUOTES, defaultValue = "true")
     private boolean removeQuotes;
 
+    public static final String PARAM_QUOTED_AREA_FILE = "quotedAreaFile";
+    @ConfigurationParameter(name = PARAM_QUOTED_AREA_FILE, mandatory = false)
+    private File quotedAreaFile;
+
+
     private ArrayList<File> textFiles;
 
     private int currentDocIndex;
+
+    private ArrayListMultimap<String, Span> quotesFromFile;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -71,28 +77,32 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
         }
 
         if (suffix == null) {
-            suffix = new String[]{""};
+            suffix = "";
         }
 
         currentDocIndex = 0;
         textFiles = new ArrayList<>();
         File[] files = directory.listFiles();
         for (int i = 0; i < files.length; i++) {
-            if (!files[i].isDirectory() && isText(files[i], suffix)) {
+            if (!files[i].isDirectory() && files[i].getName().endsWith(suffix)) {
                 textFiles.add(files[i]);
+            }
+        }
+
+        if (removeQuotes){
+            logger.info("Quoted content will be removed in default view.");
+        }
+
+        if (quotedAreaFile != null) {
+            logger.info("Quoted content are read from file.");
+            try {
+                quotesFromFile = ReaderUtils.getQuotesFromFile(quotedAreaFile);
+            } catch (IOException e) {
+                throw new ResourceInitializationException(e);
             }
         }
     }
 
-    private boolean isText(File f, String[] suffix) {
-        String filename = f.getPath();
-        for (String aSuffix : suffix) {
-            if (filename.endsWith(aSuffix)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     public Progress[] getProgress() {
         return new Progress[]{new ProgressImpl(currentDocIndex, textFiles.size(), Progress.ENTITIES)};
@@ -118,9 +128,11 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
 
         ArrayListMultimap<String, Element> tagsByName = ForumStructureParser.indexTagByName(originalText);
 
-        List<Span> quotedSpans = ForumStructureParser.getQuotesFromElement(tagsByName);
+//        List<Span> quotedSpans = ForumStructureParser.getQuotesFromElement(tagsByName);
+        List<Span> quotedSpans = quotedAreaFile == null ? ForumStructureParser.getQuotesFromElement(tagsByName) :
+                quotesFromFile.get(StringUtils.removeEnd(file.getName(), "." + suffix));
 
-//        logger.info(String.format("%d quoted spans are removed from the data.", quotedSpans.size()));
+//        System.out.println(String.format("%d spans in file %s", quotedSpans.size(), file.getName()));
 
         String documentText = removeQuotes ? ForumStructureParser.removeQuoteStr(cleanedText, quotedSpans) :
                 cleanedText;
