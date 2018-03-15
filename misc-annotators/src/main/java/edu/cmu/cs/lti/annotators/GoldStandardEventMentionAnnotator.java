@@ -196,8 +196,6 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
 
 
     private EventMention copyMention(JCas toView, EventMention sourceMention, String mentionType) {
-        UimaConvenience.printProcessLog(toView);
-
         EventMention targetMention = new EventMention(toView, sourceMention.getBegin(), sourceMention.getEnd());
 
         copyRegions(toView, sourceMention, targetMention);
@@ -220,8 +218,6 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
 
     private EventMentionSpan copyMentionSpan(JCas toView, EventMentionSpan sourceSpan,
                                              Map<EventMention, EventMention> from2toMentionMap) {
-        UimaConvenience.printProcessLog(toView);
-
         EventMentionSpan targetSpan = new EventMentionSpan(toView, sourceSpan.getBegin(), sourceSpan.getEnd());
 
         List<EventMention> targetMentions = new ArrayList<>();

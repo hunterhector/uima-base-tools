@@ -3,6 +3,7 @@ package edu.cmu.cs.lti.collection_reader;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Table;
+import edu.cmu.cs.lti.learning.model.graph.GraphUtils;
 import edu.cmu.cs.lti.model.*;
 import edu.cmu.cs.lti.script.type.Event;
 import edu.cmu.cs.lti.script.type.EventMention;
@@ -259,9 +260,10 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
         return id2Mentions;
     }
 
-    private List<Set<EventMention>> getCorefClusters(List<BratRelation> relations, Map<String, EventMention>
-            id2Mentions) {
-        List<Set<EventMention>> clusters = new ArrayList<>();
+    private List<Set<EventMention>> getCorefClusters(List<BratRelation> relations,
+                                                     Map<String, EventMention> id2Mentions) {
+        List<EventMention> allMentions = new ArrayList<>(id2Mentions.values());
+        List<Pair<EventMention, EventMention>> corefLinks = new ArrayList<>();
 
         for (BratRelation relation : relations) {
             String e1 = relation.arg1Id;
@@ -269,31 +271,14 @@ public class BratEventGoldStandardAnnotator extends AbstractAnnotator {
 
             EventMention mention1 = id2Mentions.get(e1);
             EventMention mention2 = id2Mentions.get(e2);
-
             String relationName = relation.relationName;
 
             if (relationName.equals(coreferenceLinkName)) {
-                boolean inCluster = false;
-                for (Set<EventMention> cluster : clusters) {
-                    if (cluster.contains(mention1)) {
-                        cluster.add(mention2);
-                        inCluster = true;
-                        break;
-                    } else if (cluster.contains(mention2)) {
-                        cluster.add(mention1);
-                        inCluster = true;
-                        break;
-                    }
-                }
-                if (!inCluster) {
-                    Set<EventMention> newCluster = new HashSet<>();
-                    newCluster.add(mention1);
-                    newCluster.add(mention2);
-                    clusters.add(newCluster);
-                }
+                corefLinks.add(Pair.of(mention1, mention2));
             }
         }
-        return clusters;
+
+        return GraphUtils.createCluster(allMentions, corefLinks);
     }
 
 
