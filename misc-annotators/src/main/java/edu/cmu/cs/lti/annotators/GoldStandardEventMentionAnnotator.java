@@ -61,7 +61,11 @@ public class GoldStandardEventMentionAnnotator extends AbstractLoggingAnnotator 
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
-        final JCas goldStandard = JCasUtil.getView(aJCas, goldStandardViewName, false);
+        final JCas goldStandard = JCasUtil.getView(aJCas, goldStandardViewName, null);
+
+        if (goldStandard == null){
+            return;
+        }
 
         for (String targetViewName : targetViewNames) {
             JCas targetView = JCasUtil.getView(aJCas, targetViewName, false);
