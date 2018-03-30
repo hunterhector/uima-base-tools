@@ -12,8 +12,7 @@ import org.apache.uima.jcas.tcas.Annotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class UimaNlpUtils {
     private static final Logger logger = LoggerFactory.getLogger(UimaNlpUtils.class);
@@ -36,6 +35,36 @@ public class UimaNlpUtils {
         } else {
             return headword.getLemma().toLowerCase();
         }
+    }
+
+    public static String getPredicate(Word head, List<Word> complements) {
+        FSList childDeps = head.getChildDependencyRelations();
+
+        String complementPart = "";
+        String negationPart = "";
+        String particle_part = "";
+
+        if (childDeps != null) {
+            for (StanfordDependencyRelation dep : FSCollectionFactory.create(childDeps,
+                    StanfordDependencyRelation.class)) {
+
+                if (dep.getDependencyType().equals("xcomp")) {
+                    Word complementNode = dep.getChild();
+                    complementPart = "_" + complementNode.getLemma();
+                    // Complement node contains additional subjects.
+                    complements.add(complementNode);
+                }
+
+                if (dep.getDependencyType().equals("prt")) {
+                    particle_part = "_" + dep.getChild().getLemma();
+                }
+
+                if (dep.getDependencyType().equals("neg")) {
+                    negationPart = "not_";
+                }
+            }
+        }
+        return (negationPart + head.getLemma() + particle_part + complementPart).toLowerCase();
     }
 
     public static EntityMention createEntityMention(JCas jcas, int begin, int end, String componentId) {
