@@ -285,7 +285,12 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 }
             }
             addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-            createEntities(aJCas, allMentions);
+            UimaNlpUtils.createSingletons(aJCas, allMentions, COMPONENT_ID);
+            for (EntityMention mention : allMentions) {
+                if (mention.getHead() == null) {
+                    mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
+                }
+            }
         }
     }
 
@@ -314,36 +319,15 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
         if (!splitOnly) {
             addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-            createEntities(aJCas, allMentions);
-        }
-    }
-
-    private void createEntities(JCas aJCas, List<EntityMention> allMentions) {
-        //Sort and assign id to mentions.
-        Collections.sort(allMentions, new Comparator<EntityMention>() {
-            @Override
-            public int compare(EntityMention m1, EntityMention m2) {
-                return m1.getBegin() - m2.getBegin();
-            }
-        });
-
-        int mentionIdx = 0;
-        for (EntityMention mention : allMentions) {
-            UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, mentionIdx++, aJCas);
-            if (mention.getReferingEntity() == null) {
-                // Add singleton entities.
-                Entity entity = new Entity(aJCas);
-                entity.setEntityMentions(new FSArray(aJCas, 1));
-                entity.setEntityMentions(0, mention);
-                mention.setReferingEntity(entity);
-                entity.setRepresentativeMention(mention);
-            }
-
-            if (mention.getHead() == null) {
-                mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
+            UimaNlpUtils.createSingletons(aJCas, allMentions, COMPONENT_ID);
+            for (EntityMention mention : allMentions) {
+                if (mention.getHead() == null) {
+                    mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
+                }
             }
         }
     }
+
 
     private void addCorefAnnotation(JCas aJCas, Annotation document, Map<Span, StanfordEntityMention>
             spanMentionMap, List<EntityMention> allMentions) {

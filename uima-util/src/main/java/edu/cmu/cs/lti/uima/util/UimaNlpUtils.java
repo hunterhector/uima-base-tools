@@ -7,6 +7,7 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.cas.FSList;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.slf4j.Logger;
@@ -67,11 +68,64 @@ public class UimaNlpUtils {
         return (negationPart + head.getLemma() + particle_part + complementPart).toLowerCase();
     }
 
+    public static Map<Word, EntityMention> indexEntityMentions(JCas jcas) {
+        Map<Word, EntityMention> mentions = new HashMap<>();
+        for (EntityMention entityMention : JCasUtil.select(jcas, EntityMention.class)) {
+            Word head = entityMention.getHead();
+            if (head == null) {
+                head = UimaNlpUtils.findHeadFromStanfordAnnotation(entityMention);
+                entityMention.setHead(head);
+            }
+            mentions.put(head, entityMention);
+        }
+        return mentions;
+    }
+
+    public static EntityMention createNonExistEntityMention(JCas jcas, Map<Word, EntityMention> mentionTable,
+                                                            int begin, int end, String componentId) {
+        ComponentAnnotation dummy = new ComponentAnnotation(jcas, begin, end);
+        StanfordCorenlpToken dummyHead = UimaNlpUtils.findHeadFromStanfordAnnotation(dummy);
+
+        if (mentionTable.containsKey(dummyHead)) {
+            EntityMention oldEn = mentionTable.get(dummyHead);
+            if (oldEn.getHead() == null) {
+                oldEn.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(oldEn));
+            }
+            return oldEn;
+        } else {
+            EntityMention newEn = createEntityMention(jcas, begin, end, componentId);
+            mentionTable.put(newEn.getHead(), newEn);
+            return newEn;
+        }
+    }
+
     public static EntityMention createEntityMention(JCas jcas, int begin, int end, String componentId) {
         EntityMention mention = new EntityMention(jcas, begin, end);
         UimaAnnotationUtils.finishAnnotation(mention, componentId, null, jcas);
         mention.setHead(findHeadFromStanfordAnnotation(mention));
         return mention;
+    }
+
+    public static void createSingletons(JCas aJCas, List<EntityMention> allMentions, String componentId) {
+        //Sort and assign id to mentions.
+        allMentions.sort(Comparator.comparingInt(Annotation::getBegin));
+        int mentionIdx = 0;
+
+        for (EntityMention mention : allMentions) {
+            UimaAnnotationUtils.finishAnnotation(mention, componentId, mentionIdx++, aJCas);
+            if (mention.getReferingEntity() == null) {
+                Entity entity = new Entity(aJCas);
+                entity.setEntityMentions(new FSArray(aJCas, 1));
+                entity.setEntityMentions(0, mention);
+                mention.setReferingEntity(entity);
+                entity.setRepresentativeMention(mention);
+            }
+        }
+
+        int entityId = 0;
+        for (Entity entity : JCasUtil.select(aJCas, Entity.class)) {
+            entity.setId(String.valueOf(entityId++));
+        }
     }
 
     public static StanfordCorenlpToken findFirstToken(JCas aJCas, int begin, int end) {
