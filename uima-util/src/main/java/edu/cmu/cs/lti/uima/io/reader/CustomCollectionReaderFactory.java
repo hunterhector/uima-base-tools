@@ -364,6 +364,19 @@ public class CustomCollectionReaderFactory {
                 GzippedXmiCollectionReader.PARAM_RECURSIVE, true);
     }
 
+    public static CollectionReaderDescription createRecursiveGzippedXmiReader(
+            TypeSystemDescription typeSystemDescription, String parentDir, String baseDir)
+            throws ResourceInitializationException {
+        // Instantiate a collection reader to get XMI as input.
+        return CollectionReaderFactory.createReaderDescription(
+                GzippedXmiCollectionReader.class, typeSystemDescription,
+                GzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentDir,
+                GzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseDir,
+                GzippedXmiCollectionReader.PARAM_RECURSIVE, true
+        );
+    }
+
+
     public static CollectionReaderDescription createTimeSortedGzipXmiReader(
             TypeSystemDescription typeSystemDescription, String parentInputDir, String baseInputDir)
             throws ResourceInitializationException {

@@ -46,14 +46,6 @@ public class GzippedXmiCollectionReader extends AbstractCollectionReader {
      * @see org.apache.uima.collection.CollectionReader#getNext(org.apache.uima.cas.CAS)
      */
     public void getNext(JCas jCas) throws IOException, CollectionException {
-//        try {
-//            if (!StringUtils.isEmpty(inputViewName)) {
-//                jCas = jCas.getView(inputViewName);
-//            }
-//        } catch (Exception e) {
-//            throw new CollectionException(e);
-//        }
-
         File currentFile = files.get(currentDocIndex);
         currentDocIndex++;
 

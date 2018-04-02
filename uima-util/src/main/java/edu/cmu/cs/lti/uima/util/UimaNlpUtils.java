@@ -1,5 +1,7 @@
 package edu.cmu.cs.lti.uima.util;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import edu.cmu.cs.lti.script.type.*;
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.TObjectIntMap;
@@ -81,6 +83,40 @@ public class UimaNlpUtils {
         return mentions;
     }
 
+    public static Table<Integer, Integer, EventMention> indexEventMentions(JCas jcas) {
+        Table<Integer, Integer, EventMention> mentions = HashBasedTable.create();
+        for (EventMention mention : JCasUtil.select(jcas, EventMention.class)) {
+            mentions.put(mention.getBegin(), mention.getEnd(), mention);
+        }
+        return mentions;
+    }
+
+    public static Map<Word, EventMentionArgumentLink> indexArgs(EventMention eventMention) {
+        Map<Word, EventMentionArgumentLink> span2Arg = new HashMap<>();
+        FSList existingArgsFS = eventMention.getArguments();
+        if (existingArgsFS != null) {
+            Collection<EventMentionArgumentLink> existingArgs = FSCollectionFactory.create(eventMention
+                    .getArguments(), EventMentionArgumentLink.class);
+            for (EventMentionArgumentLink existingArg : existingArgs) {
+                EntityMention en = existingArg.getArgument();
+                span2Arg.put(en.getHead(), existingArg);
+            }
+        }
+        return span2Arg;
+    }
+
+    public static EventMentionArgumentLink createArg(JCas aJCas, Map<Word, EntityMention> h2Entities,
+                                                     EventMention eventMention, int begin, int end,
+                                                     String componentId) {
+        EventMentionArgumentLink argumentLink = new EventMentionArgumentLink(aJCas);
+        EntityMention argumentMention = UimaNlpUtils.createNonExistEntityMention(aJCas, h2Entities,
+                begin, end, componentId);
+        argumentLink.setArgument(argumentMention);
+        argumentLink.setEventMention(eventMention);
+        UimaAnnotationUtils.finishTop(argumentLink, componentId, 0, aJCas);
+        return argumentLink;
+    }
+
     public static EntityMention createNonExistEntityMention(JCas jcas, Map<Word, EntityMention> mentionTable,
                                                             int begin, int end, String componentId) {
         ComponentAnnotation dummy = new ComponentAnnotation(jcas, begin, end);
@@ -101,7 +137,7 @@ public class UimaNlpUtils {
 
     public static EntityMention createEntityMention(JCas jcas, int begin, int end, String componentId) {
         EntityMention mention = new EntityMention(jcas, begin, end);
-        UimaAnnotationUtils.finishAnnotation(mention, componentId, null, jcas);
+        UimaAnnotationUtils.finishAnnotation(mention, componentId, 0, jcas);
         mention.setHead(findHeadFromStanfordAnnotation(mention));
         return mention;
     }
@@ -112,19 +148,15 @@ public class UimaNlpUtils {
         int mentionIdx = 0;
 
         for (EntityMention mention : allMentions) {
-            UimaAnnotationUtils.finishAnnotation(mention, componentId, mentionIdx++, aJCas);
+            mention.setId(String.valueOf(mentionIdx++));
             if (mention.getReferingEntity() == null) {
                 Entity entity = new Entity(aJCas);
                 entity.setEntityMentions(new FSArray(aJCas, 1));
                 entity.setEntityMentions(0, mention);
                 mention.setReferingEntity(entity);
                 entity.setRepresentativeMention(mention);
+                UimaAnnotationUtils.finishTop(entity, componentId, 0, aJCas);
             }
-        }
-
-        int entityId = 0;
-        for (Entity entity : JCasUtil.select(aJCas, Entity.class)) {
-            entity.setId(String.valueOf(entityId++));
         }
     }
 

@@ -1030,7 +1030,7 @@
                 <featureDescription>
                     <name>argumentRole</name>
                     <description>If you don't know what kind of argument it is, use this one, otherwise use one of the
-                        specific role name such as : "verbNet" "frameElement" or "probank".
+                        specific role name such as : "verbNet" "frameElement" or "propbank".
                     </description>
                     <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
