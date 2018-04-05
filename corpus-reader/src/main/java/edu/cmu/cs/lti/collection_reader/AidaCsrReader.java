@@ -5,10 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import edu.cmu.cs.lti.model.CSR;
-import edu.cmu.cs.lti.script.type.Article;
-import edu.cmu.cs.lti.script.type.EntityMention;
-import edu.cmu.cs.lti.script.type.EventMention;
-import edu.cmu.cs.lti.script.type.EventMentionArgumentLink;
+import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
@@ -107,7 +104,7 @@ public class AidaCsrReader extends AbstractCollectionReader {
                     break;
                 case "sentence":
                     CSR.SentenceFrame sentence = gson.fromJson(frame, CSR.SentenceFrame.class);
-                    addSentence(sentStarts, sentence);
+                    addSentence(jCas, sentStarts, sentence);
                     break;
                 case "event_mention":
                     CSR.EventMentionFrame evm = gson.fromJson(frame, CSR.EventMentionFrame.class);
@@ -130,8 +127,10 @@ public class AidaCsrReader extends AbstractCollectionReader {
         }
     }
 
-    private void addSentence(Map<String, Integer> sentStarts, CSR.SentenceFrame sentence) {
-        sentStarts.put(sentence.id, sentence.extent.start);
+    private void addSentence(JCas aJCas, Map<String, Integer> sentStarts, CSR.SentenceFrame frame) {
+        sentStarts.put(frame.id, frame.extent.start);
+        Sentence sentence = new Sentence(aJCas, frame.extent.start, frame.extent.start + frame.extent.length);
+        UimaAnnotationUtils.finishAnnotation(sentence, COMPONENT_ID, frame.id, aJCas);
     }
 
     private void addEventMention(JCas aJCas, CSR.EventMentionFrame frame, Map<String, Integer> sentStarts,
@@ -154,7 +153,7 @@ public class AidaCsrReader extends AbstractCollectionReader {
         }
         evm.setArguments(FSCollectionFactory.createFSList(aJCas, argumentLinks));
         evm.setEventType(frame.interp.type);
-        UimaAnnotationUtils.finishAnnotation(evm, COMPONENT_ID, 0, aJCas);
+        UimaAnnotationUtils.finishAnnotation(evm, COMPONENT_ID, frame.id, aJCas);
     }
 
     private void addEntityMention(JCas aJCas, CSR.EntityMentionFrame frame, Map<String, Integer> sentStarts,
@@ -165,7 +164,7 @@ public class AidaCsrReader extends AbstractCollectionReader {
         EntityMention ent = new EntityMention(aJCas, begin, end);
         id2EntityMentions.put(frame.id, ent);
         ent.setEntityType(frame.interp.type);
-        UimaAnnotationUtils.finishAnnotation(ent, COMPONENT_ID, 0, aJCas);
+        UimaAnnotationUtils.finishAnnotation(ent, COMPONENT_ID, frame.id, aJCas);
     }
 
     @Override
