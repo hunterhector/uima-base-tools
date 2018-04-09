@@ -40,7 +40,7 @@ public class UimaNlpUtils {
         }
     }
 
-    public static String getPredicate(Word head, List<Word> complements) {
+    public static String getPredicate(Word head, List<Word> complements, boolean keepXcomp) {
         FSList childDeps = head.getChildDependencyRelations();
 
         String complementPart = "";
@@ -51,7 +51,7 @@ public class UimaNlpUtils {
             for (StanfordDependencyRelation dep : FSCollectionFactory.create(childDeps,
                     StanfordDependencyRelation.class)) {
 
-                if (dep.getDependencyType().equals("xcomp")) {
+                if (keepXcomp && dep.getDependencyType().equals("xcomp")) {
                     Word complementNode = dep.getChild();
                     complementPart = "_" + complementNode.getLemma();
                     // Complement node contains additional subjects.

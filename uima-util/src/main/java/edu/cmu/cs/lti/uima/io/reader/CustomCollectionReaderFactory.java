@@ -361,7 +361,9 @@ public class CustomCollectionReaderFactory {
                 GzippedXmiCollectionReader.class, typeSystemDescription,
                 GzippedXmiCollectionReader.PARAM_DATA_PATH, inputDirName,
                 GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown,
-                GzippedXmiCollectionReader.PARAM_RECURSIVE, true);
+                GzippedXmiCollectionReader.PARAM_RECURSIVE, true,
+                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz"
+        );
     }
 
     public static CollectionReaderDescription createRecursiveGzippedXmiReader(
@@ -372,7 +374,8 @@ public class CustomCollectionReaderFactory {
                 GzippedXmiCollectionReader.class, typeSystemDescription,
                 GzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentDir,
                 GzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseDir,
-                GzippedXmiCollectionReader.PARAM_RECURSIVE, true
+                GzippedXmiCollectionReader.PARAM_RECURSIVE, true,
+                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz"
         );
     }
 
@@ -385,7 +388,8 @@ public class CustomCollectionReaderFactory {
         return CollectionReaderFactory.createReaderDescription(
                 TimeSortedGzippedXmiCollectionReader.class, typeSystemDescription,
                 TimeSortedGzippedXmiCollectionReader.PARAM_PARENT_INPUT_DIR_PATH, parentInputDir,
-                TimeSortedGzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDir
+                TimeSortedGzippedXmiCollectionReader.PARAM_BASE_INPUT_DIR_NAME, baseInputDir,
+                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz"
         );
     }
 }
