@@ -21,19 +21,21 @@ import org.apache.uima.jcas.cas.*;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.slf4j.Logger;
 
+import java.io.File;
+import java.net.MalformedURLException;
 import java.util.*;
 
 /**
  * @author Chris Welty
- *         <p>
- *         Required JAR files:
- *         <ul>
- *         </ul>
- *         <p>
- *         Version History:
- *         <ul>
- *         <li>0.1 [Apr 20, 2004]: Created.
- *         </ul>
+ * <p>
+ * Required JAR files:
+ * <ul>
+ * </ul>
+ * <p>
+ * Version History:
+ * <ul>
+ * <li>0.1 [Apr 20, 2004]: Created.
+ * </ul>
  * @version: 0.1
  */
 public class UimaConvenience extends BasicConvenience {
@@ -771,6 +773,21 @@ public class UimaConvenience extends BasicConvenience {
         } else {
             logger.info(String.format("Processing article: %s", fileName));
         }
+    }
+
+    public static void setDocInfo(JCas aJCas, String language, String componentId, int docLength,
+                                  String name, String path, boolean isLastSegment) throws MalformedURLException {
+        Article article = new Article(aJCas);
+        UimaAnnotationUtils.finishAnnotation(article, 0, docLength, componentId, 0, aJCas);
+        article.setArticleName(FilenameUtils.getBaseName(name));
+        article.setLanguage(language);
+
+        SourceDocumentInformation srcDocInfo = new SourceDocumentInformation(aJCas);
+        srcDocInfo.setUri(new File(path).toURI().toURL().toString());
+        srcDocInfo.setOffsetInSource(0);
+        srcDocInfo.setDocumentSize(docLength);
+        srcDocInfo.setLastSegment(isLastSegment);
+        srcDocInfo.addToIndexes();
     }
 
     public static String getDocumentName(JCas aJCas) {

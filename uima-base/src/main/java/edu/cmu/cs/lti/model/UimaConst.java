@@ -12,4 +12,6 @@ public class UimaConst {
 
     public static final String goldViewName = "GoldStandard";
 
+    public static final String goldComponentName = "GoldComponent";
+
 }
