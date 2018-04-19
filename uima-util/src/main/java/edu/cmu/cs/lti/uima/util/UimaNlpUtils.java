@@ -40,6 +40,13 @@ public class UimaNlpUtils {
         }
     }
 
+    public static String getDependencyPath(Word head, Word tail) {
+        // TODO: find the depedency path?
+
+        String depPath = "";
+        return depPath;
+    }
+
     public static String getPredicate(Word head, List<Word> complements, boolean keepXcomp) {
         FSList childDeps = head.getChildDependencyRelations();
 
