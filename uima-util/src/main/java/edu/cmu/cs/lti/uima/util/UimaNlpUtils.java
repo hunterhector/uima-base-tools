@@ -2,6 +2,7 @@ package edu.cmu.cs.lti.uima.util;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
+import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.*;
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.TObjectIntMap;
@@ -12,6 +13,7 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.cas.FSList;
 import org.apache.uima.jcas.tcas.Annotation;
+import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +118,7 @@ public class UimaNlpUtils {
                                                      EventMention eventMention, int begin, int end,
                                                      String componentId) {
         EventMentionArgumentLink argumentLink = new EventMentionArgumentLink(aJCas);
-        EntityMention argumentMention = UimaNlpUtils.createNonExistEntityMention(aJCas, h2Entities,
+        EntityMention argumentMention = UimaNlpUtils.createNonExistArg(aJCas, h2Entities,
                 begin, end, componentId);
         argumentLink.setArgument(argumentMention);
         argumentLink.setEventMention(eventMention);
@@ -124,8 +126,8 @@ public class UimaNlpUtils {
         return argumentLink;
     }
 
-    public static EntityMention createNonExistEntityMention(JCas jcas, Map<Word, EntityMention> mentionTable,
-                                                            int begin, int end, String componentId) {
+    public static EntityMention createNonExistArg(JCas jcas, Map<Word, EntityMention> mentionTable,
+                                                  int begin, int end, String componentId) {
         ComponentAnnotation dummy = new ComponentAnnotation(jcas, begin, end);
         StanfordCorenlpToken dummyHead = UimaNlpUtils.findHeadFromStanfordAnnotation(dummy);
 
@@ -136,14 +138,14 @@ public class UimaNlpUtils {
             }
             return oldEn;
         } else {
-            EntityMention newEn = createEntityMention(jcas, begin, end, componentId);
+            EntityMention newEn = createArgMention(jcas, begin, end, componentId);
             mentionTable.put(newEn.getHead(), newEn);
             return newEn;
         }
     }
 
-    public static EntityMention createEntityMention(JCas jcas, int begin, int end, String componentId) {
-        EntityMention mention = new EntityMention(jcas, begin, end);
+    public static ArgumentMention createArgMention(JCas jcas, int begin, int end, String componentId) {
+        ArgumentMention mention = new ArgumentMention(jcas, begin, end);
         UimaAnnotationUtils.finishAnnotation(mention, componentId, 0, jcas);
         mention.setHead(findHeadFromStanfordAnnotation(mention));
         return mention;
@@ -309,4 +311,5 @@ public class UimaNlpUtils {
         }
         return largestAnno;
     }
+
 }

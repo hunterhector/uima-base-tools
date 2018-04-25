@@ -267,11 +267,6 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         addCharacterAnnotation(aJCas, document, textOffset);
         addTokenLevelAnnotation(aJCas, document, textOffset, spanMentionMap, allMentions);
 
-        int mentionId = 0;
-        for (EntityMention mention : allMentions) {
-            UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, mentionId, aJCas);
-        }
-
         // Adding sentence level annotations.
         addSentenceLevelAnnotation(aJCas, document, textOffset);
 
@@ -296,6 +291,12 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                     mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
                 }
             }
+        }
+
+
+        int mentionId = 0;
+        for (EntityMention mention : allMentions) {
+            UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, mentionId, aJCas);
         }
     }
 
@@ -322,11 +323,6 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
 //        addHCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
 
-        int mentionId = 0;
-        for (EntityMention mention : allMentions) {
-            UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, mentionId, aJCas);
-        }
-
         if (!splitOnly) {
             addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
             UimaNlpUtils.createSingletons(aJCas, allMentions, COMPONENT_ID);
@@ -335,6 +331,11 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                     mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
                 }
             }
+        }
+
+        int mentionId = 0;
+        for (EntityMention mention : allMentions) {
+            UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, mentionId, aJCas);
         }
     }
 
