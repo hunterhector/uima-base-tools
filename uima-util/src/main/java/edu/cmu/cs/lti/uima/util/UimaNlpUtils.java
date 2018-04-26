@@ -2,7 +2,6 @@ package edu.cmu.cs.lti.uima.util;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
-import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.*;
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.TObjectIntMap;
@@ -13,7 +12,6 @@ import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.cas.FSList;
 import org.apache.uima.jcas.tcas.Annotation;
-import org.javatuples.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -182,6 +180,16 @@ public class UimaNlpUtils {
             return token;
         }
         return null;
+    }
+
+
+    public static <T extends Word> List<T> findCoveringTokens(Annotation anno, Class<T> clazz) {
+        List<T> words = new ArrayList<>();
+
+        List<T> coveringTokens = JCasUtil.selectCovering(clazz, anno);
+        words.addAll(coveringTokens);
+
+        return words;
     }
 
     public static Word findFirstWord(JCas jcas, int begin, int end, String targetComponentId) {
