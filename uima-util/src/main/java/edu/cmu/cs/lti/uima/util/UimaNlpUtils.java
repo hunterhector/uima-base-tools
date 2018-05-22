@@ -116,8 +116,7 @@ public class UimaNlpUtils {
                                                      EventMention eventMention, int begin, int end,
                                                      String componentId) {
         EventMentionArgumentLink argumentLink = new EventMentionArgumentLink(aJCas);
-        EntityMention argumentMention = UimaNlpUtils.createNonExistArg(aJCas, h2Entities,
-                begin, end, componentId);
+        EntityMention argumentMention = UimaNlpUtils.createNonExistArg(aJCas, h2Entities, begin, end, componentId);
         argumentLink.setArgument(argumentMention);
         argumentLink.setEventMention(eventMention);
         UimaAnnotationUtils.finishTop(argumentLink, componentId, 0, aJCas);
@@ -149,7 +148,7 @@ public class UimaNlpUtils {
         return mention;
     }
 
-    public static void createSingletons(JCas aJCas, List<EntityMention> allMentions, String componentId) {
+    public static void fixEntityMentions(JCas aJCas, List<EntityMention> allMentions, String componentId) {
         //Sort and assign id to mentions.
         allMentions.sort(Comparator.comparingInt(Annotation::getBegin));
         int mentionIdx = 0;
@@ -164,8 +163,13 @@ public class UimaNlpUtils {
                 entity.setRepresentativeMention(mention);
                 UimaAnnotationUtils.finishTop(entity, componentId, 0, aJCas);
             }
+
+            if (mention.getHead() == null) {
+                mention.setHead(findHeadFromStanfordAnnotation(mention));
+            }
         }
     }
+
 
     public static StanfordCorenlpToken findFirstToken(JCas aJCas, int begin, int end) {
         for (StanfordCorenlpToken token : JCasUtil.selectCovered(aJCas, StanfordCorenlpToken.class, begin, end)) {
