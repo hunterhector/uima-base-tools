@@ -24,9 +24,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A collection reader for plain text documents.
@@ -78,6 +76,8 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
 
         if (suffix == null) {
             suffix = "";
+        } else {
+            logger.info("Reading files with suffix: " + suffix);
         }
 
         currentDocIndex = 0;
@@ -89,7 +89,9 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
             }
         }
 
-        if (removeQuotes){
+        logger.info(String.format("Number of files loaded: %d", textFiles.size()));
+
+        if (removeQuotes) {
             logger.info("Quoted content will be removed in default view.");
         }
 
