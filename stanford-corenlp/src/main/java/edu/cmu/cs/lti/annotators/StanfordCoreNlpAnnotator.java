@@ -400,7 +400,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                         allMentions.add(em);
                     }
 
-                    StanfordCorenlpToken mentionHead = sTokens.get(mention.headIndex - 1);
+                    StanfordCorenlpToken mentionHead = UimaNlpUtils.findHeadFromStanfordAnnotation(em);
 
                     em.setHead(mentionHead);
                     stanfordEntityMentions.add(em);
