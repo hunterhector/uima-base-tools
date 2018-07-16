@@ -144,7 +144,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             }
 
             if (shiftReduceParser) {
-                props.setProperty("-parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
+                props.setProperty("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
             }
 
             if (parserMaxLen != null) {
