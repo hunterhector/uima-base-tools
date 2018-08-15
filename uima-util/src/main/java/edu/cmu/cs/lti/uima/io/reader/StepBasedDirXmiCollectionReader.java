@@ -43,8 +43,7 @@ public class StepBasedDirXmiCollectionReader extends AbstractCollectionReader {
         try {
             CasSerialization.readXmi(jCas, files.get(currentDocIndex));
         } catch (CollectionException e) {
-            logger.info("Found exceptions in document: " + UimaConvenience.getDocumentName(jCas));
-            UimaConvenience.printProcessLog(jCas);
+            logger.info("Found exceptions in document: " + files.get(currentDocIndex).getCanonicalPath());
             e.printStackTrace();
         }
 
