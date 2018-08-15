@@ -185,12 +185,6 @@
                     <rangeTypeName>edu.cmu.cs.lti.script.type.Entity</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
-                    <name>argumentLinks</name>
-                    <description>link between this argument and the event mention</description>
-                    <rangeTypeName>uima.cas.FSList</rangeTypeName>
-                    <elementType>edu.cmu.cs.lti.script.type.EventMentionArgumentLink</elementType>
-                </featureDescription>
-                <featureDescription>
                     <name>headAnnotation</name>
                     <description>used to hold ACE head value, which could be multiple words</description>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</rangeTypeName>
@@ -200,6 +194,12 @@
                     <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
             </features>
+        </typeDescription>
+        <typeDescription>
+            <name>edu.cmu.cs.lti.script.type.ArgumentMention</name>
+            <description>A special type of entity mention created simply for the sake of filing argument position.
+            </description>
+            <supertypeName>edu.cmu.cs.lti.script.type.EntityMention</supertypeName>
         </typeDescription>
         <typeDescription>
             <name>edu.cmu.cs.lti.script.type.EventMentionSpanRelation</name>

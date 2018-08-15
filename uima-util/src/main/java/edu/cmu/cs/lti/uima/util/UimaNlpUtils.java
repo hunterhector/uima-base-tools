@@ -40,6 +40,13 @@ public class UimaNlpUtils {
         }
     }
 
+    public static String getDependencyPath(Word head, Word tail) {
+        // TODO: find the depedency path?
+
+        String depPath = "";
+        return depPath;
+    }
+
     public static String getPredicate(Word head, List<Word> complements, boolean keepXcomp) {
         FSList childDeps = head.getChildDependencyRelations();
 
@@ -109,16 +116,15 @@ public class UimaNlpUtils {
                                                      EventMention eventMention, int begin, int end,
                                                      String componentId) {
         EventMentionArgumentLink argumentLink = new EventMentionArgumentLink(aJCas);
-        EntityMention argumentMention = UimaNlpUtils.createNonExistEntityMention(aJCas, h2Entities,
-                begin, end, componentId);
+        EntityMention argumentMention = UimaNlpUtils.createNonExistArg(aJCas, h2Entities, begin, end, componentId);
         argumentLink.setArgument(argumentMention);
         argumentLink.setEventMention(eventMention);
         UimaAnnotationUtils.finishTop(argumentLink, componentId, 0, aJCas);
         return argumentLink;
     }
 
-    public static EntityMention createNonExistEntityMention(JCas jcas, Map<Word, EntityMention> mentionTable,
-                                                            int begin, int end, String componentId) {
+    public static EntityMention createNonExistArg(JCas jcas, Map<Word, EntityMention> mentionTable,
+                                                  int begin, int end, String componentId) {
         ComponentAnnotation dummy = new ComponentAnnotation(jcas, begin, end);
         StanfordCorenlpToken dummyHead = UimaNlpUtils.findHeadFromStanfordAnnotation(dummy);
 
@@ -129,20 +135,20 @@ public class UimaNlpUtils {
             }
             return oldEn;
         } else {
-            EntityMention newEn = createEntityMention(jcas, begin, end, componentId);
+            EntityMention newEn = createArgMention(jcas, begin, end, componentId);
             mentionTable.put(newEn.getHead(), newEn);
             return newEn;
         }
     }
 
-    public static EntityMention createEntityMention(JCas jcas, int begin, int end, String componentId) {
-        EntityMention mention = new EntityMention(jcas, begin, end);
+    public static ArgumentMention createArgMention(JCas jcas, int begin, int end, String componentId) {
+        ArgumentMention mention = new ArgumentMention(jcas, begin, end);
         UimaAnnotationUtils.finishAnnotation(mention, componentId, 0, jcas);
         mention.setHead(findHeadFromStanfordAnnotation(mention));
         return mention;
     }
 
-    public static void createSingletons(JCas aJCas, List<EntityMention> allMentions, String componentId) {
+    public static void fixEntityMentions(JCas aJCas, List<EntityMention> allMentions, String componentId) {
         //Sort and assign id to mentions.
         allMentions.sort(Comparator.comparingInt(Annotation::getBegin));
         int mentionIdx = 0;
@@ -157,8 +163,13 @@ public class UimaNlpUtils {
                 entity.setRepresentativeMention(mention);
                 UimaAnnotationUtils.finishTop(entity, componentId, 0, aJCas);
             }
+
+            if (mention.getHead() == null) {
+                mention.setHead(findHeadFromStanfordAnnotation(mention));
+            }
         }
     }
+
 
     public static StanfordCorenlpToken findFirstToken(JCas aJCas, int begin, int end) {
         for (StanfordCorenlpToken token : JCasUtil.selectCovered(aJCas, StanfordCorenlpToken.class, begin, end)) {
@@ -173,6 +184,16 @@ public class UimaNlpUtils {
             return token;
         }
         return null;
+    }
+
+
+    public static <T extends Word> List<T> findCoveringTokens(Annotation anno, Class<T> clazz) {
+        List<T> words = new ArrayList<>();
+
+        List<T> coveringTokens = JCasUtil.selectCovering(clazz, anno);
+        words.addAll(coveringTokens);
+
+        return words;
     }
 
     public static Word findFirstWord(JCas jcas, int begin, int end, String targetComponentId) {
@@ -302,4 +323,5 @@ public class UimaNlpUtils {
         }
         return largestAnno;
     }
+
 }

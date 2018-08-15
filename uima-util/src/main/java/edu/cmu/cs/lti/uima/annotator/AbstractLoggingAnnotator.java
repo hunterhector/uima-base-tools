@@ -49,6 +49,7 @@ public abstract class AbstractLoggingAnnotator extends AbstractAnnotator {
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
         getFileAppender(loggingFileName);
+        logger.info("Initializing " + this.COMPONENT_ID);
     }
 
     private FileAppender<ILoggingEvent> getFileAppender(String loggingFileName) {

@@ -35,27 +35,28 @@ public abstract class AbstractEntityMentionCreator extends AbstractLoggingAnnota
         }
     }
 
-    protected EventMentionArgumentLink createArgumentLink(JCas aJCas, EventMention evm, String roleName, Word argument, Word prep) {
+    protected EventMentionArgumentLink createArgumentLink(JCas aJCas, EventMention evm, String roleName, Word
+            argument, Word prep) {
         EntityMention argumentEntity = getOrCreateSingletonEntityMention(aJCas, argument);
         return createArgumentLink(aJCas, evm, roleName, argumentEntity, prep);
     }
 
 
-    protected EventMentionArgumentLink createArgumentLink(JCas aJCas, EventMention evm, String roleName, EntityMention argumentEntity, Word prep) {
+    protected EventMentionArgumentLink createArgumentLink(JCas aJCas, EventMention evm, String roleName,
+                                                          EntityMention argumentEntity, Word prep) {
         EventMentionArgumentLink link = new EventMentionArgumentLink(aJCas);
         link.setVerbPreposition(prep);
         link.setArgument(argumentEntity);
         link.setArgumentRole(roleName);
         link.setEventMention(evm);
         UimaAnnotationUtils.finishTop(link, getComponentId(), null, aJCas);
-        argumentEntity.setArgumentLinks(UimaConvenience.appendFSList(aJCas, argumentEntity.getArgumentLinks(), link, EventMentionArgumentLink.class));
         return link;
     }
 
     protected EntityMention getOrCreateSingletonEntityMention(JCas jcas, Word headWord) {
         EntityMention mention = head2EntityMention.get(UimaAnnotationUtils.toSpan(headWord));
         if (mention == null) {
-            mention = UimaNlpUtils.createEntityMention(jcas, headWord.getBegin(), headWord.getEnd(),
+            mention = UimaNlpUtils.createArgMention(jcas, headWord.getBegin(), headWord.getEnd(),
                     getComponentId());
             Entity entity = new Entity(jcas);
             entity.setEntityMentions(new FSArray(jcas, 1));
@@ -68,25 +69,28 @@ public abstract class AbstractEntityMentionCreator extends AbstractLoggingAnnota
         return mention;
     }
 
-    protected EntityMention getOrCreateEntityMention(JCas jcas, Word headWord) {
+    protected EntityMention getOrCreateArg(JCas jcas, Word headWord) {
         EntityMention mention = head2EntityMention.get(UimaAnnotationUtils.toSpan(headWord));
         if (mention == null) {
-            mention = UimaNlpUtils.createEntityMention(jcas, headWord.getBegin(), headWord.getEnd(),
+            mention = UimaNlpUtils.createArgMention(jcas, headWord.getBegin(), headWord.getEnd(),
                     getComponentId());
-            UimaAnnotationUtils.finishAnnotation(mention, headWord.getBegin(), headWord.getEnd(), getComponentId(), null, jcas);
+            UimaAnnotationUtils.finishAnnotation(mention, headWord.getBegin(), headWord.getEnd(), getComponentId(),
+                    null, jcas);
             head2EntityMention.put(UimaAnnotationUtils.toSpan(headWord), mention);
         }
         return mention;
     }
 
     //conj: this should go last so it can make use of what we did before
-    protected EventMentionArgumentLink addNewArgument(JCas aJCas, EventMention evm, EntityMention newArgument, String roleName) {
+    protected EventMentionArgumentLink addNewArgument(JCas aJCas, EventMention evm, EntityMention newArgument, String
+            roleName) {
         EventMentionArgumentLink link = createArgumentLink(aJCas, evm, roleName, newArgument, null);
         evm.setArguments(UimaConvenience.appendFSList(aJCas, evm.getArguments(), link, EventMentionArgumentLink.class));
         return link;
     }
 
-    protected EventMentionArgumentLink addNewArgument(JCas aJCas, EventMention evm, Word newArgumentHead, String roleName) {
+    protected EventMentionArgumentLink addNewArgument(JCas aJCas, EventMention evm, Word newArgumentHead, String
+            roleName) {
         EventMentionArgumentLink link = createArgumentLink(aJCas, evm, roleName, newArgumentHead, null);
         evm.setArguments(UimaConvenience.appendFSList(aJCas, evm.getArguments(), link, EventMentionArgumentLink.class));
         return link;

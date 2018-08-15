@@ -144,7 +144,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             }
 
             if (shiftReduceParser) {
-                props.setProperty("-parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
+                props.setProperty("parse.model", "edu/stanford/nlp/models/srparser/englishSR.ser.gz");
             }
 
             if (parserMaxLen != null) {
@@ -285,12 +285,18 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 }
             }
             addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-            UimaNlpUtils.createSingletons(aJCas, allMentions, COMPONENT_ID);
+            UimaNlpUtils.fixEntityMentions(aJCas, allMentions, COMPONENT_ID);
             for (EntityMention mention : allMentions) {
                 if (mention.getHead() == null) {
                     mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
                 }
             }
+        }
+
+
+        int mentionId = 0;
+        for (EntityMention mention : allMentions) {
+            UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, mentionId, aJCas);
         }
     }
 
@@ -319,12 +325,17 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
         if (!splitOnly) {
             addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-            UimaNlpUtils.createSingletons(aJCas, allMentions, COMPONENT_ID);
+            UimaNlpUtils.fixEntityMentions(aJCas, allMentions, COMPONENT_ID);
             for (EntityMention mention : allMentions) {
                 if (mention.getHead() == null) {
                     mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
                 }
             }
+        }
+
+        int mentionId = 0;
+        for (EntityMention mention : allMentions) {
+            UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, mentionId, aJCas);
         }
     }
 
@@ -365,13 +376,13 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
         for (Map.Entry<Integer, edu.stanford.nlp.hcoref.data.CorefChain> entry : graph.entrySet()) {
             edu.stanford.nlp.hcoref.data.CorefChain refChain = entry.getValue();
-            Entity entity = new Entity(aJCas);
-            UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, 0, aJCas);
 
             List<StanfordEntityMention> stanfordEntityMentions = new ArrayList<StanfordEntityMention>();
 
             edu.stanford.nlp.hcoref.data.CorefChain.CorefMention representativeMention = refChain
                     .getRepresentativeMention();
+
+            StanfordEntityMention representativeUima = null;
 
             for (edu.stanford.nlp.hcoref.data.CorefChain.CorefMention mention : refChain.getMentionsInTextualOrder()) {
                 try {
@@ -389,14 +400,13 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                         allMentions.add(em);
                     }
 
-                    StanfordCorenlpToken mentionHead = sTokens.get(mention.headIndex - 1);
+                    StanfordCorenlpToken mentionHead = UimaNlpUtils.findHeadFromStanfordAnnotation(em);
 
-                    em.setReferingEntity(entity);
                     em.setHead(mentionHead);
                     stanfordEntityMentions.add(em);
 
                     if (representativeMention.equals(mention)) {
-                        entity.setRepresentativeMention(em);
+                        representativeUima = em;
                     }
                 } catch (Exception e) {
                     logger.error("Cannot find the correct range for mention " + mention.mentionSpan + " " +
@@ -404,10 +414,21 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 }
             }
 
-            // Convert the list to CAS entity mention FSList type.
-            FSArray mentionFSList = UimaConvenience.makeFsArray(stanfordEntityMentions, aJCas);
-            // Put that in the cluster type.
-            entity.setEntityMentions(mentionFSList);
+            if (stanfordEntityMentions.size() > 0) {
+                Entity entity = new Entity(aJCas);
+                UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, 0, aJCas);
+                for (StanfordEntityMention mention : stanfordEntityMentions) {
+                    mention.setReferingEntity(entity);
+                    if (representativeUima != null && representativeUima.equals(mention)) {
+                        entity.setRepresentativeMention(mention);
+                    }
+                }
+
+                // Convert the list to CAS entity mention FSList type.
+                FSArray mentionFSList = UimaConvenience.makeFsArray(stanfordEntityMentions, aJCas);
+                // Put that in the cluster type.
+                entity.setEntityMentions(mentionFSList);
+            }
         }
     }
 
@@ -430,10 +451,9 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             sentTokens.add(JCasUtil.selectCovered(aJCas, StanfordCorenlpToken.class, sSent));
         }
 
+        StanfordEntityMention representativeMentionUima = null;
         for (Map.Entry<Integer, CorefChain> entry : graph.entrySet()) {
             CorefChain refChain = entry.getValue();
-            Entity entity = new Entity(aJCas);
-            UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, 0, aJCas);
 
             List<StanfordEntityMention> stanfordEntityMentions = new ArrayList<StanfordEntityMention>();
 
@@ -457,23 +477,35 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
                     StanfordCorenlpToken mentionHead = sTokens.get(mention.headIndex - 1);
 
-                    em.setReferingEntity(entity);
+                    if (representativeMention.equals(mention)) {
+                        representativeMentionUima = em;
+                    }
+
                     em.setHead(mentionHead);
                     stanfordEntityMentions.add(em);
 
-                    if (representativeMention.equals(mention)) {
-                        entity.setRepresentativeMention(em);
-                    }
                 } catch (Exception e) {
                     logger.error("Cannot find the correct range for mention " + mention.mentionSpan + " " +
                             mention.sentNum + " " + mention.startIndex + " " + mention.endIndex);
                 }
             }
 
-            // Convert the list to CAS entity mention FSList type.
-            FSArray mentionFSList = UimaConvenience.makeFsArray(stanfordEntityMentions, aJCas);
-            // Put that in the cluster type.
-            entity.setEntityMentions(mentionFSList);
+            if (stanfordEntityMentions.size() > 0) {
+                Entity entity = new Entity(aJCas);
+                UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, 0, aJCas);
+
+                for (StanfordEntityMention em : stanfordEntityMentions) {
+                    em.setReferingEntity(entity);
+                    if (representativeMentionUima != null && representativeMentionUima.equals(em)) {
+                        entity.setRepresentativeMention(em);
+                    }
+                }
+
+                // Convert the list to CAS entity mention FSList type.
+                FSArray mentionFSList = UimaConvenience.makeFsArray(stanfordEntityMentions, aJCas);
+                // Put that in the cluster type.
+                entity.setEntityMentions(mentionFSList);
+            }
         }
     }
 

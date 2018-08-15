@@ -106,8 +106,8 @@ public class WhRcModResoluter extends AbstractEntityMentionCreator {
                         Word modifierChild = childRelation.getChild();
                         if (modifierChild.getPos().startsWith(WH_WORD_LABEL_PREFIX)) {
                             Word rcmodHead = rcmodRel.getHead();
-                            EntityMention rcmodHeadMention = getOrCreateEntityMention(aJCas, rcmodHead);
-                            EntityMention whMention = getOrCreateEntityMention(aJCas, modifierChild);
+                            EntityMention rcmodHeadMention = getOrCreateArg(aJCas, rcmodHead);
+                            EntityMention whMention = getOrCreateArg(aJCas, modifierChild);
                             relativeClauseCoreferences.put(rcmodHeadMention, whMention);
                         }
                     }
