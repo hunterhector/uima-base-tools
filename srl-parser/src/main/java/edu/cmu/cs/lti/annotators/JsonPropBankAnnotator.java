@@ -177,6 +177,5 @@ public class JsonPropBankAnnotator extends AbstractLoggingAnnotator {
         );
 
         new BasicPipeline(reader, outputBase, "srl", annotator);
-
     }
 }
