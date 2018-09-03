@@ -103,7 +103,7 @@ public class JsonPropBankAnnotator extends AbstractLoggingAnnotator {
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         String articleName = UimaConvenience.getArticleName(aJCas);
-        File jsonFile = new File(srlDataDir, articleName);
+        File jsonFile = new File(srlDataDir, articleName + ".json");
 
         if (!jsonFile.exists()) {
             return;
