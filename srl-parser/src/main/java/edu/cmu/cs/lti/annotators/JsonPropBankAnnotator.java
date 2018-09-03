@@ -9,10 +9,10 @@ import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
+import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
-import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.collection.metadata.CpeDescriptorException;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
@@ -98,10 +98,12 @@ public class JsonPropBankAnnotator extends AbstractLoggingAnnotator {
         if (inputComponentName == null) {
             inputComponentName = COMPONENT_ID;
         }
+
+        logger.info("Loading SRL output at " + srlDataDir);
     }
 
     @Override
-    public void process(JCas aJCas) throws AnalysisEngineProcessException {
+    public void process(JCas aJCas) {
         UimaConvenience.printProcessLog(aJCas, logger);
 
         String articleName = UimaConvenience.getArticleName(aJCas);
@@ -134,27 +136,27 @@ public class JsonPropBankAnnotator extends AbstractLoggingAnnotator {
             }
 
             if (verbSpan != null) {
-                StanfordCorenlpToken head = UimaConvenience.selectCoveredFirst(
+                StanfordCorenlpToken srlHead = UimaConvenience.selectCoveredFirst(
                         aJCas, verbSpan.get(0), verbSpan.get(1), StanfordCorenlpToken.class);
 
-                if (head != null) {
+                if (srlHead != null) {
                     List<SemanticRelation> relations = new ArrayList<>();
                     for (Map.Entry<String, List<Integer>> argEntry : argSpans.entrySet()) {
                         String role = argEntry.getKey();
                         SemanticArgument argument = new SemanticArgument(aJCas, argEntry.getValue().get(0),
                                 argEntry.getValue().get(1));
-                        argument.setHead(head);
+                        argument.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(argument));
                         UimaAnnotationUtils.finishAnnotation(argument, inputComponentName, 0, aJCas);
 
                         SemanticRelation rel = new SemanticRelation(aJCas);
                         rel.setChild(argument);
-                        rel.setHead(head);
+                        rel.setHead(srlHead);
                         rel.setPropbankRoleName(role);
 
                         relations.add(rel);
                     }
 
-                    head.setChildSemanticRelations(FSCollectionFactory.createFSList(aJCas, relations));
+                    srlHead.setChildSemanticRelations(FSCollectionFactory.createFSList(aJCas, relations));
                 }
             }
         }
@@ -172,7 +174,7 @@ public class JsonPropBankAnnotator extends AbstractLoggingAnnotator {
                 typeSystemDescription, inputPath);
         AnalysisEngineDescription annotator = AnalysisEngineFactory.createEngineDescription(
                 JsonPropBankAnnotator.class, typeSystemDescription,
-                JsonPropBankAnnotator.PARAM_INPUT_COMPONENT_NAME, "allenlp",
+                JsonPropBankAnnotator.PARAM_INPUT_COMPONENT_NAME, "allennlp",
                 JsonPropBankAnnotator.PARAM_JSON_SRL_INPUT_DIR, srlInput
         );
 
