@@ -102,6 +102,8 @@ public class JsonPropBankAnnotator extends AbstractLoggingAnnotator {
 
     @Override
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
+        UimaConvenience.printProcessLog(aJCas, logger);
+
         String articleName = UimaConvenience.getArticleName(aJCas);
         File jsonFile = new File(srlDataDir, articleName + ".json");
 
