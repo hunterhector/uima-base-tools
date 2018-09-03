@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <artifactId>srl-parser</artifactId>
     <version>0.0.5</version>
-    <name>Fanse Paser Uima Wrapper</name>
+    <name>SRL Parser Wrappers</name>
     <parent>
         <artifactId>uima-tools</artifactId>
         <groupId>edu.cmu.cs.lti</groupId>

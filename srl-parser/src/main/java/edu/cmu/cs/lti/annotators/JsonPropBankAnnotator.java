@@ -176,6 +176,6 @@ public class JsonPropBankAnnotator extends AbstractLoggingAnnotator {
                 JsonPropBankAnnotator.PARAM_JSON_SRL_INPUT_DIR, srlInput
         );
 
-        new BasicPipeline(reader, outputBase, "srl", annotator);
+        new BasicPipeline(reader, outputBase, "srl", annotator).run();
     }
 }

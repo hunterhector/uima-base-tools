@@ -135,7 +135,7 @@ public class BasicPipeline {
     public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats, int numWorkers,
                          AnalysisEngineDescription outputWriter, String workingDir, String outputDir,
                          AnalysisEngineDescription... processors)
-            throws UIMAException, CpeDescriptorException, SAXException, IOException {
+            throws UIMAException {
         readerDescription = reader;
         AnalysisEngineDescription[] engineDescriptions;
 
