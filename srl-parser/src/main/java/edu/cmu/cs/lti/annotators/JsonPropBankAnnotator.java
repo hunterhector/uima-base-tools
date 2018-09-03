@@ -67,11 +67,11 @@ import java.util.Map;
  */
 public class JsonPropBankAnnotator extends AbstractLoggingAnnotator {
     public static final String PARAM_JSON_SRL_INPUT_DIR = "jsonSrlInput";
-    @ConfigurationParameter(name = PARAM_JSON_SRL_INPUT_DIR, mandatory = true)
+    @ConfigurationParameter(name = PARAM_JSON_SRL_INPUT_DIR)
     private String srlDataDir;
 
     public static final String PARAM_INPUT_COMPONENT_NAME = "inputComponentName";
-    @ConfigurationParameter(name = PARAM_INPUT_COMPONENT_NAME)
+    @ConfigurationParameter(name = PARAM_INPUT_COMPONENT_NAME, mandatory = false)
     private String inputComponentName;
 
     private Gson gson;
@@ -98,6 +98,10 @@ public class JsonPropBankAnnotator extends AbstractLoggingAnnotator {
 
         logger.info("Loading SRL output at " + srlDataDir);
         logger.info("SRL component is " + inputComponentName);
+
+        if (!new File(srlDataDir).exists()) {
+            logger.error("Cannot find finished SRL runs, will not add from there.");
+        }
     }
 
     @Override

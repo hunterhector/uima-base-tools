@@ -11,7 +11,7 @@ import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.uimafit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import tratz.parse.FullSystemWrapper;
 import tratz.parse.FullSystemWrapper.FullSystemResult;
 import tratz.parse.types.Arc;
