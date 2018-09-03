@@ -11,7 +11,7 @@
         <module>uima-base</module>
         <module>uima-util</module>
         <module>corpus-reader</module>
-        <module>fanse-parser</module>
+        <module>srl-parser</module>
         <module>semafor-parser</module>
         <module>stanford-corenlp</module>
         <module>discourse-parser</module>
