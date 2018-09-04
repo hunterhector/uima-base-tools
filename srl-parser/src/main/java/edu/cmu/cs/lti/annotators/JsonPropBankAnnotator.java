@@ -154,6 +154,7 @@ public class JsonPropBankAnnotator extends AbstractLoggingAnnotator {
                         rel.setChild(argument);
                         rel.setHead(srlHead);
                         rel.setPropbankRoleName(role);
+                        UimaAnnotationUtils.finishTop(rel, inputComponentName, 0, aJCas);
 
                         relations.add(rel);
                     }
