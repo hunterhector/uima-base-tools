@@ -172,7 +172,7 @@
         <typeDescription>
             <name>edu.cmu.cs.lti.script.type.EntityMention</name>
             <description/>
-            <supertypeName>edu.cmu.cs.lti.script.type.ComponentAnnotation</supertypeName>
+            <supertypeName>edu.cmu.cs.lti.script.type.DiscontinuousComponentAnnotation</supertypeName>
             <features>
                 <featureDescription>
                     <name>head</name>

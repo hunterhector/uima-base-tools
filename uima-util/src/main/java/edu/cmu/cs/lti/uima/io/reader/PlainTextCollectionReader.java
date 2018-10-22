@@ -72,6 +72,7 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
         File directory = new File(inputDirPath);
         if (!directory.exists() || directory.isFile()) {
             logger.error("Cannot find directory at : " + inputDirPath);
+            throw new ResourceInitializationException();
         }
 
         if (suffix == null) {
