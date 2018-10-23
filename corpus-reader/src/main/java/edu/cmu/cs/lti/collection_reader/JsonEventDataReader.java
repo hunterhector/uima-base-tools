@@ -19,6 +19,7 @@ import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.fit.util.FSCollectionFactory;
+import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.tcas.Annotation;
@@ -108,12 +109,17 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         String docid = UimaConvenience.getArticleName(aJCas);
 
+        JCas goldView = JCasUtil.getView(aJCas, goldStandardViewName, true);
+        if (goldView.getDocumentText() == null) {
+            goldView.setDocumentText(aJCas.getDocumentText());
+        }
+
         File annotationFile = new File(annoDir, docid + ".json");
 
         if (annotationFile.exists()) {
             try {
                 AnnoDoc annoDoc = gson.fromJson(FileUtils.readFileToString(annotationFile), AnnoDoc.class);
-                addAnnotations(aJCas, annoDoc);
+                addAnnotations(goldView, annoDoc);
             } catch (IOException e) {
                 throw new AnalysisEngineProcessException(e);
             }
@@ -178,6 +184,13 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     argumentLink.setEventMention(evm);
                     argumentLink.setArgument(id2Ent.get(argument.arg));
                     argumentLink.setArgumentRole(argument.role);
+
+
+                    UimaAnnotationUtils.addMeta(aJCas, argumentLink, "incorporated",
+                            Boolean.toString(argument.meta.incorporated));
+                    UimaAnnotationUtils.addMeta(aJCas, argumentLink, "succeeding",
+                            Boolean.toString(argument.meta.succeeding));
+
                     UimaAnnotationUtils.finishTop(argumentLink, COMPONENT_ID, 0, aJCas);
                 }
             }

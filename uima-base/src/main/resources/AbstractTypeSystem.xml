@@ -40,6 +40,16 @@
                     <description>Index of this annotation</description>
                     <rangeTypeName>uima.cas.Integer</rangeTypeName>
                 </featureDescription>
+                <featureDescription>
+                    <name>metaNames</name>
+                    <description>List of names for the meta data.</description>
+                    <rangeTypeName>uima.cas.StringList</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>metaValues</name>
+                    <description>List of values for the meta data.</description>
+                    <rangeTypeName>uima.cas.StringList</rangeTypeName>
+                </featureDescription>
             </features>
         </typeDescription>
         <typeDescription>
@@ -61,6 +71,16 @@
                     <name>index</name>
                     <description>Index of this annotation</description>
                     <rangeTypeName>uima.cas.Integer</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>metaNames</name>
+                    <description>List of names for the meta data.</description>
+                    <rangeTypeName>uima.cas.StringList</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
+                    <name>metaValues</name>
+                    <description>List of values for the meta data.</description>
+                    <rangeTypeName>uima.cas.StringList</rangeTypeName>
                 </featureDescription>
             </features>
         </typeDescription>

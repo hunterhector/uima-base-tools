@@ -9,11 +9,10 @@ import org.apache.uima.examples.SourceDocumentInformation;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
+import org.apache.uima.jcas.cas.StringList;
 import org.apache.uima.jcas.tcas.Annotation;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class UimaAnnotationUtils {
     public static void finishAnnotation(ComponentAnnotation anno, int begin, int end,
@@ -115,6 +114,39 @@ public class UimaAnnotationUtils {
         m.removeFromIndexes(aJCas);
     }
 
+    public static void addMeta(JCas aJCas, ComponentTOP anno, String metaName, String metaValue) {
+        UimaConvenience.appendStringList(aJCas, anno.getMetaNames(), metaName);
+        UimaConvenience.appendStringList(aJCas, anno.getMetaValues(), metaValue);
+    }
+
+    public static void addMeta(JCas aJCas, ComponentAnnotation anno, String metaName, String metaValue) {
+        UimaConvenience.appendStringList(aJCas, anno.getMetaNames(), metaName);
+        UimaConvenience.appendStringList(aJCas, anno.getMetaValues(), metaValue);
+    }
+
+    public static Map<String, String> readMeta(ComponentTOP anno) {
+        return pairupStringList(anno.getMetaNames(), anno.getMetaValues());
+    }
+
+    public static Map<String, String> readMeta(ComponentAnnotation anno) {
+        return pairupStringList(anno.getMetaNames(), anno.getMetaValues());
+    }
+
+    private static Map<String, String> pairupStringList(StringList list1, StringList list2) {
+        Map<String, String> metaData = new HashMap<>();
+
+        ArrayList<String> metaNames = new ArrayList<>(FSCollectionFactory.create(list1));
+        ArrayList<String> metaValues = new ArrayList<>(FSCollectionFactory.create(list2));
+
+        for (int i = 0; i < metaValues.size(); i++) {
+            String n = metaNames.get(i);
+            String v = metaValues.get(i);
+            metaData.put(n, v);
+        }
+
+        return metaData;
+    }
+
     public static Span toSpan(ComponentAnnotation anno) {
         return new Span(anno.getBegin(), anno.getEnd());
     }
@@ -124,7 +156,8 @@ public class UimaAnnotationUtils {
     }
 
 
-    public static void setSourceDocumentInformation(JCas aJCas, String uri, int size, int offsetInSource, boolean isLastSegment) {
+    public static void setSourceDocumentInformation(JCas aJCas, String uri, int size, int offsetInSource, boolean
+            isLastSegment) {
         SourceDocumentInformation srcDocInfo = new SourceDocumentInformation(aJCas);
         srcDocInfo.setUri(uri);
         srcDocInfo.setOffsetInSource(offsetInSource);
