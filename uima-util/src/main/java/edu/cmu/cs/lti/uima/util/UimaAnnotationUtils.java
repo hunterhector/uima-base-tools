@@ -115,13 +115,13 @@ public class UimaAnnotationUtils {
     }
 
     public static void addMeta(JCas aJCas, ComponentTOP anno, String metaName, String metaValue) {
-        UimaConvenience.appendStringList(aJCas, anno.getMetaNames(), metaName);
-        UimaConvenience.appendStringList(aJCas, anno.getMetaValues(), metaValue);
+        anno.setMetaNames(UimaConvenience.appendStringList(aJCas, anno.getMetaNames(), metaName));
+        anno.setMetaValues(UimaConvenience.appendStringList(aJCas, anno.getMetaValues(), metaValue));
     }
 
     public static void addMeta(JCas aJCas, ComponentAnnotation anno, String metaName, String metaValue) {
-        UimaConvenience.appendStringList(aJCas, anno.getMetaNames(), metaName);
-        UimaConvenience.appendStringList(aJCas, anno.getMetaValues(), metaValue);
+        anno.setMetaNames(UimaConvenience.appendStringList(aJCas, anno.getMetaNames(), metaName));
+        anno.setMetaNames(UimaConvenience.appendStringList(aJCas, anno.getMetaValues(), metaValue));
     }
 
     public static Map<String, String> readMeta(ComponentTOP anno) {

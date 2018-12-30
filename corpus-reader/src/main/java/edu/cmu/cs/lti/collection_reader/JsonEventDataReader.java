@@ -77,6 +77,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
     class ArgMeta {
         boolean incorporated;
         boolean succeeding;
+        boolean implicit;
     }
 
     class JEntity {
@@ -119,6 +120,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         if (annotationFile.exists()) {
             try {
                 AnnoDoc annoDoc = gson.fromJson(FileUtils.readFileToString(annotationFile), AnnoDoc.class);
+                addAnnotations(aJCas, annoDoc);
                 addAnnotations(goldView, annoDoc);
             } catch (IOException e) {
                 throw new AnalysisEngineProcessException(e);
@@ -149,7 +151,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         anno.setEnd(latestEnd);
     }
 
-
     private void addAnnotations(JCas aJCas, AnnoDoc annoDoc) {
         Map<String, EntityMention> id2Ent = new HashMap<>();
 
@@ -162,8 +163,8 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 ent.setEntityType(jMention.type);
                 annotateSpan(aJCas, ent, jMention.spans);
                 mentions.add(ent);
-
                 id2Ent.put(jMention.id, ent);
+                UimaAnnotationUtils.finishAnnotation(ent, COMPONENT_ID, jMention.id, aJCas);
             }
             entity.setEntityMentions(FSCollectionFactory.createFSArray(aJCas, mentions));
             UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, jEntity.id, aJCas);
@@ -179,20 +180,26 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 UimaAnnotationUtils.finishAnnotation(evm, COMPONENT_ID, jMention.id, aJCas);
                 mentions.add(evm);
 
+                List<EventMentionArgumentLink> argLinks = new ArrayList<>();
+
                 for (JArgument argument : jMention.arguments) {
                     EventMentionArgumentLink argumentLink = new EventMentionArgumentLink(aJCas);
                     argumentLink.setEventMention(evm);
                     argumentLink.setArgument(id2Ent.get(argument.arg));
                     argumentLink.setArgumentRole(argument.role);
 
-
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "incorporated",
                             Boolean.toString(argument.meta.incorporated));
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "succeeding",
                             Boolean.toString(argument.meta.succeeding));
+                    UimaAnnotationUtils.addMeta(aJCas, argumentLink, "implicit",
+                            Boolean.toString(argument.meta.implicit));
 
                     UimaAnnotationUtils.finishTop(argumentLink, COMPONENT_ID, 0, aJCas);
+                    argLinks.add(argumentLink);
                 }
+
+                evm.setArguments(FSCollectionFactory.createFSList(aJCas, argLinks));
             }
             event.setEventMentions(FSCollectionFactory.createFSArray(aJCas, mentions));
             UimaAnnotationUtils.finishTop(event, COMPONENT_ID, jEvent.id, aJCas);
