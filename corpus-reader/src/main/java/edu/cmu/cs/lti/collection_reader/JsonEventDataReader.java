@@ -7,6 +7,7 @@ import edu.cmu.cs.lti.uima.io.reader.PlainTextCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
+import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
@@ -161,6 +162,10 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
             for (JEntityMention jMention : jEntity.mentions) {
                 EntityMention ent = new EntityMention(aJCas);
                 ent.setEntityType(jMention.type);
+
+                // This requires stanford annotation first.
+                ent.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(ent));
+
                 annotateSpan(aJCas, ent, jMention.spans);
                 mentions.add(ent);
                 id2Ent.put(jMention.id, ent);
@@ -176,6 +181,10 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
             for (JEventMention jMention : jEvent.mentions) {
                 EventMention evm = new EventMention(aJCas);
                 evm.setEventType(jMention.type);
+
+                // This requires stanford annotation first.
+                evm.setHeadWord(UimaNlpUtils.findHeadFromStanfordAnnotation(evm));
+
                 annotateSpan(aJCas, evm, jMention.spans);
                 UimaAnnotationUtils.finishAnnotation(evm, COMPONENT_ID, jMention.id, aJCas);
                 mentions.add(evm);
