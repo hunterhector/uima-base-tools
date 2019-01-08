@@ -7,7 +7,6 @@ import edu.cmu.cs.lti.uima.io.reader.PlainTextCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
-import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
@@ -158,13 +157,19 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         for (JEntity jEntity : annoDoc.entities) {
             Entity entity = new Entity(aJCas);
 
+            // TODO: How to merge the coreference clusters here?
+            logger.info("Adding " + jEntity.id);
+
+            // TODO: Ensure the input format is valid: it must contain multiple mentions, and it must have correct spans.
             List<EntityMention> mentions = new ArrayList<>();
             for (JEntityMention jMention : jEntity.mentions) {
                 EntityMention ent = new EntityMention(aJCas);
                 ent.setEntityType(jMention.type);
 
                 // This requires stanford annotation first.
-                ent.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(ent));
+                // TODO: Enable this.
+//                ent.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(ent));
+                ent.setReferingEntity(entity);
 
                 annotateSpan(aJCas, ent, jMention.spans);
                 mentions.add(ent);
@@ -172,6 +177,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 UimaAnnotationUtils.finishAnnotation(ent, COMPONENT_ID, jMention.id, aJCas);
             }
             entity.setEntityMentions(FSCollectionFactory.createFSArray(aJCas, mentions));
+            entity.setRepresentativeMention(mentions.get(0));
             UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, jEntity.id, aJCas);
         }
 
@@ -181,11 +187,16 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
             for (JEventMention jMention : jEvent.mentions) {
                 EventMention evm = new EventMention(aJCas);
                 evm.setEventType(jMention.type);
+                annotateSpan(aJCas, evm, jMention.spans);
 
                 // This requires stanford annotation first.
-                evm.setHeadWord(UimaNlpUtils.findHeadFromStanfordAnnotation(evm));
+                // TODO: Enable this.
+//                evm.setHeadWord(UimaNlpUtils.findHeadFromStanfordAnnotation(evm));
 
-                annotateSpan(aJCas, evm, jMention.spans);
+//                logger.info(evm.getCoveredText());
+//                logger.info(evm.getHeadWord().getCoveredText());
+//                DebugUtils.pause();
+
                 UimaAnnotationUtils.finishAnnotation(evm, COMPONENT_ID, jMention.id, aJCas);
                 mentions.add(evm);
 

@@ -452,6 +452,8 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
         }
 
         StanfordEntityMention representativeMentionUima = null;
+
+        int entityId = 0;
         for (Map.Entry<Integer, CorefChain> entry : graph.entrySet()) {
             CorefChain refChain = entry.getValue();
 
@@ -492,7 +494,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
             if (stanfordEntityMentions.size() > 0) {
                 Entity entity = new Entity(aJCas);
-                UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, 0, aJCas);
+                UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, entityId++, aJCas);
 
                 for (StanfordEntityMention em : stanfordEntityMentions) {
                     em.setReferingEntity(entity);
