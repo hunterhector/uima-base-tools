@@ -7,6 +7,8 @@ import edu.cmu.cs.lti.uima.io.reader.PlainTextCollectionReader;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
+import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
+import edu.cmu.cs.lti.utils.DebugUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
@@ -158,17 +160,15 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
             Entity entity = new Entity(aJCas);
 
             // TODO: How to merge the coreference clusters here?
-            logger.info("Adding " + jEntity.id);
+//            logger.info("Adding " + jEntity.id);
 
-            // TODO: Ensure the input format is valid: it must contain multiple mentions, and it must have correct spans.
             List<EntityMention> mentions = new ArrayList<>();
             for (JEntityMention jMention : jEntity.mentions) {
                 EntityMention ent = new EntityMention(aJCas);
                 ent.setEntityType(jMention.type);
 
                 // This requires stanford annotation first.
-                // TODO: Enable this.
-//                ent.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(ent));
+                ent.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(ent));
                 ent.setReferingEntity(entity);
 
                 annotateSpan(aJCas, ent, jMention.spans);
@@ -179,6 +179,18 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
             entity.setEntityMentions(FSCollectionFactory.createFSArray(aJCas, mentions));
             entity.setRepresentativeMention(mentions.get(0));
             UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, jEntity.id, aJCas);
+
+            if (UimaConvenience.getDocId(aJCas).contains("2411")) {
+                //TODO: figure out why the entity is missing.
+                UimaConvenience.printProcessLog(aJCas, logger);
+
+                logger.info(String.format("Entity contains %d mentions", mentions.size()));
+                for (EntityMention mention : mentions) {
+                    logger.info(String.format("Entity mention is %s, %d : %d", mention.getCoveredText(),
+                            mention.getBegin(), mention.getEnd()));
+                }
+                DebugUtils.pause();
+            }
         }
 
         for (JEvent jEvent : annoDoc.events) {
@@ -190,12 +202,8 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 annotateSpan(aJCas, evm, jMention.spans);
 
                 // This requires stanford annotation first.
-                // TODO: Enable this.
-//                evm.setHeadWord(UimaNlpUtils.findHeadFromStanfordAnnotation(evm));
-
-//                logger.info(evm.getCoveredText());
-//                logger.info(evm.getHeadWord().getCoveredText());
-//                DebugUtils.pause();
+                evm.setHeadWord(UimaNlpUtils.findHeadFromStanfordAnnotation(evm));
+                evm.setReferringEvent(event);
 
                 UimaAnnotationUtils.finishAnnotation(evm, COMPONENT_ID, jMention.id, aJCas);
                 mentions.add(evm);
