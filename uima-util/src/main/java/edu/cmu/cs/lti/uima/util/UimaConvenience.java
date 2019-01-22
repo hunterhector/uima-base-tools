@@ -447,6 +447,48 @@ public class UimaConvenience extends BasicConvenience {
         return FSCollectionFactory.createFSList(aJCas, newList);
     }
 
+    /**
+     * Returns a FSArray with the newItem appended at the end
+     *
+     * @param aJCas
+     * @param oldFSArray
+     * @param newItem
+     * @param clazz
+     * @return
+     */
+    public static <T extends TOP> FSArray appendFSArray(JCas aJCas, FSArray oldFSArray, T newItem,
+                                                        Class<T> clazz) {
+        List<T> newList;
+        if (oldFSArray != null) {
+            newList = new ArrayList<T>(FSCollectionFactory.create(oldFSArray, clazz));
+        } else {
+            newList = new ArrayList<T>();
+        }
+        newList.add(newItem);
+        return FSCollectionFactory.createFSArray(aJCas, newList);
+    }
+
+    /**
+     * Returns a FSArray with the newItem appended at the end
+     *
+     * @param aJCas
+     * @param oldFSArray
+     * @param newItems
+     * @param clazz
+     * @return
+     */
+    public static <T extends TOP> FSArray extendFSArray(JCas aJCas, FSArray oldFSArray, List<T> newItems,
+                                                        Class<T> clazz) {
+        List<T> newList;
+        if (oldFSArray != null) {
+            newList = new ArrayList<T>(FSCollectionFactory.create(oldFSArray, clazz));
+        } else {
+            newList = new ArrayList<T>();
+        }
+        newList.addAll(newItems);
+        return FSCollectionFactory.createFSArray(aJCas, newList);
+    }
+
     public static StringList appendStringList(JCas aJCas, StringList oldStringList, String newItem) {
         List<String> newList;
 

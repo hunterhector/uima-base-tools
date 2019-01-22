@@ -8,8 +8,8 @@ import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
-import edu.cmu.cs.lti.utils.DebugUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
 import org.apache.uima.analysis_engine.AnalysisEngineDescription;
@@ -30,10 +30,7 @@ import org.apache.uima.resource.metadata.TypeSystemDescription;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created with IntelliJ IDEA.
@@ -132,9 +129,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         }
     }
 
-    private void annotateSpan(JCas aJCas, DiscontinuousComponentAnnotation anno, List<Span> spans) {
-        anno.setRegions(new FSArray(aJCas, spans.size()));
-
+    private Pair<Integer, Integer> getBoundary(List<Span> spans) {
         int earliestBegin = Integer.MAX_VALUE;
         int latestEnd = 0;
 
@@ -146,6 +141,20 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
             if (span.end > latestEnd) {
                 latestEnd = span.end;
             }
+        }
+
+        return Pair.of(earliestBegin, latestEnd);
+    }
+
+    private void annotateSpan(JCas aJCas, DiscontinuousComponentAnnotation anno, List<Span> spans) {
+        anno.setRegions(new FSArray(aJCas, spans.size()));
+
+        Pair<Integer, Integer> be = getBoundary(spans);
+        int earliestBegin = be.getLeft();
+        int latestEnd = be.getRight();
+
+        for (int spanIndex = 0; spanIndex < spans.size(); spanIndex++) {
+            Span span = spans.get(spanIndex);
             Annotation region = new Annotation(aJCas, span.begin, span.end);
             anno.setRegions(spanIndex, region);
         }
@@ -153,63 +162,118 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         anno.setEnd(latestEnd);
     }
 
+    private void addToEntityCluster(JCas aJCas, Entity entity, List<EntityMention> newMentions) {
+        for (EntityMention newMention : newMentions) {
+            newMention.setReferingEntity(entity);
+        }
+        entity.setEntityMentions(UimaConvenience.extendFSArray(aJCas, entity.getEntityMentions(), newMentions,
+                EntityMention.class));
+    }
+
+    private void addToEventCluster(JCas aJCas, Event event, List<EventMention> newMentions) {
+        for (EventMention newMention : newMentions) {
+            newMention.setReferringEvent(event);
+        }
+        event.setEventMentions(UimaConvenience.extendFSArray(aJCas, event.getEventMentions(), newMentions,
+                EventMention.class));
+    }
+
+
     private void addAnnotations(JCas aJCas, AnnoDoc annoDoc) {
         Map<String, EntityMention> id2Ent = new HashMap<>();
 
+        // First create an index of the original mentions.
+        Map<Word, EventMention> eventHeadMap = new HashMap<>();
+        Map<Pair, EventMention> eventSpanMap = new HashMap<>();
+        for (EventMention eventMention : JCasUtil.select(aJCas, EventMention.class)) {
+            eventHeadMap.put(eventMention.getHeadWord(), eventMention);
+            eventSpanMap.put(Pair.of(eventMention.getBegin(), eventMention.getEnd()), eventMention);
+        }
+
+        Map<Word, EntityMention> entityHeadMap = new HashMap<>();
+        Map<Pair, EntityMention> entitySpanMap = new HashMap<>();
+        for (EntityMention entityMention : JCasUtil.select(aJCas, EntityMention.class)) {
+            entityHeadMap.put(entityMention.getHead(), entityMention);
+            entitySpanMap.put(Pair.of(entityMention.getBegin(), entityMention.getEnd()), entityMention);
+        }
+
         for (JEntity jEntity : annoDoc.entities) {
-            Entity entity = new Entity(aJCas);
+            Entity entity = null;
 
-            // TODO: How to merge the coreference clusters here?
-//            logger.info("Adding " + jEntity.id);
-
-            List<EntityMention> mentions = new ArrayList<>();
+            List<EntityMention> newMentions = new ArrayList<>();
             for (JEntityMention jMention : jEntity.mentions) {
-                EntityMention ent = new EntityMention(aJCas);
-                ent.setEntityType(jMention.type);
+                Pair<Integer, Integer> boundaries = getBoundary(jMention.spans);
 
-                // This requires stanford annotation first.
-                ent.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(ent));
-                ent.setReferingEntity(entity);
+                EntityMention mention;
+                if (entitySpanMap.containsKey(boundaries)) {
+                    // Found entity in the exact boundary.
+                    mention = entitySpanMap.get(boundaries);
+                    entity = mention.getReferingEntity();
+                } else {
+                    mention = new EntityMention(aJCas);
+                    mention.setEntityType(jMention.type);
+                    annotateSpan(aJCas, mention, jMention.spans);
+                    // This requires stanford annotation first.
+                    StanfordCorenlpToken entityHead = UimaNlpUtils.findHeadFromStanfordAnnotation(mention);
+                    mention.setHead(entityHead);
 
-                annotateSpan(aJCas, ent, jMention.spans);
-                mentions.add(ent);
-                id2Ent.put(jMention.id, ent);
-                UimaAnnotationUtils.finishAnnotation(ent, COMPONENT_ID, jMention.id, aJCas);
-            }
-            entity.setEntityMentions(FSCollectionFactory.createFSArray(aJCas, mentions));
-            entity.setRepresentativeMention(mentions.get(0));
-            UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, jEntity.id, aJCas);
+                    if (entityHeadMap.containsKey(entityHead)) {
+                        // Found entity mention sharing head, consider this mention to be coreferential.
+                        EntityMention existingMention = entityHeadMap.get(entityHead);
+                        entity = existingMention.getReferingEntity();
+                    }
 
-            if (UimaConvenience.getDocId(aJCas).contains("2411")) {
-                //TODO: figure out why the entity is missing.
-                UimaConvenience.printProcessLog(aJCas, logger);
-
-                logger.info(String.format("Entity contains %d mentions", mentions.size()));
-                for (EntityMention mention : mentions) {
-                    logger.info(String.format("Entity mention is %s, %d : %d", mention.getCoveredText(),
-                            mention.getBegin(), mention.getEnd()));
+                    newMentions.add(mention);
+                    UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, jMention.id, aJCas);
                 }
-                DebugUtils.pause();
+                id2Ent.put(jMention.id, mention);
+            }
+
+            if (entity == null) {
+                // No existing entity found for them, create a new one.
+                entity = new Entity(aJCas);
+                entity.setEntityMentions(FSCollectionFactory.createFSArray(aJCas, newMentions));
+                for (EntityMention newMention : newMentions) {
+                    newMention.setReferingEntity(entity);
+                }
+                entity.setRepresentativeMention(newMentions.get(0));
+                UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, jEntity.id, aJCas);
+            } else {
+                // Existing entity found, add the new mentions to it.
+                addToEntityCluster(aJCas, entity, newMentions);
             }
         }
 
         for (JEvent jEvent : annoDoc.events) {
-            Event event = new Event(aJCas);
-            List<EventMention> mentions = new ArrayList<>();
+            Event event = null;
+
+            List<EventMention> newMentions = new ArrayList<>();
             for (JEventMention jMention : jEvent.mentions) {
-                EventMention evm = new EventMention(aJCas);
-                evm.setEventType(jMention.type);
-                annotateSpan(aJCas, evm, jMention.spans);
+                Pair<Integer, Integer> boundaries = getBoundary(jMention.spans);
 
-                // This requires stanford annotation first.
-                evm.setHeadWord(UimaNlpUtils.findHeadFromStanfordAnnotation(evm));
-                evm.setReferringEvent(event);
+                EventMention evm;
+                if (eventSpanMap.containsKey(boundaries)) {
+                    evm = eventSpanMap.get(boundaries);
+                    event = evm.getReferringEvent();
+                } else {
+                    evm = new EventMention(aJCas);
+                    evm.setEventType(jMention.type);
+                    annotateSpan(aJCas, evm, jMention.spans);
+                    // This requires stanford annotation first.
+                    StanfordCorenlpToken eventHead = UimaNlpUtils.findHeadFromStanfordAnnotation(evm);
+                    evm.setHeadWord(eventHead);
 
-                UimaAnnotationUtils.finishAnnotation(evm, COMPONENT_ID, jMention.id, aJCas);
-                mentions.add(evm);
+                    if (eventHeadMap.containsKey(eventHead)) {
+                        EventMention existingMention = eventHeadMap.get(eventHead);
+                        event = existingMention.getReferringEvent();
+                    }
 
+                    newMentions.add(evm);
+                    UimaAnnotationUtils.finishAnnotation(evm, COMPONENT_ID, jMention.id, aJCas);
+                }
+
+                // Add the gold standard arguments to the mention.
                 List<EventMentionArgumentLink> argLinks = new ArrayList<>();
-
                 for (JArgument argument : jMention.arguments) {
                     EventMentionArgumentLink argumentLink = new EventMentionArgumentLink(aJCas);
                     argumentLink.setEventMention(evm);
@@ -226,11 +290,20 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     UimaAnnotationUtils.finishTop(argumentLink, COMPONENT_ID, 0, aJCas);
                     argLinks.add(argumentLink);
                 }
-
                 evm.setArguments(FSCollectionFactory.createFSList(aJCas, argLinks));
             }
-            event.setEventMentions(FSCollectionFactory.createFSArray(aJCas, mentions));
-            UimaAnnotationUtils.finishTop(event, COMPONENT_ID, jEvent.id, aJCas);
+
+            if (event == null) {
+                event = new Event(aJCas);
+                event.setEventMentions(FSCollectionFactory.createFSArray(aJCas, newMentions));
+                for (EventMention newMention : newMentions) {
+                    newMention.setReferringEvent(event);
+                }
+                UimaAnnotationUtils.finishTop(event, COMPONENT_ID, jEvent.id, aJCas);
+            } else {
+                // Existing event found.
+                addToEventCluster(aJCas, event, newMentions);
+            }
         }
     }
 
