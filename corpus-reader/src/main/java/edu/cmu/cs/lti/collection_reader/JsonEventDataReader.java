@@ -24,6 +24,7 @@ import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.cas.FSArray;
+import org.apache.uima.jcas.cas.FSList;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.resource.metadata.TypeSystemDescription;
@@ -109,10 +110,10 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         String docid = UimaConvenience.getArticleName(aJCas);
 
-        JCas goldView = JCasUtil.getView(aJCas, goldStandardViewName, true);
-        if (goldView.getDocumentText() == null) {
-            goldView.setDocumentText(aJCas.getDocumentText());
-        }
+//        JCas goldView = JCasUtil.getView(aJCas, goldStandardViewName, true);
+//        if (goldView.getDocumentText() == null) {
+//            goldView.setDocumentText(aJCas.getDocumentText());
+//        }
 
         File annotationFile = new File(annoDir, docid + ".json");
 
@@ -120,7 +121,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
             try {
                 AnnoDoc annoDoc = gson.fromJson(FileUtils.readFileToString(annotationFile), AnnoDoc.class);
                 addAnnotations(aJCas, annoDoc);
-                addAnnotations(goldView, annoDoc);
+//                addAnnotations(goldView, annoDoc);
             } catch (IOException e) {
                 throw new AnalysisEngineProcessException(e);
             }
@@ -225,19 +226,17 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
 
                     newMentions.add(mention);
                     UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, jMention.id, aJCas);
+
+                    entityHeadMap.put(entityHead, mention);
+                    entitySpanMap.put(Pair.of(mention.getBegin(), mention.getEnd()), mention);
                 }
+
                 id2Ent.put(jMention.id, mention);
             }
 
             if (entity == null) {
                 // No existing entity found for them, create a new one.
-                entity = new Entity(aJCas);
-                entity.setEntityMentions(FSCollectionFactory.createFSArray(aJCas, newMentions));
-                for (EntityMention newMention : newMentions) {
-                    newMention.setReferingEntity(entity);
-                }
-                entity.setRepresentativeMention(newMentions.get(0));
-                UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, jEntity.id, aJCas);
+                createNewEntities(aJCas, newMentions, jEntity.id);
             } else {
                 // Existing entity found, add the new mentions to it.
                 addToEntityCluster(aJCas, entity, newMentions);
@@ -253,6 +252,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
 
                 EventMention evm;
                 if (eventSpanMap.containsKey(boundaries)) {
+                    // This is an seen event.
                     evm = eventSpanMap.get(boundaries);
                     event = evm.getReferringEvent();
                 } else {
@@ -272,13 +272,95 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     UimaAnnotationUtils.finishAnnotation(evm, COMPONENT_ID, jMention.id, aJCas);
                 }
 
+                // Check the frame information from previous parsers.
+                StanfordCorenlpToken eventHead = (StanfordCorenlpToken) evm.getHeadWord();
+                FSList eventHeadArgsFS = eventHead.getChildSemanticRelations();
+
+                evm.setFrameName(eventHead.getFrameName());
+
+                // There may be duplicated arguments with the gold ones.
+                Map<Pair<Integer, Integer>, EventMentionArgumentLink> argumentLinkMap = new HashMap<>();
+
+                if (eventHeadArgsFS != null) {
+                    List<EventMentionArgumentLink> eventArgs = new ArrayList<>();
+                    for (SemanticRelation relation : FSCollectionFactory.create(eventHeadArgsFS,
+                            SemanticRelation.class)) {
+                        EventMentionArgumentLink argumentLink = new EventMentionArgumentLink((aJCas));
+                        SemanticArgument argument = relation.getChild();
+
+                        Pair<Integer, Integer> argumentBoundary = Pair.of(argument.getBegin(), argument.getEnd());
+
+//                        logger.info("Semantic argument " + argument.getCoveredText());
+
+                        EntityMention argumentEntityMention;
+                        if (entitySpanMap.containsKey(argumentBoundary)) {
+                            argumentEntityMention = entitySpanMap.get(argumentBoundary);
+//                            logger.info("Link to entity : " + argumentEntityMention.getReferingEntity()
+//                            .getRepresentativeMention().getCoveredText());
+                        } else {
+                            argumentEntityMention = UimaNlpUtils.createArgMention(aJCas, argument
+                                    .getBegin(), argument.getEnd(), argument.getComponentId());
+                            Word argumentHead = argumentEntityMention.getHead();
+
+                            if (entityHeadMap.containsKey(argumentHead)) {
+                                // Found entity mention sharing head, consider this mention to be coreferential.
+                                EntityMention existingMention = entityHeadMap.get(argumentHead);
+                                Entity entity = existingMention.getReferingEntity();
+                                addToEntityCluster(aJCas, entity, Arrays.asList(argumentEntityMention));
+//                                logger.info("Link to entity : " + existingMention.getReferingEntity()
+//                                .getRepresentativeMention().getCoveredText());
+                            } else {
+                                // This is a new entity without clear cluster, create a singleton entity.
+                                createNewEntities(aJCas, Arrays.asList(argumentEntityMention), "0");
+//                                logger.info("Link to entity : " + argumentEntityMention.getReferingEntity()
+//                                .getRepresentativeMention().getCoveredText());
+                            }
+
+                            entitySpanMap.put(Pair.of(argumentEntityMention.getBegin(),
+                                    argumentEntityMention.getEnd()), argumentEntityMention);
+                            entityHeadMap.put(argumentHead, argumentEntityMention);
+                        }
+
+                        argumentLink.setArgument(argumentEntityMention);
+                        eventArgs.add(argumentLink);
+
+                        if (relation.getPropbankRoleName() != null) {
+                            argumentLink.setPropbankRoleName(relation.getPropbankRoleName());
+                        }
+
+                        if (relation.getFrameElementName() != null) {
+                            argumentLink.setFrameElementName(relation.getFrameElementName());
+                        }
+
+                        argumentLinkMap.put(Pair.of(argument.getBegin(), argument.getEnd()), argumentLink);
+                        UimaAnnotationUtils.finishTop(argumentLink, relation.getComponentId(), 0, aJCas);
+//                        logger.info("Head Argument is " + argument.getCoveredText());
+//                        logger.info("Event Argument is " + argumentEntityMention.getCoveredText());
+                    }
+
+                    evm.setArguments(FSCollectionFactory.createFSList(aJCas, eventArgs));
+                }
+
                 // Add the gold standard arguments to the mention.
+                // TODO: Need to add the system extracted arguments here as well.
                 List<EventMentionArgumentLink> argLinks = new ArrayList<>();
                 for (JArgument argument : jMention.arguments) {
-                    EventMentionArgumentLink argumentLink = new EventMentionArgumentLink(aJCas);
-                    argumentLink.setEventMention(evm);
-                    argumentLink.setArgument(id2Ent.get(argument.arg));
+                    EntityMention argumentEntity = id2Ent.get(argument.arg);
+                    EventMentionArgumentLink argumentLink;
+
+                    if (argumentLinkMap.containsKey(Pair.of(argumentEntity.getBegin(), argumentEntity.getEnd()))) {
+                        argumentLink = argumentLinkMap.get(Pair.of(argumentEntity.getBegin(), argumentEntity.getEnd()));
+                    } else {
+                        argumentLink = new EventMentionArgumentLink(aJCas);
+                        argumentLink.setEventMention(evm);
+                        // All the argument entities are already included in the entity set.
+                        argumentLink.setArgument(argumentEntity);
+                        UimaAnnotationUtils.finishTop(argumentLink, COMPONENT_ID, 0, aJCas);
+                        argLinks.add(argumentLink);
+                    }
+
                     argumentLink.setArgumentRole(argument.role);
+                    argumentLink.setComponentId(COMPONENT_ID); // Mark this as gold standard component.
 
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "incorporated",
                             Boolean.toString(argument.meta.incorporated));
@@ -287,10 +369,12 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "implicit",
                             Boolean.toString(argument.meta.implicit));
 
-                    UimaAnnotationUtils.finishTop(argumentLink, COMPONENT_ID, 0, aJCas);
-                    argLinks.add(argumentLink);
+
+//                    logger.info("Gold Argument is " + argumentLink.getArgument().getCoveredText());
+//                    logger.info("Gold Argument role is " + argumentLink.getArgumentRole());
                 }
-                evm.setArguments(FSCollectionFactory.createFSList(aJCas, argLinks));
+                evm.setArguments(UimaConvenience.extendFSList(aJCas, evm.getArguments(), argLinks,
+                        EventMentionArgumentLink.class));
             }
 
             if (event == null) {
@@ -305,6 +389,18 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 addToEventCluster(aJCas, event, newMentions);
             }
         }
+    }
+
+    private Entity createNewEntities(JCas aJCas, List<EntityMention> newMentions, String entityId) {
+        Entity entity = new Entity(aJCas);
+        entity.setEntityMentions(FSCollectionFactory.createFSArray(aJCas, newMentions));
+        for (EntityMention newMention : newMentions) {
+            newMention.setReferingEntity(entity);
+        }
+        entity.setRepresentativeMention(newMentions.get(0));
+        UimaAnnotationUtils.finishTop(entity, COMPONENT_ID, entityId, aJCas);
+
+        return entity;
     }
 
     public static void main(String[] args) throws UIMAException, IOException {

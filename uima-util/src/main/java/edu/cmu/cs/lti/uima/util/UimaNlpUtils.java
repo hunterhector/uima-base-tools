@@ -144,7 +144,7 @@ public class UimaNlpUtils {
     public static ArgumentMention createArgMention(JCas jcas, int begin, int end, String componentId) {
         ArgumentMention mention = new ArgumentMention(jcas, begin, end);
         UimaAnnotationUtils.finishAnnotation(mention, componentId, 0, jcas);
-        mention.setHead(findHeadFromStanfordAnnotation(mention));
+        mention.setHead(findHeadFromStanfordWithoutPrep(mention));
         return mention;
     }
 
@@ -169,7 +169,6 @@ public class UimaNlpUtils {
             }
         }
     }
-
 
     public static StanfordCorenlpToken findFirstToken(JCas aJCas, int begin, int end) {
         for (StanfordCorenlpToken token : JCasUtil.selectCovered(aJCas, StanfordCorenlpToken.class, begin, end)) {
@@ -222,6 +221,11 @@ public class UimaNlpUtils {
 
     public static CharacterAnnotation findHeadCharacterFromZparAnnotation(Annotation anno) {
         return findHeadFromTree(findLargestContainingTree(anno, ZparTreeAnnotation.class), CharacterAnnotation.class);
+    }
+
+    public static StanfordCorenlpToken findHeadFromStanfordWithoutPrep(Annotation anno) {
+        // TODO: Finish it.
+        return findHeadFromStanfordAnnotation(anno);
     }
 
     public static StanfordCorenlpToken findHeadFromStanfordAnnotation(Annotation anno) {

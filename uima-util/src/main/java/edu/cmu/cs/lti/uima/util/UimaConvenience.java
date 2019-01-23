@@ -447,6 +447,28 @@ public class UimaConvenience extends BasicConvenience {
         return FSCollectionFactory.createFSList(aJCas, newList);
     }
 
+
+    /**
+     * Returns a FSArray with the newItem appended at the end
+     *
+     * @param aJCas
+     * @param oldFSList
+     * @param newItems
+     * @param clazz
+     * @return
+     */
+    public static <T extends TOP> FSList extendFSList(JCas aJCas, FSList oldFSList, List<T> newItems,
+                                                      Class<T> clazz) {
+        List<T> newList;
+        if (oldFSList != null) {
+            newList = new ArrayList<T>(FSCollectionFactory.create(oldFSList, clazz));
+        } else {
+            newList = new ArrayList<T>();
+        }
+        newList.addAll(newItems);
+        return FSCollectionFactory.createFSList(aJCas, newList);
+    }
+
     /**
      * Returns a FSArray with the newItem appended at the end
      *
