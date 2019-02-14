@@ -57,7 +57,7 @@ public class SleepDummy extends AbstractLoggingAnnotator {
         }
 
         // Now just sleep for a random while.
-        int n = rand.nextInt(3000) + 1;
+        int n = rand.nextInt(300) + 1;
         try {
 //            logger.info(String.format("Dummy [%s] will sleep for %d milliseconds on doc [%s]", dummyName, n,
 //                    UimaConvenience.getDocumentName(jCas)));

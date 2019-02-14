@@ -245,10 +245,20 @@ public class BasicPipeline {
         logger.debug("number of task in queue: " + taskQueue.size());
         logger.debug("number of available case: " + availableCASes.size());
 
-
         numInputFiles = docsProcessed.get();
 
-        executor.awaitTermination(30, TimeUnit.MINUTES);
+        try {
+            if (!executor.awaitTermination(5, TimeUnit.MINUTES)) {
+                executor.shutdownNow();
+                if (!executor.awaitTermination(60, TimeUnit.SECONDS))
+                    logger.error("Executor Pool did not terminate.");
+            }
+        } catch (InterruptedException ie) {
+            // (Re-)Cancel if current thread also interrupted
+            executor.shutdownNow();
+            // Preserve interrupt status
+            Thread.currentThread().interrupt();
+        }
 
         if (withStats) {
             if (performanceTrace != null) {
@@ -359,15 +369,17 @@ public class BasicPipeline {
             numProcessedDocs[i] = new AtomicInteger();
         }
 
-        MutableBoolean noNewJobs = new MutableBoolean(false);
+        MutableBoolean noNewDocs = new MutableBoolean(false);
 
         // The consumer manger thread that submit jobs.
         executor.execute(
                 () -> {
                     while (true) {
                         // If there are no new jobs and all current jobs are done, we shut down the executor.
-                        if (noNewJobs.booleanValue()) {
-                            logger.debug(String.format("Jobs submitted : %s.", noNewJobs.booleanValue()));
+                        if (noNewDocs.booleanValue()) {
+                            logger.debug(String.format("Last step processed %d docs, input file size is %d.",
+                                    numProcessedDocs[numProcessedDocs.length - 1].get(), numInputFiles));
+//                            showProgress(numProcessedDocs);
                             boolean jobFinished = numProcessedDocs[numProcessedDocs.length - 1].get() >= numInputFiles;
                             if (jobFinished) {
                                 executor.shutdown();
@@ -387,12 +399,17 @@ public class BasicPipeline {
 
                         // Get the poison item, all elements are read. No more new jobs coming.
                         if (nextTask.isPoison) {
-                            noNewJobs.setValue(true);
+                            noNewDocs.setValue(true);
+                            logger.info("Encounter poison now.");
                             // Remember do not process the poison. This is empty and only shows the end of queue.
                             continue;
                         }
 
                         ProcessElement executionTuple = nextTask;
+
+                        // TODO: If we add the count here, then the job might not get submitted, then we might
+                        //  terminate early.
+                        int count = numProcessedDocs[executionTuple.step.get()].incrementAndGet();
 
                         // The actual workers doing the job.
                         executor.submit(
@@ -404,8 +421,11 @@ public class BasicPipeline {
                                     // Run the next step in the analysis functions.
                                     ProcessTrace t = analysisFunctions.get(step).apply(cas);
 
+//                                    int count = numProcessedDocs[step].incrementAndGet();
+
                                     if (executionTuple.increment()) {
-                                        // If the tuple has not gone through all steps, put it back to the list again.
+                                        // If the tuple has not gone through all steps, put it back to the list
+                                        // again.
                                         taskQueue.offer(executionTuple);
                                     } else {
                                         // Finished cas are reused by putting back to the available pool.
@@ -415,19 +435,19 @@ public class BasicPipeline {
 
                                     // Since we've finished processed this cas at this step, now we count the docs
                                     // processed by the engine.
-                                    int count = numProcessedDocs[step].incrementAndGet();
 
                                     // Showing progress when the last engine (last step) processed 100 documents.
                                     if (step == engines.length - 1) {
+                                        logger.info(String.format("Step %s processed %d files", step, count));
                                         if (count % 100 == 0) {
                                             showProgress(numProcessedDocs);
                                         }
                                     }
-
                                     combineTrace(processTrace, t);
-                                }
-                        );
-
+//                                    logger.info(String.format("Active count %d, complete count %d, core pool size %d",
+//                                            executor.getActiveCount(), executor.getCompletedTaskCount(),
+//                                            executor.getCorePoolSize()));
+                                });
                     }
 
                     StringBuilder sb = new StringBuilder();
@@ -435,7 +455,6 @@ public class BasicPipeline {
                         sb.append("\n to engine ").append(engines[i].getMetaData().getName()).append(":")
                                 .append(numProcessedDocs[i]);
                     }
-
                     logger.info("Submitter thread finished, number jobs submitted:" + sb.toString());
                 }
         );
@@ -478,7 +497,7 @@ public class BasicPipeline {
         // be blocked.
         // The available CAS are placed in another blocking queue (availableCASes), if there is no available CAS, the
         // producer will be blocked.
-        // The producer is done when it reads all the files.
+        // The producer will add a poison element at the end of all documents, indicating no new docs will be read.
         return executor.submit(
                 () -> {
                     AtomicInteger numDocuments = new AtomicInteger();
