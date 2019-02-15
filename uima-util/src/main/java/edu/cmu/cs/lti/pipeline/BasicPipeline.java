@@ -319,16 +319,22 @@ public class BasicPipeline {
         // Now submit multiple jobs.
         ProcessTrace processTrace = new ProcessTrace_impl();
 
-        Object lock = new Object();
+        // Count number of documents submitted to each engine.
+        AtomicInteger[] numSubmittedDocs = new AtomicInteger[engines.length];
+
+        // When the engine does not support multi thread, it will need to obtain its lock.
+        Object[] locks = new Object[engines.length];
+        for (int i = 0; i < engines.length; i++) {
+            locks[i] = new Object();
+        }
 
         List<Function<CAS, ProcessTrace>> analysisFunctions = new ArrayList<>();
 
-//        List<AtomicInteger> processedCounters = new ArrayList<>();
-
-        for (AnalysisEngine engine : engines) {
+        for (int engineId = 0; engineId < engines.length; engineId++) {
+            AnalysisEngine engine = engines[engineId];
             boolean multiThread = (boolean) engine.getConfigParameterValue(AbstractAnnotator.MULTI_THREAD);
 
-//            processedCounters.add(new AtomicInteger());
+            Object lock = locks[engineId];
 
             Function<CAS, ProcessTrace> func = cas -> {
                 try {
@@ -362,28 +368,30 @@ public class BasicPipeline {
             analysisFunctions.add(func);
         }
 
-        // Count number of documents processed by each engine.
-        AtomicInteger[] numProcessedDocs = new AtomicInteger[engines.length];
-
         for (int i = 0; i < engines.length; i++) {
-            numProcessedDocs[i] = new AtomicInteger();
+            numSubmittedDocs[i] = new AtomicInteger();
         }
 
         MutableBoolean noNewDocs = new MutableBoolean(false);
+
+        if (noNewDocs.booleanValue()) {
+            logger.info(String.format("No more new docs available. %d docs submitted to the last step out of %d total.",
+                    numSubmittedDocs[numSubmittedDocs.length - 1].get(), numInputFiles));
+        }
 
         // The consumer manger thread that submit jobs.
         executor.execute(
                 () -> {
                     while (true) {
-                        // If there are no new jobs and all current jobs are done, we shut down the executor.
+                        // If there are no new docs and all current jobs are submitted, we shut down the executor.
                         if (noNewDocs.booleanValue()) {
-                            logger.debug(String.format("Last step processed %d docs, input file size is %d.",
-                                    numProcessedDocs[numProcessedDocs.length - 1].get(), numInputFiles));
-//                            showProgress(numProcessedDocs);
-                            boolean jobFinished = numProcessedDocs[numProcessedDocs.length - 1].get() >= numInputFiles;
+                            boolean jobFinished = numSubmittedDocs[numSubmittedDocs.length - 1].get() >= numInputFiles;
                             if (jobFinished) {
                                 executor.shutdown();
-                                logger.info("Shut down executor, do not take more jobs.");
+
+                                logger.info(String.format("All docs should have been submitted. Total number of jobs " +
+                                        "executed: %d. Shut down executor, do not take more jobs.",
+                                        executor.getTaskCount()));
                                 break;
                             }
                         }
@@ -407,19 +415,15 @@ public class BasicPipeline {
 
                         ProcessElement executionTuple = nextTask;
 
-                        // TODO: If we add the count here, then the job might not get submitted, then we might
-                        //  terminate early.
-                        int count = numProcessedDocs[executionTuple.step.get()].incrementAndGet();
 
-                        // The actual workers doing the job.
+                        // Submit to the corresponding step engines.
                         executor.submit(
                                 () -> {
                                     // Run the next engine using one of the available thread in the executor pool.
                                     CAS cas = executionTuple.cas;
-                                    int step = executionTuple.step.get();
 
                                     // Run the next step in the analysis functions.
-                                    ProcessTrace t = analysisFunctions.get(step).apply(cas);
+                                    ProcessTrace t = analysisFunctions.get(executionTuple.step.get()).apply(cas);
 
 //                                    int count = numProcessedDocs[step].incrementAndGet();
 
@@ -433,27 +437,24 @@ public class BasicPipeline {
                                         availableCASes.add(cas);
                                     }
 
-                                    // Since we've finished processed this cas at this step, now we count the docs
-                                    // processed by the engine.
-
-                                    // Showing progress when the last engine (last step) processed 100 documents.
-                                    if (step == engines.length - 1) {
-                                        logger.info(String.format("Step %s processed %d files", step, count));
-                                        if (count % 100 == 0) {
-                                            showProgress(numProcessedDocs);
-                                        }
-                                    }
                                     combineTrace(processTrace, t);
-//                                    logger.info(String.format("Active count %d, complete count %d, core pool size %d",
-//                                            executor.getActiveCount(), executor.getCompletedTaskCount(),
-//                                            executor.getCorePoolSize()));
                                 });
+
+                        int step = executionTuple.step.get();
+                        int count = numSubmittedDocs[step].incrementAndGet();
+
+                        // Showing progress when the last engine (last step) processed 100 documents.
+                        if (executionTuple.step.get() == engines.length - 1) {
+                            if (count % 100 == 0) {
+                                showProgress(numSubmittedDocs);
+                            }
+                        }
                     }
 
                     StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < numProcessedDocs.length; i++) {
+                    for (int i = 0; i < numSubmittedDocs.length; i++) {
                         sb.append("\n to engine ").append(engines[i].getMetaData().getName()).append(":")
-                                .append(numProcessedDocs[i]);
+                                .append(numSubmittedDocs[i]);
                     }
                     logger.info("Submitter thread finished, number jobs submitted:" + sb.toString());
                 }
