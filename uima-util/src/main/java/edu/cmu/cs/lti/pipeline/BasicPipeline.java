@@ -223,7 +223,7 @@ public class BasicPipeline {
             typeSystem = cas.getTypeSystem();
         }
 
-        logger.info("Created " + availableCASes.size() + " CASes for processing.");
+        logger.info(String.format("Created %d CASes, half for reading, half for buffering.", availableCASes.size()));
 
         // The reader can take type system from any CAS (they are the same.).
         cReader.typeSystemInit(typeSystem);
