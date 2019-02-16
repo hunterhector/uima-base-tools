@@ -5,7 +5,6 @@ import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.io.reader.CustomCollectionReaderFactory;
 import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.io.writer.StepBasedDirGzippedXmiWriter;
-import org.apache.commons.lang.mutable.MutableBoolean;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.uima.UIMAException;
 import org.apache.uima.analysis_engine.AnalysisEngine;
@@ -32,6 +31,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
@@ -51,24 +51,16 @@ import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngine;
  */
 public class BasicPipeline {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
-    private CollectionReaderDescription readerDescription;
-    private CollectionReaderDescription outputReader;
-
-    private CollectionReader cReader;
-
-    private AnalysisEngineDescription[] analysisEngineDescs;
-    private AnalysisEngine[] engines;
-
-    private boolean withStats;
-
     // Must be at least 1.
     private final int numWorkers;
-
     private final BlockingQueue<ProcessElement> rawTaskQueue;
-
     private final boolean robust;
-
+    private CollectionReaderDescription readerDescription;
+    private CollectionReaderDescription outputReader;
+    private CollectionReader cReader;
+    private AnalysisEngineDescription[] analysisEngineDescs;
+    private AnalysisEngine[] engines;
+    private boolean withStats;
     //    private ExecutorService executor;
     private ThreadPoolExecutor manager;
     private ThreadPoolExecutor taskDispatcher;
@@ -76,6 +68,9 @@ public class BasicPipeline {
     private BlockingQueue<CAS> availableCASes;
 
     private int numDocsProduced;
+
+    // Count number of documents submitted to each engine.
+    private    AtomicInteger[] numSubmittedDocs;
 
     public BasicPipeline(CollectionReaderDescription reader, AnalysisEngineDescription... processors) throws
             UIMAException {
@@ -122,24 +117,6 @@ public class BasicPipeline {
         );
     }
 
-    private static AnalysisEngineDescription getWriter(String workingDir, String outputDir, boolean zipOutput)
-            throws ResourceInitializationException {
-        if (outputDir == null || workingDir == null) {
-            return null;
-        }
-
-        if (zipOutput) {
-            return AnalysisEngineFactory.createEngineDescription(
-                    StepBasedDirGzippedXmiWriter.class,
-                    StepBasedDirGzippedXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, workingDir,
-                    StepBasedDirGzippedXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME, outputDir,
-                    AbstractLoggingAnnotator.MULTI_THREAD, true
-            );
-        } else {
-            return CustomAnalysisEngineFactory.createXmiWriter(workingDir, outputDir);
-        }
-    }
-
     public BasicPipeline(CollectionReaderDescription reader, boolean robust, boolean withStats, int numWorkers,
                          AnalysisEngineDescription outputWriter, String workingDir, String outputDir,
                          AnalysisEngineDescription... processors)
@@ -165,13 +142,30 @@ public class BasicPipeline {
         outputReader = CustomCollectionReaderFactory.createRecursiveXmiReader(workingDir, outputDir);
 
         // Number of threads for the workers, one additional for producer, one additional for dispatcher.
-        manager = (ThreadPoolExecutor) Executors.newFixedThreadPool(2);
+        manager = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
         taskDispatcher = (ThreadPoolExecutor) Executors.newFixedThreadPool(numWorkers);
 
-        availableCASes = new ArrayBlockingQueue<>(numWorkers);
+        availableCASes = new ArrayBlockingQueue<>(numWorkers * 2);
         rawTaskQueue = new ArrayBlockingQueue<>(numWorkers);
     }
 
+    private static AnalysisEngineDescription getWriter(String workingDir, String outputDir, boolean zipOutput)
+            throws ResourceInitializationException {
+        if (outputDir == null || workingDir == null) {
+            return null;
+        }
+
+        if (zipOutput) {
+            return AnalysisEngineFactory.createEngineDescription(
+                    StepBasedDirGzippedXmiWriter.class,
+                    StepBasedDirGzippedXmiWriter.PARAM_PARENT_OUTPUT_DIR_PATH, workingDir,
+                    StepBasedDirGzippedXmiWriter.PARAM_BASE_OUTPUT_DIR_NAME, outputDir,
+                    AbstractLoggingAnnotator.MULTI_THREAD, true
+            );
+        } else {
+            return CustomAnalysisEngineFactory.createXmiWriter(workingDir, outputDir);
+        }
+    }
 
     public static BasicPipeline getRobust(CollectionReaderDescription reader, String workingDir,
                                           String outputDir, int numWorkers, AnalysisEngineDescription... processors)
@@ -219,9 +213,11 @@ public class BasicPipeline {
             metaData.add(engine.getMetaData());
         }
 
+        numSubmittedDocs = new AtomicInteger[engines.length];
+
         // Create multiple cas containers.
         TypeSystem typeSystem = null;
-        for (int i = 0; i < numWorkers; i++) {
+        for (int i = 0; i < numWorkers * 2; i++) {
             CAS cas = CasCreationUtils.createCas(metaData);
             availableCASes.offer(CasCreationUtils.createCas(metaData));
             typeSystem = cas.getTypeSystem();
@@ -233,85 +229,32 @@ public class BasicPipeline {
         cReader.typeSystemInit(typeSystem);
     }
 
-    private void shutdownExecutor(ThreadPoolExecutor executor) {
-        try {
-            if (!executor.awaitTermination(5, TimeUnit.MINUTES)) {
-                executor.shutdownNow();
-                if (!executor.awaitTermination(60, TimeUnit.SECONDS))
-                    logger.error("Executor Pool did not terminate.");
-            }
-        } catch (InterruptedException ie) {
-            // (Re-)Cancel if current thread also interrupted
-            executor.shutdownNow();
-            // Preserve interrupt status
-            Thread.currentThread().interrupt();
-        }
-    }
-
     /**
      * Process the next CAS in the reader.
      */
     public void process() throws ExecutionException, InterruptedException {
         Future<Integer> docsProduced = runProducer();
-        ProcessTrace performanceTrace = runCasConsumers(engines);
 
         // Waiting for the last batch of jobs to terminate.
-        logger.info("Waiting for jobs to terminate.");
+        logger.info("Start running on consumers.");
+        ProcessTrace performanceTrace = runCasConsumers(engines);
+
+        manager.shutdown();
+        manager.awaitTermination(10, TimeUnit.MINUTES);
+
+        taskDispatcher.shutdown();
+        taskDispatcher.awaitTermination(10, TimeUnit.MINUTES);
 
         numDocsProduced = docsProduced.get();
+        logger.info(String.format("Number of documents produced: %d.", numDocsProduced));
 
-        logger.info(String.format("Number of documents produced: %d, number of scheduled tasks: %d", numDocsProduced,
-                taskDispatcher.getTaskCount()));
-
-        shutdownExecutor(manager);
-        shutdownExecutor(taskDispatcher);
+        showProgress(numSubmittedDocs);
 
         if (withStats) {
             if (performanceTrace != null) {
                 logger.info("Process complete, the full processing trace is as followed:");
                 logger.info("\n" + performanceTrace.toString());
             }
-        }
-    }
-
-    private class ProcessElement {
-        CAS cas;
-        AtomicInteger step;
-        final int maxStep;
-
-        // The poison flag is to mark the last element in the queue.
-        // We only set up a dummy poison element, it does not contain any thing to process.
-        boolean isPoison;
-
-        /**
-         * Create a poison dummy element, not for processing.
-         */
-        ProcessElement() {
-            isPoison = true;
-            maxStep = -1;
-        }
-
-        /**
-         * A new process element will all have a step number of 0, which means it is not processed before.
-         *
-         * @param cas      The actual content.
-         * @param maxLevel Total number of process needed to get it done.
-         */
-        ProcessElement(CAS cas, int maxLevel) {
-            this.cas = cas;
-            step = new AtomicInteger(0);
-            this.maxStep = maxLevel;
-            isPoison = false;
-        }
-
-        /**
-         * Called when processed, increment the step by 1.
-         *
-         * @return whether the element is processed enough times so that it is done.
-         */
-        boolean increment() {
-            int newStep = step.incrementAndGet();
-            return newStep < maxStep;
         }
     }
 
@@ -324,9 +267,6 @@ public class BasicPipeline {
     private ProcessTrace runCasConsumers(AnalysisEngine[] engines) {
         // Now submit multiple jobs.
         ProcessTrace processTrace = new ProcessTrace_impl();
-
-        // Count number of documents submitted to each engine.
-        AtomicInteger[] numSubmittedDocs = new AtomicInteger[engines.length];
 
         // When the engine does not support multi thread, it will need to obtain its lock.
         Object[] locks = new Object[engines.length];
@@ -380,20 +320,36 @@ public class BasicPipeline {
             numSubmittedDocs[i] = new AtomicInteger();
         }
 
-        MutableBoolean noNewDocs = new MutableBoolean(false);
-
-        if (noNewDocs.booleanValue()) {
-            logger.info(String.format("No more new docs available. %d docs submitted to the last step out of %d total.",
-                    numSubmittedDocs[numSubmittedDocs.length - 1].get(), numDocsProduced));
-        }
+        AtomicBoolean noNewDocs = new AtomicBoolean(false);
 
         final BlockingQueue<ProcessElement> processingQueue = new ArrayBlockingQueue<>(numWorkers);
+        final ConcurrentLinkedQueue<ProcessElement> processingBuffer = new ConcurrentLinkedQueue<>();
+
         AtomicInteger numRunningTasks = new AtomicInteger(0);
 
         // The consumer manger thread that check available jobs.
-        manager.execute(
+        manager.submit(
                 () -> {
                     while (true) {
+                        // The submitter will be responsible to check whether there are available task.
+                        ProcessElement partialJob = processingBuffer.poll();
+                        if (partialJob != null) {
+                            // Check whether there are partial jobs first.
+                            processingQueue.offer(partialJob);
+                        } else if (!noNewDocs.get()) {
+                            try {
+                                ProcessElement rawTask = rawTaskQueue.take();
+                                if (rawTask.isPoison) {
+                                    noNewDocs.set(true);
+                                    logger.info("Encounter poison now.");
+                                } else {
+                                    processingQueue.offer(rawTask);
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
+
                         // If there are no new docs and all current jobs are submitted, we shut down the executor.
 
                         // The tasks can be in on of the following states:
@@ -403,69 +359,43 @@ public class BasicPipeline {
                         // 4. Finished, thus not in the processing queue or raw task queue.
 
                         // To judge whether it is done, we check whether no docs are in the first 3 conditions.
-                        if (noNewDocs.booleanValue()) {
-                            // No raw docs.
-                            if (processingQueue.isEmpty()) {
-                                //  The processing queue is currently empty.
-                                if (numRunningTasks.get() == 0) {
-                                    // No Running tasks.
-                                    manager.shutdown();
-                                    logger.info(String.format("All docs submitted. Total number of jobs " +
-                                                    "executed: %d. Shut down executor, do not take more jobs.",
-                                            manager.getTaskCount()));
-                                    break;
-                                } else {
-                                    logger.debug("Still running tasks");
-                                }
-                            } else {
-                                logger.debug("Still processing queue");
-                            }
-                        } else {
-                            logger.debug("Still new docs");
-                        }
-
-                        // The submitter will be responsible to check whether there are available task.
-//                        ProcessElement nextTask;
-                        try {
-                            if (!noNewDocs.booleanValue()) {
-                                ProcessElement rawTask = rawTaskQueue.take();
-                                if (rawTask.isPoison) {
-                                    noNewDocs.setValue(true);
-                                    logger.info("Encounter poison now.");
-                                } else {
-                                    logger.info("Trying to offer raw to processing queue");
-//                                    if (processingQueue.)
-                                    // Should not always offer.
-                                    processingQueue.offer(rawTask);
-                                }
-                            }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                        if (noNewDocs.get() && processingQueue.isEmpty() && numRunningTasks.get() == 0) {
+                            logger.info(String.format("All docs submitted. Total number of jobs executed: %d.",
+                                    taskDispatcher.getTaskCount()));
+                            // Offer a poison.
+                            processingQueue.offer(new ProcessElement());
                             break;
                         }
+                    }
+                }
+        );
 
-                        // Handle jobs to the correct step engines.
-                        taskDispatcher.submit(
-                                () -> {
-                                    try {
+        // The thread that actually submit jobs.
+        manager.submit(
+                () -> {
+                    while (true) {
+                        try {
+                            ProcessElement nextTask = processingQueue.take();
+                            if (nextTask.isPoison) {
+                                break;
+                            }
+
+                            // Dispatch jobs to the correct step engines.
+                            taskDispatcher.submit(
+                                    () -> {
                                         // Record the current running task number.
                                         numRunningTasks.incrementAndGet();
 
-                                        ProcessElement nextTask = processingQueue.take();
                                         int taskStep = nextTask.step.get();
-
-                                        logger.info(String.format("Number running task %d, running step %d.",
-                                                numRunningTasks.get(), taskStep));
 
                                         // Run the next engine using one of the available thread in the executor pool.
                                         CAS cas = nextTask.cas;
                                         ProcessTrace t = analysisFunctions.get(taskStep).apply(cas);
 
                                         if (nextTask.increment()) {
-                                            // If the tuple has not gone through all steps, put it back to the list
-                                            // again.
-                                            logger.info("Trying to offer step to processing queue");
-                                            processingQueue.offer(nextTask);
+                                            // If the tuple has not gone through all steps, put it to the buffer, the
+                                            // submitter will submit it to the job queue again.
+                                            processingBuffer.offer(nextTask);
                                         } else {
                                             // Finished cas are reused by putting back to the available pool.
                                             cas.reset();
@@ -473,36 +403,19 @@ public class BasicPipeline {
                                         }
 
                                         combineTrace(processTrace, t);
+                                        int submittedCount = numSubmittedDocs[taskStep].incrementAndGet();
                                         numRunningTasks.decrementAndGet();
 
-
-//                                        numSubmittedDocs[taskStep].incrementAndGet();
-//                                        logger.info(String.format("Number running task %d, step %d finished on %d.",
-//                                                numRunningTasks.get(), taskStep, numSubmittedDocs[taskStep].get()));
-                                    } catch (InterruptedException e) {
-                                        logger.info("Get interrupted");
-                                        e.printStackTrace();
-                                    }
-
-                                    logger.info(String.format("Active tasks %d", taskDispatcher.getActiveCount()));
-                                });
-
-//                        // Showing progress when the last engine (last step) processed 100 documents.
-//                        int finishedCount = numSubmittedDocs[engines.length - 1].get();
-//                        if (finishedCount % 10 == 0) {
-//                            showProgress(numSubmittedDocs);
-//                        }
-                        logger.info("End of while.");
+                                        if (taskStep == analysisFunctions.size() - 1) {
+                                            if (submittedCount % 100 == 0) {
+                                                showProgress(numSubmittedDocs);
+                                            }
+                                        }
+                                    });
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                     }
-
-                    logger.info("Exited loop.");
-
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < numSubmittedDocs.length; i++) {
-                        sb.append("\n to engine ").append(engines[i].getMetaData().getName()).append(":")
-                                .append(numSubmittedDocs[i]);
-                    }
-                    logger.info("Submitter thread finished, number jobs submitted:" + sb.toString());
                 }
         );
 
@@ -516,7 +429,7 @@ public class BasicPipeline {
         for (int i = 0; i < processedCounters.length; i++) {
             AtomicInteger counter = processedCounters[i];
             String processName = engines[i].getMetaData().getName();
-            sb.append(String.format("\nAnnotated by %s: %d.", processName, counter.get()));
+            sb.append(String.format("\n - Annotated by %s: %d.", processName, counter.get()));
         }
         logger.info(sb.toString());
     }
@@ -587,6 +500,46 @@ public class BasicPipeline {
             for (AnalysisEngine engine : engines) {
                 engine.destroy();
             }
+        }
+    }
+
+    private class ProcessElement {
+        final int maxStep;
+        CAS cas;
+        AtomicInteger step;
+        // The poison flag is to mark the last element in the queue.
+        // We only set up a dummy poison element, it does not contain any thing to process.
+        boolean isPoison;
+
+        /**
+         * Create a poison dummy element, not for processing.
+         */
+        ProcessElement() {
+            isPoison = true;
+            maxStep = -1;
+        }
+
+        /**
+         * A new process element will all have a step number of 0, which means it is not processed before.
+         *
+         * @param cas      The actual content.
+         * @param maxLevel Total number of process needed to get it done.
+         */
+        ProcessElement(CAS cas, int maxLevel) {
+            this.cas = cas;
+            step = new AtomicInteger(0);
+            this.maxStep = maxLevel;
+            isPoison = false;
+        }
+
+        /**
+         * Called when processed, increment the step by 1.
+         *
+         * @return whether the element is processed enough times so that it is done.
+         */
+        boolean increment() {
+            int newStep = step.incrementAndGet();
+            return newStep < maxStep;
         }
     }
 }
