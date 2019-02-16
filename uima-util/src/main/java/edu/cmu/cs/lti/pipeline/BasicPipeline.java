@@ -332,17 +332,21 @@ public class BasicPipeline {
                 () -> {
                     while (true) {
                         // The submitter will be responsible to check whether there are available task.
+                        logger.debug("Taking a partial job from buffer");
                         ProcessElement partialJob = processingBuffer.poll();
                         if (partialJob != null) {
                             // Check whether there are partial jobs first.
+                            logger.debug("Placing the partial job to queue");
                             processingQueue.offer(partialJob);
                         } else if (!noNewDocs.get()) {
                             try {
                                 ProcessElement rawTask = rawTaskQueue.take();
+                                logger.debug("Taking a raw task from queue.");
                                 if (rawTask.isPoison) {
                                     noNewDocs.set(true);
                                     logger.info("Encounter poison now.");
                                 } else {
+                                    logger.debug("Placing a new job to queue");
                                     processingQueue.offer(rawTask);
                                 }
                             } catch (InterruptedException e) {
@@ -375,6 +379,8 @@ public class BasicPipeline {
                 () -> {
                     while (true) {
                         try {
+                            logger.debug(String.format("Worker waiting for next task."));
+
                             ProcessElement nextTask = processingQueue.take();
                             if (nextTask.isPoison) {
                                 break;
@@ -399,7 +405,9 @@ public class BasicPipeline {
                                         } else {
                                             // Finished cas are reused by putting back to the available pool.
                                             cas.reset();
+                                            logger.debug(String.format("Placing CAS back to queue."));
                                             availableCASes.offer(cas);
+                                            logger.debug(String.format("Available CAS is now %d.", availableCASes.size()));
                                         }
 
                                         combineTrace(processTrace, t);
@@ -464,6 +472,7 @@ public class BasicPipeline {
                     try {
                         while (cReader.hasNext()) {
                             // Get a available container, blocked if non available.
+                            logger.debug(String.format("Number of available cases %d", availableCASes.size()));
                             CAS currentContainer = availableCASes.take();
                             // Fill the container with actual document input.
                             cReader.getNext(currentContainer);
