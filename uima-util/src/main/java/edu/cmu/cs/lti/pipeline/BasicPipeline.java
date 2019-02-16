@@ -334,14 +334,16 @@ public class BasicPipeline {
                         // The submitter will be responsible to check whether there are available task.
                         logger.debug("Taking a partial job from buffer");
                         ProcessElement partialJob = processingBuffer.poll();
+                        logger.debug(String.format("%d jobs remained in buffer.", processingBuffer.size()));
+
                         if (partialJob != null) {
                             // Check whether there are partial jobs first.
                             logger.debug("Placing the partial job to queue");
                             processingQueue.offer(partialJob);
                         } else if (!noNewDocs.get()) {
                             try {
-                                ProcessElement rawTask = rawTaskQueue.take();
                                 logger.debug("Taking a raw task from queue.");
+                                ProcessElement rawTask = rawTaskQueue.take();
                                 if (rawTask.isPoison) {
                                     noNewDocs.set(true);
                                     logger.info("Encounter poison now.");
@@ -379,7 +381,7 @@ public class BasicPipeline {
                 () -> {
                     while (true) {
                         try {
-                            logger.debug(String.format("Worker waiting for next task."));
+                            logger.debug(String.format("Waiting for next task to submit to worker."));
 
                             ProcessElement nextTask = processingQueue.take();
                             if (nextTask.isPoison) {
@@ -401,7 +403,9 @@ public class BasicPipeline {
                                         if (nextTask.increment()) {
                                             // If the tuple has not gone through all steps, put it to the buffer, the
                                             // submitter will submit it to the job queue again.
+                                            logger.debug(String.format("Offer a task to buffer."));
                                             processingBuffer.offer(nextTask);
+                                            logger.debug(String.format("Buffer contains %d jobs.", processingBuffer.size()));
                                         } else {
                                             // Finished cas are reused by putting back to the available pool.
                                             cas.reset();
