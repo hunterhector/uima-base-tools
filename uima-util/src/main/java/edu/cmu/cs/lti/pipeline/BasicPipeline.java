@@ -67,10 +67,8 @@ public class BasicPipeline {
 
     private BlockingQueue<CAS> availableCASes;
 
-    private int numDocsProduced;
-
     // Count number of documents submitted to each engine.
-    private    AtomicInteger[] numSubmittedDocs;
+    private  AtomicInteger[] numSubmittedDocs;
 
     public BasicPipeline(CollectionReaderDescription reader, AnalysisEngineDescription... processors) throws
             UIMAException {
@@ -245,7 +243,7 @@ public class BasicPipeline {
         taskDispatcher.shutdown();
         taskDispatcher.awaitTermination(10, TimeUnit.MINUTES);
 
-        numDocsProduced = docsProduced.get();
+        int numDocsProduced = docsProduced.get();
         logger.info(String.format("Number of documents produced: %d.", numDocsProduced));
 
         showProgress(numSubmittedDocs);
