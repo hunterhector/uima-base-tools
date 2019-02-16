@@ -68,7 +68,9 @@ public class BasicPipeline {
     private BlockingQueue<CAS> availableCASes;
 
     // Count number of documents submitted to each engine.
-    private  AtomicInteger[] numSubmittedDocs;
+    private AtomicInteger[] numSubmittedDocs;
+    private AtomicInteger numRunningTasks;
+
 
     public BasicPipeline(CollectionReaderDescription reader, AnalysisEngineDescription... processors) throws
             UIMAException {
@@ -143,8 +145,10 @@ public class BasicPipeline {
         manager = (ThreadPoolExecutor) Executors.newFixedThreadPool(3);
         taskDispatcher = (ThreadPoolExecutor) Executors.newFixedThreadPool(numWorkers);
 
-        availableCASes = new ArrayBlockingQueue<>(numWorkers * 2);
+        availableCASes = new ArrayBlockingQueue<>(numWorkers);
         rawTaskQueue = new ArrayBlockingQueue<>(numWorkers);
+
+        numRunningTasks = new AtomicInteger(0);
     }
 
     private static AnalysisEngineDescription getWriter(String workingDir, String outputDir, boolean zipOutput)
@@ -221,7 +225,7 @@ public class BasicPipeline {
             typeSystem = cas.getTypeSystem();
         }
 
-        logger.info(String.format("Created %d CASes, half for reading, half for buffering.", availableCASes.size()));
+        logger.info(String.format("Created %d CASes.", availableCASes.size()));
 
         // The reader can take type system from any CAS (they are the same.).
         cReader.typeSystemInit(typeSystem);
@@ -321,24 +325,25 @@ public class BasicPipeline {
         AtomicBoolean noNewDocs = new AtomicBoolean(false);
 
         final BlockingQueue<ProcessElement> processingQueue = new ArrayBlockingQueue<>(numWorkers);
-        final ConcurrentLinkedQueue<ProcessElement> processingBuffer = new ConcurrentLinkedQueue<>();
+//        final ConcurrentLinkedQueue<ProcessElement> processingBuffer = new ConcurrentLinkedQueue<>();
 
-        AtomicInteger numRunningTasks = new AtomicInteger(0);
 
         // The consumer manger thread that check available jobs.
         manager.submit(
                 () -> {
                     while (true) {
                         // The submitter will be responsible to check whether there are available task.
-                        logger.debug("Taking a partial job from buffer");
-                        ProcessElement partialJob = processingBuffer.poll();
-                        logger.debug(String.format("%d jobs remained in buffer.", processingBuffer.size()));
 
-                        if (partialJob != null) {
-                            // Check whether there are partial jobs first.
-                            logger.debug("Placing the partial job to queue");
-                            processingQueue.offer(partialJob);
-                        } else if (!noNewDocs.get()) {
+//                        logger.debug("Taking a partial job from buffer");
+//                        ProcessElement partialJob = processingBuffer.poll();
+//                        logger.debug(String.format("%d jobs remained in buffer.", processingBuffer.size()));
+//
+//                        if (partialJob != null) {
+//                            // Check whether there are partial jobs first.
+//                            logger.debug("Placing the partial job to queue");
+//                            processingQueue.offer(partialJob);
+//                        } else
+                        if (!noNewDocs.get()) {
                             try {
                                 logger.debug("Taking a raw task from queue.");
                                 ProcessElement rawTask = rawTaskQueue.take();
@@ -402,12 +407,18 @@ public class BasicPipeline {
                                             // If the tuple has not gone through all steps, put it to the buffer, the
                                             // submitter will submit it to the job queue again.
                                             logger.debug(String.format("Offer a task to buffer."));
-                                            processingBuffer.offer(nextTask);
-                                            logger.debug(String.format("Buffer contains %d jobs.", processingBuffer.size()));
+                                            // Possible block when the processing queue is full.
+                                            processingQueue.offer(nextTask);
+                                            logger.debug(String.format("Buffer contains %d jobs.", processingQueue.size()));
                                         } else {
                                             // Finished cas are reused by putting back to the available pool.
                                             cas.reset();
                                             logger.debug(String.format("Placing CAS back to queue."));
+                                            // TODO: problem, cas queue will deadlock when the producer use up the case.
+                                            // Then worker may wait here without releasing the thread
+                                            // Manager may wait without a new task
+
+                                            // Possible block when the CAS poll is full.
                                             availableCASes.offer(cas);
                                             logger.debug(String.format("Available CAS is now %d.", availableCASes.size()));
                                         }
@@ -473,14 +484,17 @@ public class BasicPipeline {
                     AtomicInteger numDocuments = new AtomicInteger();
                     try {
                         while (cReader.hasNext()) {
-                            // Get a available container, blocked if non available.
-                            logger.debug(String.format("Number of available cases %d", availableCASes.size()));
-                            CAS currentContainer = availableCASes.take();
-                            // Fill the container with actual document input.
-                            cReader.getNext(currentContainer);
-                            // Put element for processed in the queue. This will block the thread if necessary.
-                            rawTaskQueue.offer(new ProcessElement(currentContainer, engines.length));
-                            numDocuments.incrementAndGet();
+                            // We only read next doc if there are enough worker there.
+                            if (numRunningTasks.get() < numWorkers) {
+                                // Get a available container, blocked if non available.
+                                logger.debug(String.format("Number of available cases %d", availableCASes.size()));
+                                CAS currentContainer = availableCASes.take();
+                                // Fill the container with actual document input.
+                                cReader.getNext(currentContainer);
+                                // Put element for processed in the queue. This will block the thread if necessary.
+                                rawTaskQueue.offer(new ProcessElement(currentContainer, engines.length));
+                                numDocuments.incrementAndGet();
+                            }
                         }
 
                         // Offer a dummy poison element, which does not contain anything, just mark end of queue.
