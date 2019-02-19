@@ -334,15 +334,6 @@ public class BasicPipeline {
                     while (true) {
                         // The submitter will be responsible to check whether there are available task.
 
-//                        logger.debug("Taking a partial job from buffer");
-//                        ProcessElement partialJob = processingBuffer.poll();
-//                        logger.debug(String.format("%d jobs remained in buffer.", processingBuffer.size()));
-//
-//                        if (partialJob != null) {
-//                            // Check whether there are partial jobs first.
-//                            logger.debug("Placing the partial job to queue");
-//                            processingQueue.offer(partialJob);
-//                        } else
                         if (!noNewDocs.get()) {
                             try {
                                 logger.debug("Taking a raw task from queue.");
@@ -406,17 +397,14 @@ public class BasicPipeline {
                                         if (nextTask.increment()) {
                                             // If the tuple has not gone through all steps, put it to the buffer, the
                                             // submitter will submit it to the job queue again.
-                                            logger.debug(String.format("Offer a task to buffer."));
+                                            logger.debug("Offer a task to buffer.");
                                             // Possible block when the processing queue is full.
                                             processingQueue.offer(nextTask);
                                             logger.debug(String.format("Buffer contains %d jobs.", processingQueue.size()));
                                         } else {
                                             // Finished cas are reused by putting back to the available pool.
                                             cas.reset();
-                                            logger.debug(String.format("Placing CAS back to queue."));
-                                            // TODO: problem, cas queue will deadlock when the producer use up the case.
-                                            // Then worker may wait here without releasing the thread
-                                            // Manager may wait without a new task
+                                            logger.debug("Placing CAS back to queue.");
 
                                             // Possible block when the CAS poll is full.
                                             availableCASes.offer(cas);
@@ -479,6 +467,9 @@ public class BasicPipeline {
         // The available CAS are placed in another blocking queue (availableCASes), if there is no available CAS, the
         // producer will be blocked.
         // The producer will add a poison element at the end of all documents, indicating no new docs will be read.
+
+        // When the numRunningTasks reach numWorkers, the producer will stop adding new tasks, since the workers may
+        // need the cas for recycling.
         return manager.submit(
                 () -> {
                     AtomicInteger numDocuments = new AtomicInteger();
