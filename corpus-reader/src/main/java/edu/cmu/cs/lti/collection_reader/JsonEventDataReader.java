@@ -1,5 +1,6 @@
 package edu.cmu.cs.lti.collection_reader;
 
+import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
@@ -290,13 +291,10 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
 
                         Pair<Integer, Integer> argumentBoundary = Pair.of(argument.getBegin(), argument.getEnd());
 
-//                        logger.info("Semantic argument " + argument.getCoveredText());
-
                         EntityMention argumentEntityMention;
                         if (entitySpanMap.containsKey(argumentBoundary)) {
                             argumentEntityMention = entitySpanMap.get(argumentBoundary);
-//                            logger.info("Link to entity : " + argumentEntityMention.getReferingEntity()
-//                            .getRepresentativeMention().getCoveredText());
+
                         } else {
                             argumentEntityMention = UimaNlpUtils.createArgMention(aJCas, argument
                                     .getBegin(), argument.getEnd(), argument.getComponentId());
@@ -307,13 +305,9 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                                 EntityMention existingMention = entityHeadMap.get(argumentHead);
                                 Entity entity = existingMention.getReferingEntity();
                                 addToEntityCluster(aJCas, entity, Arrays.asList(argumentEntityMention));
-//                                logger.info("Link to entity : " + existingMention.getReferingEntity()
-//                                .getRepresentativeMention().getCoveredText());
                             } else {
                                 // This is a new entity without clear cluster, create a singleton entity.
                                 createNewEntities(aJCas, Arrays.asList(argumentEntityMention), "0");
-//                                logger.info("Link to entity : " + argumentEntityMention.getReferingEntity()
-//                                .getRepresentativeMention().getCoveredText());
                             }
 
                             entitySpanMap.put(Pair.of(argumentEntityMention.getBegin(),
@@ -334,8 +328,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
 
                         argumentLinkMap.put(Pair.of(argument.getBegin(), argument.getEnd()), argumentLink);
                         UimaAnnotationUtils.finishTop(argumentLink, relation.getComponentId(), 0, aJCas);
-//                        logger.info("Head Argument is " + argument.getCoveredText());
-//                        logger.info("Event Argument is " + argumentEntityMention.getCoveredText());
                     }
 
                     evm.setArguments(FSCollectionFactory.createFSList(aJCas, eventArgs));
@@ -359,7 +351,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                         argLinks.add(argumentLink);
                     }
 
-                    argumentLink.setArgumentRole(argument.role);
+                    argumentLink.setArgumentRole(simplifyRole(argument.role));
                     argumentLink.setComponentId(COMPONENT_ID); // Mark this as gold standard component.
 
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "incorporated",
@@ -369,9 +361,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "implicit",
                             Boolean.toString(argument.meta.implicit));
 
-
-//                    logger.info("Gold Argument is " + argumentLink.getArgument().getCoveredText());
-//                    logger.info("Gold Argument role is " + argumentLink.getArgumentRole());
                 }
                 evm.setArguments(UimaConvenience.extendFSList(aJCas, evm.getArguments(), argLinks,
                         EventMentionArgumentLink.class));
@@ -389,6 +378,31 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 addToEventCluster(aJCas, event, newMentions);
             }
         }
+    }
+
+    private String simplifyRole(String roleName) {
+        if (roleName.startsWith("arg")) {
+            // We simplifying the PropBank like roles here.
+            String[] role_parts = roleName.split("-");
+
+            String arg_type = role_parts[0];
+
+            if (Character.isDigit(arg_type.charAt(3))) {
+                // Core arg types.
+                return role_parts[0];
+            }
+
+            List<String> simplified_parts = new ArrayList<>();
+            for (String part : role_parts) {
+                if (part.startsWith("h") && part.length() > 1 && Character.isDigit(part.charAt(1))) {
+                    // h0, h1, the hyphenated annotation by NomBank.
+                }else{
+                    simplified_parts.add(part);
+                }
+            }
+            return Joiner.on('-').join(simplified_parts);
+        }
+        return roleName;
     }
 
     private Entity createNewEntities(JCas aJCas, List<EntityMention> newMentions, String entityId) {

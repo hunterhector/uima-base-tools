@@ -295,9 +295,7 @@ public class BasicPipeline {
                     if (multiThread) {
                         return engine.process(cas);
                     } else {
-//                        logger.debug(String.format("Engine %d trying to obtain lock.", finalEngineId));
                         synchronized (lock) {
-//                            logger.debug(String.format("Engine %d successfully obtained lock.", finalEngineId));
                             return engine.process(cas);
                         }
                     }
@@ -325,8 +323,6 @@ public class BasicPipeline {
         AtomicBoolean noNewDocs = new AtomicBoolean(false);
 
         final BlockingQueue<ProcessElement> processingQueue = new ArrayBlockingQueue<>(numWorkers);
-//        final ConcurrentLinkedQueue<ProcessElement> processingBuffer = new ConcurrentLinkedQueue<>();
-
 
         // The consumer manger thread that check available jobs.
         manager.submit(
@@ -343,7 +339,11 @@ public class BasicPipeline {
                                     logger.info("Encounter poison now.");
                                 } else {
                                     logger.debug("Placing a new job to queue");
+                                    logger.debug(String.format("Number of running tasks: %d.", numRunningTasks.get()));
+                                    logger.debug(String.format("Number of active threads: %d.",
+                                            taskDispatcher.getActiveCount()));
                                     processingQueue.offer(rawTask);
+                                    logger.debug(String.format("Queue now contain %d tasks.", processingQueue.size()));
                                 }
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
@@ -362,7 +362,7 @@ public class BasicPipeline {
                         if (noNewDocs.get() && processingQueue.isEmpty() && numRunningTasks.get() == 0) {
                             logger.info(String.format("All docs submitted. Total number of jobs executed: %d.",
                                     taskDispatcher.getTaskCount()));
-                            // Offer a poison.
+                            // Offer a poison task.
                             processingQueue.offer(new ProcessElement());
                             break;
                         }
@@ -375,8 +375,7 @@ public class BasicPipeline {
                 () -> {
                     while (true) {
                         try {
-                            logger.debug(String.format("Waiting for next task to submit to worker."));
-
+                            logger.debug("Waiting for next task to submit to worker.");
                             ProcessElement nextTask = processingQueue.take();
                             if (nextTask.isPoison) {
                                 break;
@@ -397,18 +396,20 @@ public class BasicPipeline {
                                         if (nextTask.increment()) {
                                             // If the tuple has not gone through all steps, put it to the buffer, the
                                             // submitter will submit it to the job queue again.
-                                            logger.debug("Offer a task to buffer.");
+                                            logger.debug(String.format("Offer a task to queue for next step: %d",
+                                                    nextTask.step.get()));
                                             // Possible block when the processing queue is full.
                                             processingQueue.offer(nextTask);
-                                            logger.debug(String.format("Buffer contains %d jobs.", processingQueue.size()));
+                                            logger.debug(String.format("Queue now contains %d jobs.",
+                                                    processingQueue.size()));
                                         } else {
                                             // Finished cas are reused by putting back to the available pool.
                                             cas.reset();
                                             logger.debug("Placing CAS back to queue.");
-
                                             // Possible block when the CAS poll is full.
                                             availableCASes.offer(cas);
-                                            logger.debug(String.format("Available CAS is now %d.", availableCASes.size()));
+                                            logger.debug(String.format("Available CAS is now %d.",
+                                                    availableCASes.size()));
                                         }
 
                                         combineTrace(processTrace, t);
@@ -479,10 +480,11 @@ public class BasicPipeline {
                             if (numRunningTasks.get() < numWorkers) {
                                 // Get a available container, blocked if non available.
                                 logger.debug(String.format("Number of available cases %d", availableCASes.size()));
-                                CAS currentContainer = availableCASes.take();
+                                CAS currentContainer = availableCASes.take(); //potential blocking
                                 // Fill the container with actual document input.
                                 cReader.getNext(currentContainer);
                                 // Put element for processed in the queue. This will block the thread if necessary.
+                                //potential blocking
                                 rawTaskQueue.offer(new ProcessElement(currentContainer, engines.length));
                                 numDocuments.incrementAndGet();
                             }
