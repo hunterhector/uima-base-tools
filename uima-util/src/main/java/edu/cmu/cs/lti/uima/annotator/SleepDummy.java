@@ -57,7 +57,7 @@ public class SleepDummy extends AbstractLoggingAnnotator {
         }
 
         // Now just sleep for a random while.
-        int n = rand.nextInt(100) + 1;
+        int n = rand.nextInt(500) + 1;
         try {
 //            logger.info(String.format("Dummy [%s] will sleep for %d milliseconds on doc [%s]", dummyName, n,
 //                    UimaConvenience.getDocumentName(jCas)));
@@ -91,9 +91,9 @@ public class SleepDummy extends AbstractLoggingAnnotator {
         for (int i = 0; i < numDummies; i++) {
             dummies[i] = AnalysisEngineFactory.createEngineDescription(SleepDummy.class, typeSystemDescription,
                     SleepDummy.PARAM_DUMMY_NAME, String.format("Tester_%d", i),
-                    SleepDummy.MULTI_THREAD, false
+                    SleepDummy.MULTI_THREAD, true
             );
         }
-        new BasicPipeline(reader, outputPath, "test_out", dummies).run();
+        new BasicPipeline(reader, outputPath, "test_out", 8, dummies).run();
     }
 }
