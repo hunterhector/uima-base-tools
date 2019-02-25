@@ -111,11 +111,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
     public void process(JCas aJCas) throws AnalysisEngineProcessException {
         String docid = UimaConvenience.getArticleName(aJCas);
 
-//        JCas goldView = JCasUtil.getView(aJCas, goldStandardViewName, true);
-//        if (goldView.getDocumentText() == null) {
-//            goldView.setDocumentText(aJCas.getDocumentText());
-//        }
-
         File annotationFile = new File(annoDir, docid + ".json");
 
         if (annotationFile.exists()) {
@@ -396,7 +391,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
             for (String part : role_parts) {
                 if (part.startsWith("h") && part.length() > 1 && Character.isDigit(part.charAt(1))) {
                     // h0, h1, the hyphenated annotation by NomBank.
-                }else{
+                } else {
                     simplified_parts.add(part);
                 }
             }
