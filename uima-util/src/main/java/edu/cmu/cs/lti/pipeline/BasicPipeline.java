@@ -71,7 +71,6 @@ public class BasicPipeline {
 
     // Count number of documents submitted to each engine.
     private AtomicInteger[] numSubmittedDocs;
-    private AtomicInteger numPendingTasks;
 
     private ProcessTrace processTrace;
 
@@ -153,8 +152,6 @@ public class BasicPipeline {
         casTokens = new Semaphore(numWorkers);
 
         rawTaskQueue = new ArrayBlockingQueue<>(numWorkers);
-
-        numPendingTasks = new AtomicInteger(0);
 
         processTrace = new ProcessTrace_impl();
     }
@@ -253,6 +250,7 @@ public class BasicPipeline {
         logger.info(String.format("Number of raw task processed: %d.", rawTaskCount.get()));
 
         // Then shutdown the manager itself.
+        logger.info("Shutting down manager");
         shutdownExecutor(manager, 10, TimeUnit.SECONDS);
         logger.info("Manager shut.");
 
@@ -267,9 +265,9 @@ public class BasicPipeline {
     }
 
     /**
-     * This method runs the consumers to process the CASes. It will be blocked until
+     * This method runs the consumers to process the CASes. It will be blocked until all tasks are done.
      *
-     * @param engines
+     * @param engines List of engines to applied on the CASes.
      * @return
      */
     private Future<Integer> runCasConsumers(AnalysisEngine[] engines) {
@@ -323,104 +321,63 @@ public class BasicPipeline {
             numSubmittedDocs[i] = new AtomicInteger();
         }
 
-        AtomicBoolean noNewDocs = new AtomicBoolean(false);
+        AtomicBoolean moreDocs = new AtomicBoolean(true);
 
         final BlockingQueue<ProcessElement> processingQueue = new ArrayBlockingQueue<>(numWorkers);
 
-//        // The consumer manger thread that check available jobs.
-//        Future<Integer> rawTaskSubmitted = manager.submit(
-//                () -> {
-//                    int taskCount = 0;
-//                    while (true) {
-//                        // The submitter will be responsible to check whether there are available task.
-//                        if (!noNewDocs.get()) {
-//                            try {
-//                                logger.debug("Manager taking a raw task from queue.");
-//                                ProcessElement rawTask = rawTaskQueue.take();
-//                                if (rawTask.isPoison) {
-//                                    noNewDocs.set(true);
-//                                    logger.info("Encounter poison now.");
-//                                } else {
-//                                    logger.debug("Placing a raw job to queue");
-//                                    logger.debug(String.format("Number of running tasks: %d.", numPendingTasks.get
-//                                    ()));
-//                                    logger.debug(String.format("Number of active threads: %d.",
-//                                            taskDispatcher.getActiveCount()));
-//                                    processingQueue.offer(rawTask);
-//                                    taskCount += 1;
-//                                    logger.debug(String.format("Queue now contain %d tasks.", processingQueue.size
-//                                    ()));
-//                                }
-//                            } catch (InterruptedException e) {
-//                                e.printStackTrace();
-//                            }
-//                        }
-//
-//                        // If there are no new docs and all current jobs are submitted, we shut down the executor.
-//
-//                        // The tasks can be in on of the following states:
-//                        // 1. Task to be read into the processing queue, in this case, noNewDocs will be false.
-//                        // 2. In the processing queue, the processing queue is not empty.
-//                        // 3. Taken out from queue, but not finished, in this case, numRunningTasks is non zero.
-//                        // 4. When all the above are finished, then no more tasks to do.
-//
-//                        // To judge whether it is done, we check whether no docs are in the first 3 conditions.
-//                        if (noNewDocs.get()) {
-////                            logger.info("All docs read now");
-//                            // Offer a poison task when everything is done to kill the submit thread.
-//                            processingQueue.offer(new ProcessElement());
-//                        }
-//
-//                        if (processingQueue.isEmpty() && numPendingTasks.get() == 0) {
-//                            logger.info("Sending shutdown signals to dispatcher.");
-//                            logger.info("Number of running task : " + numPendingTasks.get());
-//                            // Annotation task could take a while, set a longer timeout here.
-//                            shutdownExecutor(taskDispatcher, 20, TimeUnit.MINUTES);
-//                            logger.info("Dispatcher shut.");
-//                            break;
-//                        }
-//                    }
-//                    return taskCount;
-//                }
-//        );
+        final AtomicInteger numPendingTasks = new AtomicInteger();
 
-        // The submit thread.
-        AtomicBoolean noNewTask = new AtomicBoolean(false);
+        // The consumer manger thread that check available jobs.
         Future<Integer> rawTaskSubmitted = manager.submit(
                 () -> {
                     int taskCount = 0;
-                    AtomicInteger pendingTask = new AtomicInteger();
-                    while (!(noNewTask.get() && processingQueue.isEmpty() && pendingTask.get() == 0)) {
-                        try {
-                            logger.debug("Manager taking a raw task from queue.");
-                            ProcessElement rawTask = rawTaskQueue.take();
-                            logger.debug("Placing a raw job to queue");
-                            logger.debug(String.format("Number of running tasks: %d.", numPendingTasks.get()));
-                            logger.debug(String.format("Number of active threads: %d.",
-                                    taskDispatcher.getActiveCount()));
-                            processingQueue.offer(rawTask);
-                            taskCount += 1;
-                            pendingTask.incrementAndGet();
-                            logger.debug(String.format("Queue now contain %d tasks.", processingQueue.size()));
-//                                }
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
+                    while (true) {
+                        // The submitter will be responsible to check whether there are available task.
+                        if (moreDocs.get()) {
+                            try {
+                                logger.debug("Manager taking a raw task from queue.");
+                                ProcessElement rawTask = rawTaskQueue.take();
+                                if (rawTask.isPoison) {
+                                    moreDocs.set(false);
+                                    logger.info("Encounter poison now.");
+                                } else {
+                                    logger.debug("Placing a raw job to queue");
+                                    logger.debug(String.format("Number of active threads: %d.",
+                                            taskDispatcher.getActiveCount()));
+                                    processingQueue.offer(rawTask);
+                                    numPendingTasks.incrementAndGet();
+                                    logger.debug(String.format("Increment pending to: %d.", numPendingTasks.get()));
+                                    taskCount += 1;
+                                    logger.debug(String.format("Queue now contain %d tasks.", processingQueue.size()));
+                                }
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
 
+                        if (numPendingTasks.get() == 0) {
+                            logger.info("All pending tasks finished, sending shutdown signals to dispatcher.");
+                            // Annotation task could take a while, set a longer timeout here.
+                            shutdownExecutor(taskDispatcher, 20, TimeUnit.MINUTES);
+                            logger.info("Dispatcher shut.");
+                            break;
+                        }
+                    }
+                    return taskCount;
+                }
+        );
 
+        // The submit thread.
+        manager.submit(
+                () -> {
+                    int taskCount = 0;
+
+                    while (moreDocs.get() || numPendingTasks.get() > 0) {
                         try {
-                            ProcessElement nextTask = processingQueue.take();
-                            logger.debug("Number of pending task is " + numPendingTasks.get());
-
-                            // End this thread if we see a poison.
-                            if (nextTask.isPoison) {
-                                logger.debug("Not providing the poison");
-                                // The poison task is considered finished.
-                                pendingTask.decrementAndGet();
-                                noNewTask.set(true);
+                            if (processingQueue.isEmpty()){
                                 continue;
                             }
-
+                            ProcessElement nextTask = processingQueue.take();
                             // Dispatch jobs to the correct step engines.
                             taskDispatcher.submit(
                                     () -> {
@@ -440,7 +397,7 @@ public class BasicPipeline {
                                             logger.debug(String.format("Queue now contains %d jobs.",
                                                     processingQueue.size()));
                                         } else {
-                                            // Finished cas are reused by putting back to the available pool.
+                                            // Finished CASes are reused by putting back to the available pool.
                                             cas.reset();
                                             logger.debug("Placing CAS back to queue.");
                                             availableCASes.offer(cas);
@@ -448,7 +405,8 @@ public class BasicPipeline {
                                             logger.debug(String.format("Available CAS is now %d.",
                                                     availableCASes.size()));
                                             // The task go through the whole life cycle and finished.
-                                            pendingTask.decrementAndGet();
+                                            numPendingTasks.decrementAndGet();
+                                            logger.debug("Decrement pending documents to: " + numPendingTasks.get());
                                         }
                                         combineTrace(processTrace, t);
                                         int submittedCount = numSubmittedDocs[taskStep].incrementAndGet();
@@ -463,6 +421,8 @@ public class BasicPipeline {
                             e.printStackTrace();
                         }
                     }
+
+                    logger.debug("Submitter thread done.");
                     return taskCount;
                 }
         );
@@ -511,7 +471,8 @@ public class BasicPipeline {
         // need the cas for recycling.
         return manager.submit(
                 () -> {
-                    AtomicInteger numDocuments = new AtomicInteger();
+//                    AtomicInteger numDocuments = new AtomicInteger();
+                    int numDocuments = 0;
                     try {
                         while (cReader.hasNext()) {
                             // Acquire the semaphore for accessing the cas queue.
@@ -526,7 +487,7 @@ public class BasicPipeline {
                             cReader.getNext(currentContainer);
                             // Put element for processed in the queue. This will block the thread if necessary.
                             rawTaskQueue.offer(new ProcessElement(currentContainer, engines.length));
-                            numDocuments.incrementAndGet();
+                            numDocuments++;
                         }
 
                         // Offer a dummy poison element, which does not contain anything, just mark end of queue.
@@ -536,7 +497,8 @@ public class BasicPipeline {
                         e.printStackTrace();
                         System.exit(1);
                     }
-                    return numDocuments.get();
+                    logger.debug("Producer thread done.");
+                    return numDocuments;
                 }
         );
     }
