@@ -1035,6 +1035,12 @@
                     <rangeTypeName>uima.cas.String</rangeTypeName>
                 </featureDescription>
                 <featureDescription>
+                    <name>dependency</name>
+                    <description>The direct dependency between the head and the argument if known.
+                    </description>
+                    <rangeTypeName>uima.cas.String</rangeTypeName>
+                </featureDescription>
+                <featureDescription>
                     <name>confidence</name>
                     <description/>
                     <rangeTypeName>uima.cas.Double</rangeTypeName>

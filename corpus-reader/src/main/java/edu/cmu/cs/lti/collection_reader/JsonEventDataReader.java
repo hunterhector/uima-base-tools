@@ -346,7 +346,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                         argLinks.add(argumentLink);
                     }
 
-                    argumentLink.setArgumentRole(simplifyRole(argument.role));
+                    argumentLink.setPropbankRoleName(simplifyRole(argument.role));
                     argumentLink.setComponentId(COMPONENT_ID); // Mark this as gold standard component.
 
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "incorporated",
