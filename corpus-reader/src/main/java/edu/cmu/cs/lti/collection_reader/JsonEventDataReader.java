@@ -329,7 +329,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 }
 
                 // Add the gold standard arguments to the mention.
-                // TODO: Need to add the system extracted arguments here as well.
                 List<EventMentionArgumentLink> argLinks = new ArrayList<>();
                 for (JArgument argument : jMention.arguments) {
                     EntityMention argumentEntity = id2Ent.get(argument.arg);
@@ -346,6 +345,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                         argLinks.add(argumentLink);
                     }
 
+                    // TODO: Some arguments propbank role are not set, need to check.
                     argumentLink.setPropbankRoleName(simplifyRole(argument.role));
                     argumentLink.setComponentId(COMPONENT_ID); // Mark this as gold standard component.
 
@@ -376,8 +376,8 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
     }
 
     private String simplifyRole(String roleName) {
+        // We simplify the PropBank like roles here.
         if (roleName.startsWith("arg")) {
-            // We simplifying the PropBank like roles here.
             String[] role_parts = roleName.split("-");
 
             String arg_type = role_parts[0];
