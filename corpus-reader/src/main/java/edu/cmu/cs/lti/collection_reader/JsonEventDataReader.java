@@ -345,7 +345,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                         argLinks.add(argumentLink);
                     }
 
-                    // TODO: Some arguments propbank role are not set, need to check.
                     argumentLink.setPropbankRoleName(simplifyRole(argument.role));
                     argumentLink.setComponentId(COMPONENT_ID); // Mark this as gold standard component.
 
