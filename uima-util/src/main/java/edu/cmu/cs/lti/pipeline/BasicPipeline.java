@@ -221,10 +221,9 @@ public class BasicPipeline {
         }
 
         numSubmittedDocs = new AtomicInteger[engines.length];
-
         // Create multiple cas containers.
         TypeSystem typeSystem = null;
-        for (int i = 0; i < numWorkers * 2; i++) {
+        for (int i = 0; i < numWorkers; i++) {
             CAS cas = CasCreationUtils.createCas(metaData);
             availableCASes.offer(CasCreationUtils.createCas(metaData));
             typeSystem = cas.getTypeSystem();
@@ -335,7 +334,7 @@ public class BasicPipeline {
                         // The submitter will be responsible to check whether there are available task.
                         if (moreDocs.get()) {
                             try {
-                                logger.debug("Manager taking a raw task from queue.");
+                                logger.debug("Manager taking a raw task from queue out of " + rawTaskQueue.size());
                                 ProcessElement rawTask = rawTaskQueue.take();
                                 if (rawTask.isPoison) {
                                     moreDocs.set(false);
@@ -344,7 +343,7 @@ public class BasicPipeline {
                                     logger.debug("Placing a raw job to queue");
                                     logger.debug(String.format("Number of active threads: %d.",
                                             taskDispatcher.getActiveCount()));
-                                    processingQueue.offer(rawTask);
+                                    processingQueue.put(rawTask);
                                     numPendingTasks.incrementAndGet();
                                     logger.debug(String.format("Increment pending to: %d.", numPendingTasks.get()));
                                     taskCount += 1;
@@ -381,40 +380,44 @@ public class BasicPipeline {
                             // Dispatch jobs to the correct step engines.
                             taskDispatcher.submit(
                                     () -> {
-                                        int taskStep = nextTask.step.get();
+                                        try {
+                                            int taskStep = nextTask.step.get();
 
-                                        // Run the next engine using one ofq the available thread in the executor pool.
-                                        CAS cas = nextTask.cas;
-                                        ProcessTrace t = analysisFunctions.get(taskStep).apply(cas);
+                                            // Run the next engine using one ofq the available thread in the executor pool.
+                                            CAS cas = nextTask.cas;
+                                            ProcessTrace t = analysisFunctions.get(taskStep).apply(cas);
 
-                                        if (nextTask.increment()) {
-                                            // If the tuple has not gone through all steps, put it to the buffer, the
-                                            // submitter will submit it to the job queue again.
-                                            logger.debug(String.format("Offer a task to queue for step [%d].",
-                                                    nextTask.step.get()));
-                                            // Possible block when the processing queue is full.
-                                            processingQueue.offer(nextTask);
-                                            logger.debug(String.format("Queue now contains %d jobs.",
-                                                    processingQueue.size()));
-                                        } else {
-                                            // Finished CASes are reused by putting back to the available pool.
-                                            cas.reset();
-                                            logger.debug("Placing CAS back to queue.");
-                                            availableCASes.offer(cas);
-                                            casTokens.release();
-                                            logger.debug(String.format("Available CAS is now %d.",
-                                                    availableCASes.size()));
-                                            // The task go through the whole life cycle and finished.
-                                            numPendingTasks.decrementAndGet();
-                                            logger.debug("Decrement pending documents to: " + numPendingTasks.get());
-                                        }
-                                        combineTrace(processTrace, t);
-                                        int submittedCount = numSubmittedDocs[taskStep].incrementAndGet();
-
-                                        if (taskStep == analysisFunctions.size() - 1) {
-                                            if (submittedCount % 100 == 0) {
-                                                showProgress(numSubmittedDocs);
+                                            if (nextTask.increment()) {
+                                                // If the tuple has not gone through all steps, put it to the buffer, the
+                                                // submitter will submit it to the job queue again.
+                                                logger.debug(String.format("Put a task to queue for step [%d].",
+                                                        nextTask.step.get()));
+                                                // Possible block when the processing queue is full.
+                                                processingQueue.put(nextTask);
+                                                logger.debug(String.format("Queue now contains %d jobs.",
+                                                        processingQueue.size()));
+                                            } else {
+                                                // Finished CASes are reused by putting back to the available pool.
+                                                cas.reset();
+                                                logger.debug("Placing CAS back to queue.");
+                                                availableCASes.put(cas);
+                                                casTokens.release();
+                                                logger.debug(String.format("Available CAS is now %d.",
+                                                        availableCASes.size()));
+                                                // The task go through the whole life cycle and finished.
+                                                numPendingTasks.decrementAndGet();
+                                                logger.debug("Decrement pending documents to: " + numPendingTasks.get());
                                             }
+                                            combineTrace(processTrace, t);
+                                            int submittedCount = numSubmittedDocs[taskStep].incrementAndGet();
+
+                                            if (taskStep == analysisFunctions.size() - 1) {
+                                                if (submittedCount % 100 == 0) {
+                                                    showProgress(numSubmittedDocs);
+                                                }
+                                            }
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
                                         }
                                     });
                         } catch (InterruptedException e) {
@@ -486,12 +489,12 @@ public class BasicPipeline {
                             // Fill the container with actual document input.
                             cReader.getNext(currentContainer);
                             // Put element for processed in the queue. This will block the thread if necessary.
-                            rawTaskQueue.offer(new ProcessElement(currentContainer, engines.length));
+                            rawTaskQueue.put(new ProcessElement(currentContainer, engines.length));
                             numDocuments++;
                         }
 
-                        // Offer a dummy poison element, which does not contain anything, just mark end of queue.
-                        rawTaskQueue.offer(new ProcessElement());
+                        // Put a dummy poison element, which does not contain anything, just mark end of queue.
+                        rawTaskQueue.put(new ProcessElement());
                     } catch (IOException | CollectionException e) {
                         // Errors in thread should terminate the program.
                         e.printStackTrace();
