@@ -4,23 +4,14 @@ import com.google.common.base.Joiner;
 import com.google.gson.Gson;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
-import edu.cmu.cs.lti.uima.io.reader.PlainTextCollectionReader;
-import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
-import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
-import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
-import org.apache.uima.fit.factory.AnalysisEngineFactory;
-import org.apache.uima.fit.factory.CollectionReaderFactory;
-import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
-import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.fit.util.FSCollectionFactory;
 import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
@@ -28,7 +19,6 @@ import org.apache.uima.jcas.cas.FSArray;
 import org.apache.uima.jcas.cas.FSList;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.apache.uima.resource.ResourceInitializationException;
-import org.apache.uima.resource.metadata.TypeSystemDescription;
 
 import java.io.File;
 import java.io.IOException;
@@ -411,27 +401,29 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         return entity;
     }
 
-    public static void main(String[] args) throws UIMAException, IOException {
-        String sourceTextDir = args[0];
-        String annotateDir = args[1];
-        String outputDir = args[2];
-
-        TypeSystemDescription des = TypeSystemDescriptionFactory.createTypeSystemDescription("TypeSystem");
-
-        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
-                PlainTextCollectionReader.class,
-                PlainTextCollectionReader.PARAM_INPUTDIR, sourceTextDir,
-                PlainTextCollectionReader.PARAM_TEXT_SUFFIX, ".txt");
-
-        AnalysisEngineDescription engine = AnalysisEngineFactory.createEngineDescription(
-                JsonEventDataReader.class, des,
-                JsonEventDataReader.PARAM_JSON_ANNO_DIR, annotateDir
-        );
-
-        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
-                outputDir, "gold", null, null
-        );
-
-        SimplePipeline.runPipeline(reader, engine, writer);
-    }
+//    public static void main(String[] args) throws UIMAException, IOException {
+//        String sourceTextDir = args[0];
+//        String annotateDir = args[1];
+//        String outputDir = args[2];
+//
+//        TypeSystemDescription des = TypeSystemDescriptionFactory.createTypeSystemDescription("TypeSystem");
+//
+//        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+//                PlainTextCollectionReader.class,
+//                PlainTextCollectionReader.PARAM_INPUTDIR, sourceTextDir,
+//                PlainTextCollectionReader.PARAM_TEXT_SUFFIX, ".txt");
+//
+//
+//
+//        AnalysisEngineDescription engine = AnalysisEngineFactory.createEngineDescription(
+//                JsonEventDataReader.class, des,
+//                JsonEventDataReader.PARAM_JSON_ANNO_DIR, annotateDir
+//        );
+//
+//        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
+//                outputDir, "gold", null, null
+//        );
+//
+//        SimplePipeline.runPipeline(reader, engine, writer);
+//    }
 }
