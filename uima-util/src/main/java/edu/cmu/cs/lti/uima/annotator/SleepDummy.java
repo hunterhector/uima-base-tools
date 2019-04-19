@@ -94,6 +94,6 @@ public class SleepDummy extends AbstractLoggingAnnotator {
                     SleepDummy.MULTI_THREAD, true
             );
         }
-        new BasicPipeline(reader, outputPath, "test_out", 8, dummies).run();
+        new BasicPipeline(reader, outputPath, "test_out", 1, dummies).run();
     }
 }
