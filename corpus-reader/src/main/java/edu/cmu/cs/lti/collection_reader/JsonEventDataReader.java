@@ -279,7 +279,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                         EntityMention argumentEntityMention;
                         if (entitySpanMap.containsKey(argumentBoundary)) {
                             argumentEntityMention = entitySpanMap.get(argumentBoundary);
-
                         } else {
                             argumentEntityMention = UimaNlpUtils.createArgMention(aJCas, argument
                                     .getBegin(), argument.getEnd(), argument.getComponentId());
@@ -323,6 +322,13 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 for (JArgument argument : jMention.arguments) {
                     EntityMention argumentEntity = id2Ent.get(argument.arg);
                     EventMentionArgumentLink argumentLink;
+
+                    Word argHead = argumentEntity.getHead();
+
+                    if (argHead.getPos().equals("TO") || argHead.getPos().equals("IN")) {
+                        UimaNlpUtils.findPrepTarget(eventHead, argHead);
+                    }
+
 
                     if (argumentLinkMap.containsKey(Pair.of(argumentEntity.getBegin(), argumentEntity.getEnd()))) {
                         argumentLink = argumentLinkMap.get(Pair.of(argumentEntity.getBegin(), argumentEntity.getEnd()));

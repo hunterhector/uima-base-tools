@@ -20,6 +20,11 @@ import java.util.*;
 public class UimaNlpUtils {
     private static final Logger logger = LoggerFactory.getLogger(UimaNlpUtils.class);
 
+
+    public static Word findPrepTarget(Word headWord, Word prepWord) {
+        return prepWord;
+    }
+
     public static String getLemmatizedAnnotation(Annotation a) {
         StringBuilder builder = new StringBuilder();
         String spliter = "";
@@ -39,22 +44,6 @@ public class UimaNlpUtils {
             return headword.getLemma().toLowerCase();
         }
     }
-
-//    public static String getDirectDependency(Word head, Word tail) {
-//
-//
-//    }
-
-//    public static List<String> getDependencyPath(Word head, Word tail) {
-//
-//        String depPath = "";
-//        return depPath;
-//    }
-//
-//    public static List<String> buildDependencyRecursively(Word head, Word tail, List<String> currentPath) {
-//
-//
-//    }
 
     public static Map<String, Word> getDepChildByDep(Word head) {
         Map<String, Word> childByDep = new HashMap<>();
