@@ -326,9 +326,14 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     Word argHead = argumentEntity.getHead();
 
                     if (argHead.getPos().equals("TO") || argHead.getPos().equals("IN")) {
-                        UimaNlpUtils.findPrepTarget(eventHead, argHead);
+//                        if (argHead != actualHead) {
+//                            logger.info("Origin head is " + argHead.getCoveredText());
+//                            logger.info("Actual head is " + actualHead.getCoveredText());
+//                            logger.info("Argument entity to annotate is " + argumentEntity.getCoveredText());
+//                            DebugUtils.pause();
+//                        }
+                        argumentEntity.setHead(UimaNlpUtils.findPrepTarget(eventHead, argHead));
                     }
-
 
                     if (argumentLinkMap.containsKey(Pair.of(argumentEntity.getBegin(), argumentEntity.getEnd()))) {
                         argumentLink = argumentLinkMap.get(Pair.of(argumentEntity.getBegin(), argumentEntity.getEnd()));
@@ -418,7 +423,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
 //                PlainTextCollectionReader.class,
 //                PlainTextCollectionReader.PARAM_INPUTDIR, sourceTextDir,
 //                PlainTextCollectionReader.PARAM_TEXT_SUFFIX, ".txt");
-//
 //
 //
 //        AnalysisEngineDescription engine = AnalysisEngineFactory.createEngineDescription(
