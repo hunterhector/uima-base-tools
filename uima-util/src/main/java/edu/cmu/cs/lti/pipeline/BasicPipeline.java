@@ -83,7 +83,7 @@ public class BasicPipeline {
     }
 
     public BasicPipeline(CollectionReaderDescription reader, int numWorkers, AnalysisEngineDescription... processors)
-            throws UIMAException, CpeDescriptorException, SAXException, IOException {
+            throws UIMAException {
         this(reader, false, true, numWorkers, null, null, processors);
     }
 
@@ -373,7 +373,7 @@ public class BasicPipeline {
 
                     while (moreDocs.get() || numPendingTasks.get() > 0) {
                         try {
-                            if (processingQueue.isEmpty()){
+                            if (processingQueue.isEmpty()) {
                                 continue;
                             }
                             ProcessElement nextTask = processingQueue.take();

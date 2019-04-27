@@ -27,7 +27,8 @@ public class SemaforFullPipeline {
 
     ParserImpl malt;
 
-    public SemaforFullPipeline(File modelDir) throws IOException, URISyntaxException, ClassNotFoundException, MaltChainedException {
+    public SemaforFullPipeline(File modelDir) throws IOException, URISyntaxException, ClassNotFoundException,
+            MaltChainedException {
         semafor = Semafor.getSemaforInstance(modelDir.getCanonicalPath());
         malt = new MaltWrapper(modelDir);
     }
@@ -36,11 +37,8 @@ public class SemaforFullPipeline {
     public SemaforParseResult parse(List<String> wordSurfaces, List<String> lemmas, List<String> pos) throws ParsingException, IOException {
         List<Token> tokens = new ArrayList<Token>();
         for (int i = 0; i < wordSurfaces.size(); i++) {
-//            Token parsedToken = TokenBuilder.aToken(tokens.get(i)).withId(i+1).withForm(wordSurfaces.get(i)).withLemma(lemmas.get(i))
-//                    .withPostag(pos.get(i)).build();
-            tokens.add(TokenBuilder.aToken(tokens.get(i)).withId(i + 1).withForm(wordSurfaces.get(i)).withLemma(lemmas.get(i))
+            tokens.add(TokenBuilder.aToken().withId(i + 1).withForm(wordSurfaces.get(i)).withLemma(lemmas.get(i))
                     .withPostag(pos.get(i)).build());
-//            tokens.add(new Token(i + 1, wordSurfaces.get(i), lemmas.get(i), null, pos.get(i), null, null, null, null, null));
         }
         return parse(tokens);
     }
@@ -53,48 +51,53 @@ public class SemaforFullPipeline {
         Sentence parsedSentence;
         // Malt parser is not thread safe.
         synchronized (this) {
-             parsedSentence = malt.parse(sentence);
+            parsedSentence = malt.parse(sentence);
         }
         return semafor.parseSentence(parsedSentence);
     }
 
-    public static void main(String args[]) throws URISyntaxException, ClassNotFoundException, MaltChainedException, IOException, ParsingException {
+    public static void main(String args[]) throws URISyntaxException, ClassNotFoundException, MaltChainedException,
+            IOException, ParsingException {
         List<String> words = new ArrayList<String>() {
             {
-                add("He");
-                add("is");
-                add("a");
-                add("professor");
+                add("The");
+                add("storm");
+                add("ripped");
+                add("off");
+                add("the");
+                add("bathroom");
+                add("'s");
+                add("roof");
             }
         };
 
+
         List<String> lemmas = new ArrayList<String>() {
             {
-                add("He");
-                add("is");
-                add("a");
-                add("professor");
+                add("The");
+                add("storm");
+                add("rip");
+                add("off");
+                add("the");
+                add("bathroom");
+                add("'s");
+                add("roof");
             }
         };
 
 
         List<String> pos = new ArrayList<String>() {
             {
-                add("PRP");
-                add("VBZ");
                 add("DT");
+                add("NN");
+                add("VBD");
+                add("RP");
+                add("DT");
+                add("NN");
+                add("POS");
                 add("NN");
             }
         };
-
-//        List<String> cpos = new ArrayList<String>() {
-//            {
-//                add("PRP");
-//                add("VBZ");
-//                add("DT");
-//                add("NN");
-//            }
-//        };
 
         SemaforFullPipeline pipeline = new SemaforFullPipeline(new File("../models/semafor_malt_model_20121129"));
 

@@ -20,6 +20,23 @@ import java.util.*;
 public class UimaNlpUtils {
     private static final Logger logger = LoggerFactory.getLogger(UimaNlpUtils.class);
 
+    public static Word findPrepTarget(Word predHead, Word prepWord) {
+        for (Map.Entry<String, Word> depWord : getDepChildByDep(predHead).entrySet()) {
+            String depType = depWord.getKey();
+            Word predChild = depWord.getValue();
+
+            String[] indirectDepParts = depType.split(":");
+            if (indirectDepParts.length > 1) {
+                if (indirectDepParts[indirectDepParts.length - 1].equals(prepWord.getLemma().toLowerCase())) {
+                    if (getDependentWords(predChild).contains(prepWord)) {
+                        return predChild;
+                    }
+                }
+            }
+        }
+        return prepWord;
+    }
+
     public static String getLemmatizedAnnotation(Annotation a) {
         StringBuilder builder = new StringBuilder();
         String spliter = "";
@@ -42,11 +59,14 @@ public class UimaNlpUtils {
 
     public static Map<String, Word> getDepChildByDep(Word head) {
         Map<String, Word> childByDep = new HashMap<>();
-        for (Dependency dependency : FSCollectionFactory.create(head.getChildDependencyRelations(),
-                Dependency.class)) {
-            String dep = dependency.getDependencyType();
-            Word child = dependency.getChild();
-            childByDep.put(dep, child);
+
+        FSList depFS = head.getChildDependencyRelations();
+        if (depFS != null) {
+            for (Dependency dependency : FSCollectionFactory.create(depFS, Dependency.class)) {
+                String dep = dependency.getDependencyType();
+                Word child = dependency.getChild();
+                childByDep.put(dep, child);
+            }
         }
         return childByDep;
     }
