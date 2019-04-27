@@ -40,22 +40,6 @@ public class UimaNlpUtils {
         }
     }
 
-//    public static String getDirectDependency(Word head, Word tail) {
-//
-//
-//    }
-
-//    public static List<String> getDependencyPath(Word head, Word tail) {
-//
-//        String depPath = "";
-//        return depPath;
-//    }
-//
-//    public static List<String> buildDependencyRecursively(Word head, Word tail, List<String> currentPath) {
-//
-//
-//    }
-
     public static Map<String, Word> getDepChildByDep(Word head) {
         Map<String, Word> childByDep = new HashMap<>();
         for (Dependency dependency : FSCollectionFactory.create(head.getChildDependencyRelations(),
@@ -67,6 +51,20 @@ public class UimaNlpUtils {
         return childByDep;
     }
 
+    public static Map<Word, String> getDepChildren(Word head) {
+        Map<Word, String> children = new HashMap<>();
+        if (head == null || head.getChildDependencyRelations() == null){
+            return children;
+        }
+
+        for (Dependency dependency : FSCollectionFactory.create(head.getChildDependencyRelations(),
+                Dependency.class)) {
+            String dep = dependency.getDependencyType();
+            Word child = dependency.getChild();
+            children.put(child, dep);
+        }
+        return children;
+    }
     public static String getPredicate(Word head, List<Word> complements, boolean keepXcomp) {
         FSList childDeps = head.getChildDependencyRelations();
 
