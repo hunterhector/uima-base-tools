@@ -224,19 +224,25 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     } else if (entityWordMap.containsKey(entityHead)) {
                         // There is an entity mention that refers this entity, let's see how to deal with it.
                         EntityMention coveringMention = entityWordMap.get(entityHead);
-                        logger.info(
-                                String.format("%s (head: %s, pos: %s, component: %s) covers current mention %s (head:" +
-                                                " %s, pos: %s, component: %s)",
-                                        coveringMention.getCoveredText(),
-                                        coveringMention.getHead().getCoveredText(),
-                                        coveringMention.getHead().getPos(),
-                                        coveringMention.getComponentId(),
-                                        mention.getCoveredText(),
-                                        entityHead.getCoveredText(),
-                                        entityHead.getPos(),
-                                        mention.getComponentId()
-                                ));
-//                        DebugUtils.pause();
+
+                        // We can at least deal with proper nouns.
+                        if (UimaNlpUtils.isProperNoun(entityHead) && UimaNlpUtils.isProperNoun(coveringMention.getHead())) {
+//                            logger.info(
+//                                    String.format("%s (head: %s, pos: %s, component: %s) covers current mention %s " +
+//                                                    "(head:" +
+//                                                    " %s, pos: %s, component: %s)",
+//                                            coveringMention.getCoveredText(),
+//                                            coveringMention.getHead().getCoveredText(),
+//                                            coveringMention.getHead().getPos(),
+//                                            coveringMention.getComponentId(),
+//                                            mention.getCoveredText(),
+//                                            entityHead.getCoveredText(),
+//                                            entityHead.getPos(),
+//                                            mention.getComponentId()
+//                                    ));
+//                            DebugUtils.pause();
+                            entity = coveringMention.getReferingEntity();
+                        }
                     }
 
                     newMentions.add(mention);

@@ -404,6 +404,10 @@ public class UimaNlpUtils {
         return headWord;
     }
 
+    public static boolean isProperNoun(Word word){
+        return word.getPos().equals("NNP") || word.getPos().equals("NNPS");
+    }
+
     public static <T extends ParseTreeAnnotation> T findLargestContainingTree(
             Annotation anno, Class<T> clazz) {
         return findLargest(JCasUtil.selectCovered(clazz, anno));
