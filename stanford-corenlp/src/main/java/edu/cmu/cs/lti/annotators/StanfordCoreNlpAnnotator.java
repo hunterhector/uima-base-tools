@@ -285,7 +285,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                 }
             }
             addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-            UimaNlpUtils.fixEntityMentions(aJCas, allMentions, COMPONENT_ID);
+            UimaNlpUtils.cleanEntityMentionMetaData(aJCas, allMentions, COMPONENT_ID);
             for (EntityMention mention : allMentions) {
                 if (mention.getHead() == null) {
                     mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
@@ -325,7 +325,7 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
         if (!splitOnly) {
             addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
-            UimaNlpUtils.fixEntityMentions(aJCas, allMentions, COMPONENT_ID);
+            UimaNlpUtils.cleanEntityMentionMetaData(aJCas, allMentions, COMPONENT_ID);
             for (EntityMention mention : allMentions) {
                 if (mention.getHead() == null) {
                     mention.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(mention));
@@ -393,16 +393,13 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
                     StanfordEntityMention em;
                     if (spanMentionMap.containsKey(new Span(begin, end))) {
-//                        System.out.println("This mention is contained ");
                         em = spanMentionMap.get(new Span(begin, end));
                     } else {
                         em = new StanfordEntityMention(aJCas, begin, end);
                         allMentions.add(em);
                     }
 
-                    StanfordCorenlpToken mentionHead = UimaNlpUtils.findHeadFromStanfordAnnotation(em);
-
-                    em.setHead(mentionHead);
+                    em.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(em));
                     stanfordEntityMentions.add(em);
 
                     if (representativeMention.equals(mention)) {
@@ -477,13 +474,11 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
                         allMentions.add(em);
                     }
 
-                    StanfordCorenlpToken mentionHead = sTokens.get(mention.headIndex - 1);
-
                     if (representativeMention.equals(mention)) {
                         representativeMentionUima = em;
                     }
 
-                    em.setHead(mentionHead);
+                    em.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(em));
                     stanfordEntityMentions.add(em);
 
                 } catch (Exception e) {

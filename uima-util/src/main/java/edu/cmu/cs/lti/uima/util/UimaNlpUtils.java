@@ -1,8 +1,10 @@
 package edu.cmu.cs.lti.uima.util;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import edu.cmu.cs.lti.script.type.*;
+import edu.cmu.cs.lti.utils.CollectionUtils;
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
@@ -19,6 +21,109 @@ import java.util.*;
 
 public class UimaNlpUtils {
     private static final Logger logger = LoggerFactory.getLogger(UimaNlpUtils.class);
+
+
+    public static void mergeSameHeadEntities(JCas aJCas) {
+        ArrayListMultimap<Word, EntityMention> entityHeadMap = ArrayListMultimap.create();
+
+        for (EntityMention entityMention : JCasUtil.select(aJCas, EntityMention.class)) {
+            entityHeadMap.put(entityMention.getHead(), entityMention);
+        }
+
+        for (Map.Entry<Word, Collection<EntityMention>> sameHeadEntities : entityHeadMap.asMap().entrySet()) {
+            Word headword = sameHeadEntities.getKey();
+
+            Collection<EntityMention> entityMentions = sameHeadEntities.getValue();
+            if (entityMentions.size() > 1) {
+                // Now merge.
+                Set<EntityMention> allMentions = new HashSet<>();
+                Set<EntityMention> represents = new HashSet<>();
+
+                String componentId = null;
+
+                for (EntityMention entityMention : entityMentions) {
+                    Entity theEntity = entityMention.getReferingEntity();
+                    represents.add(theEntity.getRepresentativeMention());
+                    componentId = theEntity.getComponentId();
+                    theEntity.removeFromIndexes();
+                    allMentions.addAll(FSCollectionFactory.create(theEntity.getEntityMentions(),
+                            EntityMention.class));
+                }
+
+                Entity theEntity = new Entity(aJCas);
+                theEntity.setEntityMentions(FSCollectionFactory.createFSArray(aJCas, allMentions));
+
+                int earliestStart = aJCas.getDocumentText().length();
+                for (EntityMention represent : represents) {
+                    if (represent.getBegin() <= earliestStart) {
+                        earliestStart = represent.getBegin();
+                        theEntity.setRepresentativeMention(represent);
+                        theEntity.setRepresentativeString(represent.getCoveredText());
+                    }
+                }
+
+                UimaAnnotationUtils.finishTop(theEntity, componentId + "_merged", 0, aJCas);
+
+                for (EntityMention theMention : allMentions) {
+                    // Set the reference to the new Entity object.
+                    theMention.setReferingEntity(theEntity);
+                }
+            }
+        }
+    }
+
+    static Map<String, Integer> priority = new HashMap<>();
+
+    static {
+        priority.put("ORGANIZATION", 0);
+        priority.put("PERSON", 1);
+        priority.put("LOCATION", 2);
+        priority.put("TIME", 3);
+        priority.put("MONEY", 4);
+        priority.put("DATE", 5);
+        priority.put("DURATION", 6);
+        priority.put("PERCENT", 7);
+        priority.put("NUMBER", 8);
+        priority.put("SEt", 9);
+        priority.put("MISC", 10);
+    }
+
+    public static void voteNerType(JCas aJCas) {
+
+        for (Entity entity : JCasUtil.select(aJCas, Entity.class)) {
+            TObjectIntHashMap<String> nerTypes = new TObjectIntHashMap<>();
+            for (EntityMention entityMention : FSCollectionFactory.create(entity.getEntityMentions(),
+                    EntityMention.class)) {
+                if (entityMention.getEntityType() != null) {
+                    nerTypes.adjustOrPutValue(entityMention.getEntityType(), 1, 1);
+                }
+            }
+
+            List<String> mostFrequentTypes = CollectionUtils.findMaxCount(nerTypes);
+
+            String votedType = null;
+
+            if (mostFrequentTypes.size() == 1) {
+                votedType = mostFrequentTypes.get(0);
+            } else if (mostFrequentTypes.size() > 1) {
+                // Resolving with priority.
+
+                int highestPriority = priority.size();
+
+                for (String type : mostFrequentTypes) {
+                    if (priority.containsKey(type)) {
+                        Integer p = priority.get(type);
+                        if (p < highestPriority) {
+                            highestPriority = p;
+                            votedType = type;
+                        }
+                    }
+                }
+            }
+            entity.setEntityType(votedType);
+        }
+    }
+
 
     public static Word findPrepTarget(Word predHead, Word prepWord) {
         for (Map.Entry<String, Word> depWord : getDepChildByDep(predHead).entrySet()) {
@@ -73,7 +178,7 @@ public class UimaNlpUtils {
 
     public static Map<Word, String> getDepChildren(Word head) {
         Map<Word, String> children = new HashMap<>();
-        if (head == null || head.getChildDependencyRelations() == null){
+        if (head == null || head.getChildDependencyRelations() == null) {
             return children;
         }
 
@@ -85,6 +190,7 @@ public class UimaNlpUtils {
         }
         return children;
     }
+
     public static String getPredicate(Word head, List<Word> complements, boolean keepXcomp) {
         FSList childDeps = head.getChildDependencyRelations();
 
@@ -186,7 +292,7 @@ public class UimaNlpUtils {
         return mention;
     }
 
-    public static void fixEntityMentions(JCas aJCas, List<EntityMention> allMentions, String componentId) {
+    public static void cleanEntityMentionMetaData(JCas aJCas, List<EntityMention> allMentions, String componentId) {
         //Sort and assign id to mentions.
         allMentions.sort(Comparator.comparingInt(Annotation::getBegin));
         int mentionIdx = 0;
@@ -251,11 +357,6 @@ public class UimaNlpUtils {
         return null;
     }
 
-//    public static StanfordCorenlpToken findHeadFromRange(JCas view, int begin, int end) {
-//        StanfordTreeAnnotation largestContainingTree = findLargest(JCasUtil.selectCovered(view,
-//                StanfordTreeAnnotation.class, begin, end));
-//        return findHeadFromTree(largestContainingTree, StanfordCorenlpToken.class);
-//    }
 
     public static CharacterAnnotation findHeadCharacterFromZparAnnotation(Annotation anno) {
         return findHeadFromTree(findLargestContainingTree(anno, ZparTreeAnnotation.class), CharacterAnnotation.class);

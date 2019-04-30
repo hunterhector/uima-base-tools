@@ -36,6 +36,10 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
     @ConfigurationParameter(name = PARAM_JSON_ANNO_DIR)
     private File annoDir;
 
+    public static final String PARAM_CLEANUP_ENTITY = "cleanUpEntity";
+    @ConfigurationParameter(name = PARAM_CLEANUP_ENTITY)
+    private boolean cleanUpEntity;
+
     private Gson gson;
 
     class AnnoDoc {
@@ -106,8 +110,11 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         if (annotationFile.exists()) {
             try {
                 AnnoDoc annoDoc = gson.fromJson(FileUtils.readFileToString(annotationFile), AnnoDoc.class);
+                if (cleanUpEntity) {
+                    UimaNlpUtils.mergeSameHeadEntities(aJCas);
+                    UimaNlpUtils.voteNerType(aJCas);
+                }
                 addAnnotations(aJCas, annoDoc);
-//                addAnnotations(goldView, annoDoc);
             } catch (IOException e) {
                 throw new AnalysisEngineProcessException(e);
             }
@@ -120,8 +127,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         int earliestBegin = Integer.MAX_VALUE;
         int latestEnd = 0;
 
-        for (int spanIndex = 0; spanIndex < spans.size(); spanIndex++) {
-            Span span = spans.get(spanIndex);
+        for (Span span : spans) {
             if (span.begin < earliestBegin) {
                 earliestBegin = span.begin;
             }
@@ -179,15 +185,21 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
 
         Map<Word, EntityMention> entityHeadMap = new HashMap<>();
         Map<Pair, EntityMention> entitySpanMap = new HashMap<>();
+        Map<Word, EntityMention> entityWordMap = new HashMap<>();
         for (EntityMention entityMention : JCasUtil.select(aJCas, EntityMention.class)) {
             entityHeadMap.put(entityMention.getHead(), entityMention);
             entitySpanMap.put(Pair.of(entityMention.getBegin(), entityMention.getEnd()), entityMention);
+            for (StanfordCorenlpToken token : JCasUtil.selectCovered(StanfordCorenlpToken.class, entityMention)) {
+                entityWordMap.put(token, entityMention);
+            }
         }
 
         for (JEntity jEntity : annoDoc.entities) {
             Entity entity = null;
 
             List<EntityMention> newMentions = new ArrayList<>();
+
+            // Here we map mentions from jMentions to uima Mentions.
             for (JEntityMention jMention : jEntity.mentions) {
                 Pair<Integer, Integer> boundaries = getBoundary(jMention.spans);
 
@@ -200,6 +212,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     mention = new EntityMention(aJCas);
                     mention.setEntityType(jMention.type);
                     annotateSpan(aJCas, mention, jMention.spans);
+
                     // This requires stanford annotation first.
                     StanfordCorenlpToken entityHead = UimaNlpUtils.findHeadFromStanfordAnnotation(mention);
                     mention.setHead(entityHead);
@@ -208,6 +221,22 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                         // Found entity mention sharing head, consider this mention to be coreferential.
                         EntityMention existingMention = entityHeadMap.get(entityHead);
                         entity = existingMention.getReferingEntity();
+                    } else if (entityWordMap.containsKey(entityHead)) {
+                        // There is an entity mention that refers this entity, let's see how to deal with it.
+                        EntityMention coveringMention = entityWordMap.get(entityHead);
+                        logger.info(
+                                String.format("%s (head: %s, pos: %s, component: %s) covers current mention %s (head:" +
+                                                " %s, pos: %s, component: %s)",
+                                        coveringMention.getCoveredText(),
+                                        coveringMention.getHead().getCoveredText(),
+                                        coveringMention.getHead().getPos(),
+                                        coveringMention.getComponentId(),
+                                        mention.getCoveredText(),
+                                        entityHead.getCoveredText(),
+                                        entityHead.getPos(),
+                                        mention.getComponentId()
+                                ));
+//                        DebugUtils.pause();
                     }
 
                     newMentions.add(mention);
@@ -326,12 +355,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     Word argHead = argumentEntity.getHead();
 
                     if (argHead.getPos().equals("TO") || argHead.getPos().equals("IN")) {
-//                        if (argHead != actualHead) {
-//                            logger.info("Origin head is " + argHead.getCoveredText());
-//                            logger.info("Actual head is " + actualHead.getCoveredText());
-//                            logger.info("Argument entity to annotate is " + argumentEntity.getCoveredText());
-//                            DebugUtils.pause();
-//                        }
                         argumentEntity.setHead(UimaNlpUtils.findPrepTarget(eventHead, argHead));
                     }
 
@@ -412,28 +435,4 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         return entity;
     }
 
-//    public static void main(String[] args) throws UIMAException, IOException {
-//        String sourceTextDir = args[0];
-//        String annotateDir = args[1];
-//        String outputDir = args[2];
-//
-//        TypeSystemDescription des = TypeSystemDescriptionFactory.createTypeSystemDescription("TypeSystem");
-//
-//        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
-//                PlainTextCollectionReader.class,
-//                PlainTextCollectionReader.PARAM_INPUTDIR, sourceTextDir,
-//                PlainTextCollectionReader.PARAM_TEXT_SUFFIX, ".txt");
-//
-//
-//        AnalysisEngineDescription engine = AnalysisEngineFactory.createEngineDescription(
-//                JsonEventDataReader.class, des,
-//                JsonEventDataReader.PARAM_JSON_ANNO_DIR, annotateDir
-//        );
-//
-//        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(
-//                outputDir, "gold", null, null
-//        );
-//
-//        SimplePipeline.runPipeline(reader, engine, writer);
-//    }
 }
