@@ -124,11 +124,30 @@ public class UimaNlpUtils {
         }
     }
 
+    public static <T extends Word> T getDepHead(T word) {
+        if (word.getHeadDependencyRelations() == null) {
+            return null;
+        }
 
-    public static Word findPrepTarget(Word predHead, Word prepWord) {
-        for (Map.Entry<String, Word> depWord : getDepChildByDep(predHead).entrySet()) {
+        for (Dependency dependency : FSCollectionFactory.create(word.getHeadDependencyRelations(), Dependency.class)) {
+            return (T) dependency.getHead();
+        }
+        return null;
+    }
+
+    public static <T extends Word> T findPrepTarget(T predHead, T prepWord) {
+        T target = findPrepTargetFromStanford(predHead, prepWord);
+        if (target == null) {
+            target = findPrepTargetFromUD(predHead, prepWord);
+        }
+        return target == null ? prepWord : target;
+    }
+
+
+    public static <T extends Word> T findPrepTargetFromUD(T predHead, T prepWord) {
+        for (Map.Entry<String, T> depWord : getDepChildByDep(predHead).entrySet()) {
             String depType = depWord.getKey();
-            Word predChild = depWord.getValue();
+            T predChild = depWord.getValue();
 
             String[] indirectDepParts = depType.split(":");
             if (indirectDepParts.length > 1) {
@@ -139,8 +158,27 @@ public class UimaNlpUtils {
                 }
             }
         }
-        return prepWord;
+        return null;
     }
+
+    public static <T extends Word> T findPrepTargetFromStanford(T depHead, T prepWord) {
+        String depRel = "prep_" + prepWord.getLemma();
+        return (T) findChildOfDep(depHead, depRel);
+    }
+
+    public static Word findChildOfDep(Word depHead, String targetDep) {
+        FSList childFS = depHead.getChildDependencyRelations();
+        if (childFS != null) {
+            for (Dependency dep : FSCollectionFactory.create(childFS,
+                    Dependency.class)) {
+                if (dep.getDependencyType().equals(targetDep)) {
+                    return dep.getChild();
+                }
+            }
+        }
+        return null;
+    }
+
 
     public static String getLemmatizedAnnotation(Annotation a) {
         StringBuilder builder = new StringBuilder();
@@ -162,14 +200,14 @@ public class UimaNlpUtils {
         }
     }
 
-    public static Map<String, Word> getDepChildByDep(Word head) {
-        Map<String, Word> childByDep = new HashMap<>();
+    public static <T extends Word> Map<String, T> getDepChildByDep(T head) {
+        Map<String, T> childByDep = new HashMap<>();
 
         FSList depFS = head.getChildDependencyRelations();
         if (depFS != null) {
             for (Dependency dependency : FSCollectionFactory.create(depFS, Dependency.class)) {
                 String dep = dependency.getDependencyType();
-                Word child = dependency.getChild();
+                T child = (T) dependency.getChild();
                 childByDep.put(dep, child);
             }
         }
@@ -220,6 +258,15 @@ public class UimaNlpUtils {
         }
         return (negationPart + head.getLemma() + particle_part + complementPart).toLowerCase();
     }
+
+    public static void addToEntityCluster(JCas aJCas, Entity entity, List<EntityMention> newMentions) {
+        for (EntityMention newMention : newMentions) {
+            newMention.setReferingEntity(entity);
+        }
+        entity.setEntityMentions(UimaConvenience.extendFSArray(aJCas, entity.getEntityMentions(), newMentions,
+                EntityMention.class));
+    }
+
 
     public static Map<Word, EntityMention> indexEntityMentions(JCas jcas) {
         Map<Word, EntityMention> mentions = new HashMap<>();
@@ -367,6 +414,23 @@ public class UimaNlpUtils {
         return findHeadFromStanfordAnnotation(anno);
     }
 
+    public static StanfordCorenlpToken findHeadInRange(Annotation anno, StanfordCorenlpToken word,
+                                                       Set<StanfordCorenlpToken> visits) {
+        StanfordCorenlpToken itsHead = getDepHead(word);
+        if (itsHead == null) {
+            return word;
+        } else if (visits.contains(itsHead)) {
+            return word;
+        }
+
+        visits.add(word);
+        if (itsHead.getBegin() >= anno.getBegin() && itsHead.getEnd() <= anno.getEnd()) {
+            return findHeadInRange(anno, itsHead, visits);
+        } else {
+            return word;
+        }
+    }
+
     public static StanfordCorenlpToken findHeadFromStanfordAnnotation(Annotation anno) {
         StanfordCorenlpToken headWord = findHeadFromTree(findLargestContainingTree(anno,
                 StanfordTreeAnnotation.class), StanfordCorenlpToken.class);
@@ -401,11 +465,24 @@ public class UimaNlpUtils {
             }
         }
 
+        // From constituent head to dependency head.
+        headWord = findHeadInRange(anno, headWord, new HashSet<>());
+
         return headWord;
     }
 
-    public static boolean isProperNoun(Word word){
+    public static boolean compatibleMentions(EntityMention mention1, EntityMention mention2) {
+        if (isProperNoun(mention1.getHead()) && isProperNoun(mention2.getHead())) {
+            return true;
+        } else return couldBeMoney(mention1.getHead()) && couldBeMoney(mention2.getHead());
+    }
+
+    public static boolean isProperNoun(Word word) {
         return word.getPos().equals("NNP") || word.getPos().equals("NNPS");
+    }
+
+    public static boolean couldBeMoney(Word word) {
+        return word.getPos().equals("$") || word.getPos().equals("CD");
     }
 
     public static <T extends ParseTreeAnnotation> T findLargestContainingTree(

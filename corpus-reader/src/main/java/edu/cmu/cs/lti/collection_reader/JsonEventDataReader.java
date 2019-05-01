@@ -1,6 +1,7 @@
 package edu.cmu.cs.lti.collection_reader;
 
 import com.google.common.base.Joiner;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.gson.Gson;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
@@ -155,14 +156,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         anno.setEnd(latestEnd);
     }
 
-    private void addToEntityCluster(JCas aJCas, Entity entity, List<EntityMention> newMentions) {
-        for (EntityMention newMention : newMentions) {
-            newMention.setReferingEntity(entity);
-        }
-        entity.setEntityMentions(UimaConvenience.extendFSArray(aJCas, entity.getEntityMentions(), newMentions,
-                EntityMention.class));
-    }
-
     private void addToEventCluster(JCas aJCas, Event event, List<EventMention> newMentions) {
         for (EventMention newMention : newMentions) {
             newMention.setReferringEvent(event);
@@ -185,7 +178,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
 
         Map<Word, EntityMention> entityHeadMap = new HashMap<>();
         Map<Pair, EntityMention> entitySpanMap = new HashMap<>();
-        Map<Word, EntityMention> entityWordMap = new HashMap<>();
+        ArrayListMultimap<Word, EntityMention> entityWordMap = ArrayListMultimap.create();
         for (EntityMention entityMention : JCasUtil.select(aJCas, EntityMention.class)) {
             entityHeadMap.put(entityMention.getHead(), entityMention);
             entitySpanMap.put(Pair.of(entityMention.getBegin(), entityMention.getEnd()), entityMention);
@@ -204,6 +197,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 Pair<Integer, Integer> boundaries = getBoundary(jMention.spans);
 
                 EntityMention mention;
+
                 if (entitySpanMap.containsKey(boundaries)) {
                     // Found entity in the exact boundary.
                     mention = entitySpanMap.get(boundaries);
@@ -212,8 +206,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     mention = new EntityMention(aJCas);
                     mention.setEntityType(jMention.type);
                     annotateSpan(aJCas, mention, jMention.spans);
-
-                    // This requires stanford annotation first.
                     StanfordCorenlpToken entityHead = UimaNlpUtils.findHeadFromStanfordAnnotation(mention);
                     mention.setHead(entityHead);
 
@@ -223,31 +215,20 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                         entity = existingMention.getReferingEntity();
                     } else if (entityWordMap.containsKey(entityHead)) {
                         // There is an entity mention that refers this entity, let's see how to deal with it.
-                        EntityMention coveringMention = entityWordMap.get(entityHead);
-
-                        // We can at least deal with proper nouns.
-                        if (UimaNlpUtils.isProperNoun(entityHead) && UimaNlpUtils.isProperNoun(coveringMention.getHead())) {
-//                            logger.info(
-//                                    String.format("%s (head: %s, pos: %s, component: %s) covers current mention %s " +
-//                                                    "(head:" +
-//                                                    " %s, pos: %s, component: %s)",
-//                                            coveringMention.getCoveredText(),
-//                                            coveringMention.getHead().getCoveredText(),
-//                                            coveringMention.getHead().getPos(),
-//                                            coveringMention.getComponentId(),
-//                                            mention.getCoveredText(),
-//                                            entityHead.getCoveredText(),
-//                                            entityHead.getPos(),
-//                                            mention.getComponentId()
-//                                    ));
-//                            DebugUtils.pause();
-                            entity = coveringMention.getReferingEntity();
+                        List<EntityMention> coveringMentions = entityWordMap.get(entityHead);
+                        for (EntityMention coveringMention : coveringMentions) {
+                            // We can at least deal with proper nouns.
+                            if (UimaNlpUtils.compatibleMentions(mention, coveringMention)) {
+                                entity = coveringMention.getReferingEntity();
+                            }
+                            if (entity != null) {
+                                // Once we found 1 potential cluster, then that's it.
+                                break;
+                            }
                         }
                     }
-
                     newMentions.add(mention);
                     UimaAnnotationUtils.finishAnnotation(mention, COMPONENT_ID, jMention.id, aJCas);
-
                     entityHeadMap.put(entityHead, mention);
                     entitySpanMap.put(Pair.of(mention.getBegin(), mention.getEnd()), mention);
                 }
@@ -260,7 +241,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 createNewEntities(aJCas, newMentions, jEntity.id);
             } else {
                 // Existing entity found, add the new mentions to it.
-                addToEntityCluster(aJCas, entity, newMentions);
+                UimaNlpUtils.addToEntityCluster(aJCas, entity, newMentions);
             }
         }
 
@@ -323,7 +304,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                                 // Found entity mention sharing head, consider this mention to be coreferential.
                                 EntityMention existingMention = entityHeadMap.get(argumentHead);
                                 Entity entity = existingMention.getReferingEntity();
-                                addToEntityCluster(aJCas, entity, Arrays.asList(argumentEntityMention));
+                                UimaNlpUtils.addToEntityCluster(aJCas, entity, Arrays.asList(argumentEntityMention));
                             } else {
                                 // This is a new entity without clear cluster, create a singleton entity.
                                 createNewEntities(aJCas, Arrays.asList(argumentEntityMention), "0");
@@ -356,14 +337,13 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 List<EventMentionArgumentLink> argLinks = new ArrayList<>();
                 for (JArgument argument : jMention.arguments) {
                     EntityMention argumentEntity = id2Ent.get(argument.arg);
-                    EventMentionArgumentLink argumentLink;
-
                     Word argHead = argumentEntity.getHead();
 
                     if (argHead.getPos().equals("TO") || argHead.getPos().equals("IN")) {
                         argumentEntity.setHead(UimaNlpUtils.findPrepTarget(eventHead, argHead));
                     }
 
+                    EventMentionArgumentLink argumentLink;
                     if (argumentLinkMap.containsKey(Pair.of(argumentEntity.getBegin(), argumentEntity.getEnd()))) {
                         argumentLink = argumentLinkMap.get(Pair.of(argumentEntity.getBegin(), argumentEntity.getEnd()));
                     } else {
