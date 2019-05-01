@@ -292,30 +292,29 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
 
                         Pair<Integer, Integer> argumentBoundary = Pair.of(argument.getBegin(), argument.getEnd());
 
-                        EntityMention argumentEntityMention;
+                        EntityMention argEntMention;
                         if (entitySpanMap.containsKey(argumentBoundary)) {
-                            argumentEntityMention = entitySpanMap.get(argumentBoundary);
+                            argEntMention = entitySpanMap.get(argumentBoundary);
                         } else {
-                            argumentEntityMention = UimaNlpUtils.createArgMention(aJCas, argument
+                            argEntMention = UimaNlpUtils.createArgMention(aJCas, argument
                                     .getBegin(), argument.getEnd(), argument.getComponentId());
-                            Word argumentHead = argumentEntityMention.getHead();
+                            Word argumentHead = argEntMention.getHead();
 
                             if (entityHeadMap.containsKey(argumentHead)) {
                                 // Found entity mention sharing head, consider this mention to be coreferential.
                                 EntityMention existingMention = entityHeadMap.get(argumentHead);
                                 Entity entity = existingMention.getReferingEntity();
-                                UimaNlpUtils.addToEntityCluster(aJCas, entity, Arrays.asList(argumentEntityMention));
+                                UimaNlpUtils.addToEntityCluster(aJCas, entity, Arrays.asList(argEntMention));
                             } else {
                                 // This is a new entity without clear cluster, create a singleton entity.
-                                createNewEntities(aJCas, Arrays.asList(argumentEntityMention), "0");
+                                createNewEntities(aJCas, Arrays.asList(argEntMention), "0");
                             }
 
-                            entitySpanMap.put(Pair.of(argumentEntityMention.getBegin(),
-                                    argumentEntityMention.getEnd()), argumentEntityMention);
-                            entityHeadMap.put(argumentHead, argumentEntityMention);
+                            entitySpanMap.put(Pair.of(argEntMention.getBegin(), argEntMention.getEnd()), argEntMention);
+                            entityHeadMap.put(argumentHead, argEntMention);
                         }
 
-                        argumentLink.setArgument(argumentEntityMention);
+                        argumentLink.setArgument(argEntMention);
                         eventArgs.add(argumentLink);
 
                         if (relation.getPropbankRoleName() != null) {
