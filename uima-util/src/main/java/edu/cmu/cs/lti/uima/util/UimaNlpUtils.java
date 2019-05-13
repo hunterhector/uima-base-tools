@@ -466,7 +466,9 @@ public class UimaNlpUtils {
         }
 
         // From constituent head to dependency head.
-        headWord = findHeadInRange(anno, headWord, new HashSet<>());
+        if (headWord != null) {
+            headWord = findHeadInRange(anno, headWord, new HashSet<>());
+        }
 
         return headWord;
     }
