@@ -41,6 +41,10 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
     @ConfigurationParameter(name = PARAM_CLEANUP_ENTITY)
     private boolean cleanUpEntity;
 
+    public static final String propbank = "PROPBANK";
+
+    public static final String nombank = "NOMBANK";
+
     private Gson gson;
 
     class AnnoDoc {
@@ -355,7 +359,12 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     }
 
                     argumentLink.setPropbankRoleName(simplifyRole(argument.role));
-                    argumentLink.setComponentId(COMPONENT_ID); // Mark this as gold standard component.
+
+                    if (jMention.type.equals("PROPBANK")) {
+                        argumentLink.setComponentId(propbank); // Mark this as gold standard component.
+                    } else if (jMention.type.equals("NOMBANK")) {
+                        argumentLink.setComponentId(nombank); // Mark this as gold standard component.
+                    }
 
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "incorporated",
                             Boolean.toString(argument.meta.incorporated));
