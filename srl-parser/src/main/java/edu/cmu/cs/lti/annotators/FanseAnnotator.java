@@ -174,6 +174,8 @@ public class FanseAnnotator extends AbstractLoggingAnnotator {
                     FanseSemanticRelation fArc = new FanseSemanticRelation(aJCas);
                     fArc.setHead(headToken);
                     fArc.setChild(arg);
+                    // A fix score for Fanse.
+                    fArc.setConfidence(0.4);
                     fArc.setSemanticAnnotation(arc.getSemanticAnnotation());
 
                     semanticChildRelationMap.put(headToken, fArc);

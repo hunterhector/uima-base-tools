@@ -1218,11 +1218,6 @@
                     <name>child</name>
                     <rangeTypeName>edu.cmu.cs.lti.script.type.SemanticArgument</rangeTypeName>
                 </featureDescription>
-                <!--<featureDescription>-->
-                <!--<name>childHead</name>-->
-                <!--<description/>-->
-                <!--<rangeTypeName>edu.cmu.cs.lti.script.type.Word</rangeTypeName>-->
-                <!--</featureDescription>-->
                 <featureDescription>
                     <name>verbNetRoleName</name>
                     <description>The thematic role name in VerbNet</description>
