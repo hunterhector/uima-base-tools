@@ -8,6 +8,8 @@ import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.uima.UimaContext;
@@ -40,10 +42,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
     public static final String PARAM_CLEANUP_ENTITY = "cleanUpEntity";
     @ConfigurationParameter(name = PARAM_CLEANUP_ENTITY)
     private boolean cleanUpEntity;
-
-    public static final String propbank = "PROPBANK";
-
-    public static final String nombank = "NOMBANK";
 
     private Gson gson;
 
@@ -100,10 +98,37 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         int end;
     }
 
+    private TObjectIntMap<String> predicateWithImplicit = new TObjectIntHashMap<>();
+    private TObjectIntMap<String> slotsWithImplicit = new TObjectIntHashMap<>();
+    private TObjectIntMap<String> slotsWithNoIncorpImplicit = new TObjectIntHashMap<>();
+    private TObjectIntMap<String> slotsWithNoPreceedingImplicit = new TObjectIntHashMap<>();
+
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
         gson = new Gson();
+    }
+
+    @Override
+    public void collectionProcessComplete() throws AnalysisEngineProcessException {
+        super.collectionProcessComplete();
+        logger.info("Printing corpus statistics");
+
+        String[] predicates = predicateWithImplicit.keys(new String[]{});
+        Arrays.sort(predicates);
+
+        System.out.println("Predicate\tImplicit Predicates\tImplicit Slots\tNon incorp implicit slots" +
+                "\tNon incop preceeding implicit slots");
+        for (String pred : predicates) {
+            System.out.println(String.format("%s\t%d\t%d\t%d\t%d",
+                    pred,
+                    predicateWithImplicit.get(pred),
+                    slotsWithImplicit.get(pred),
+                    slotsWithNoIncorpImplicit.get(pred),
+                    slotsWithNoPreceedingImplicit.get(pred)
+            ));
+        }
+
     }
 
     @Override
@@ -338,6 +363,11 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
 
                 // Add the gold standard arguments to the mention.
                 List<EventMentionArgumentLink> argLinks = new ArrayList<>();
+
+                Set<String> implictArgs = new HashSet<>();
+                Set<String> nonIncorpImplicitArgs = new HashSet<>();
+                Set<String> preceedNonIncorpImplicitArgs = new HashSet<>();
+
                 for (JArgument argument : jMention.arguments) {
                     EntityMention argumentEntity = id2Ent.get(argument.arg);
                     Word argHead = argumentEntity.getHead();
@@ -360,20 +390,39 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
 
                     argumentLink.setPropbankRoleName(simplifyRole(argument.role));
 
-                    if (jMention.type.equals("PROPBANK")) {
-                        argumentLink.setComponentId(propbank); // Mark this as gold standard component.
-                    } else if (jMention.type.equals("NOMBANK")) {
-                        argumentLink.setComponentId(nombank); // Mark this as gold standard component.
-                    }
-
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "incorporated",
                             Boolean.toString(argument.meta.incorporated));
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "succeeding",
                             Boolean.toString(argument.meta.succeeding));
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "implicit",
                             Boolean.toString(argument.meta.implicit));
+                    UimaAnnotationUtils.addMeta(aJCas, argumentLink, "source",
+                            jMention.type);
 
+                    if (argument.meta.implicit) {
+                        implictArgs.add(argument.role);
+                        if (!argument.meta.incorporated) {
+                            nonIncorpImplicitArgs.add(argument.role);
+                            if (!argument.meta.succeeding) {
+                                preceedNonIncorpImplicitArgs.add(argument.role);
+                            }
+                        }
+                    }
                 }
+
+                if (!implictArgs.isEmpty()) {
+                    String predText = eventHead.getLemma().toLowerCase();
+                    if (predText.equals("small-investor")) {
+                        predText = "investor";
+                    }
+                    predicateWithImplicit.adjustOrPutValue(predText, 1, 1);
+                    slotsWithImplicit.adjustOrPutValue(predText, implictArgs.size(), implictArgs.size());
+                    slotsWithNoIncorpImplicit.adjustOrPutValue(predText, nonIncorpImplicitArgs.size(),
+                            nonIncorpImplicitArgs.size());
+                    slotsWithNoPreceedingImplicit.adjustOrPutValue(predText, preceedNonIncorpImplicitArgs.size(),
+                            preceedNonIncorpImplicitArgs.size());
+                }
+
                 evm.setArguments(UimaConvenience.extendFSList(aJCas, evm.getArguments(), argLinks,
                         EventMentionArgumentLink.class));
             }
