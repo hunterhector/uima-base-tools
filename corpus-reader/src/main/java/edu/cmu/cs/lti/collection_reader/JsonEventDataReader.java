@@ -57,6 +57,10 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         List<JEventMention> mentions;
     }
 
+    class NodeMeta {
+        String node;
+    }
+
     class JEventMention {
         String id;
         String annotation;
@@ -64,6 +68,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         List<Span> spans;
         List<JArgument> arguments;
         String type;
+        NodeMeta meta;
     }
 
     class JArgument {
@@ -72,7 +77,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         ArgMeta meta;
     }
 
-    class ArgMeta {
+    class ArgMeta extends NodeMeta {
         boolean incorporated;
         boolean succeeding;
         boolean implicit;
@@ -98,6 +103,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         int end;
     }
 
+    private TObjectIntMap<String> predicateCounts = new TObjectIntHashMap<>();
     private TObjectIntMap<String> predicateWithImplicit = new TObjectIntHashMap<>();
     private TObjectIntMap<String> slotsWithImplicit = new TObjectIntHashMap<>();
     private TObjectIntMap<String> slotsWithNoIncorpImplicit = new TObjectIntHashMap<>();
@@ -117,11 +123,13 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         String[] predicates = predicateWithImplicit.keys(new String[]{});
         Arrays.sort(predicates);
 
-        System.out.println("Predicate\tImplicit Predicates\tImplicit Slots\tNon incorp implicit slots" +
+        System.out.println("Predicate\tPredicate Count\tImplicit Predicates\tImplicit Slots\tNon incorp implicit " +
+                "slots" +
                 "\tNon incop preceeding implicit slots");
         for (String pred : predicates) {
-            System.out.println(String.format("%s\t%d\t%d\t%d\t%d",
+            System.out.println(String.format("%s\t%d\t%d\t%d\t%d\t%d",
                     pred,
+                    predicateCounts.get(pred),
                     predicateWithImplicit.get(pred),
                     slotsWithImplicit.get(pred),
                     slotsWithNoIncorpImplicit.get(pred),
@@ -193,7 +201,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 EventMention.class));
     }
 
-
+    // TODO: bug, There are annotations that are not read into here.
     private void addAnnotations(JCas aJCas, AnnoDoc annoDoc) {
         Map<String, EntityMention> id2Ent = new HashMap<>();
 
@@ -308,6 +316,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 FSList eventHeadArgsFS = eventHead.getChildSemanticRelations();
 
                 evm.setFrameName(eventHead.getFrameName());
+                UimaAnnotationUtils.addMeta(aJCas, evm, "node", jMention.meta.node);
 
                 // There may be duplicated arguments with the gold ones.
                 Map<Pair<Integer, Integer>, EventMentionArgumentLink> argumentLinkMap = new HashMap<>();
@@ -396,8 +405,8 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                             Boolean.toString(argument.meta.succeeding));
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "implicit",
                             Boolean.toString(argument.meta.implicit));
-                    UimaAnnotationUtils.addMeta(aJCas, argumentLink, "source",
-                            jMention.type);
+                    UimaAnnotationUtils.addMeta(aJCas, argumentLink, "source", jMention.type);
+                    UimaAnnotationUtils.addMeta(aJCas, argumentLink, "node", argument.meta.node);
 
                     if (argument.meta.implicit) {
                         implictArgs.add(argument.role);
@@ -410,11 +419,17 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     }
                 }
 
+                String predText = eventHead.getLemma().toLowerCase();
+                if (predText.equals("small-investor")) {
+                    predText = "investor";
+                }
+
+                predicateCounts.adjustOrPutValue(predText, 1, 1);
                 if (!implictArgs.isEmpty()) {
-                    String predText = eventHead.getLemma().toLowerCase();
-                    if (predText.equals("small-investor")) {
-                        predText = "investor";
+                    if (predText.equals("loss")) {
+                        System.out.println("implicit for loss in " + UimaConvenience.getArticleName(aJCas));
                     }
+
                     predicateWithImplicit.adjustOrPutValue(predText, 1, 1);
                     slotsWithImplicit.adjustOrPutValue(predText, implictArgs.size(), implictArgs.size());
                     slotsWithNoIncorpImplicit.adjustOrPutValue(predText, nonIncorpImplicitArgs.size(),
