@@ -91,6 +91,10 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     @ConfigurationParameter(name = PARAM_SKIP_ANNOTATED, defaultValue = "false")
     private boolean skipAnnotated;
 
+    public static final String PARAM_STANFORD_DEP = "useOldStanfordDep";
+    @ConfigurationParameter(name = PARAM_STANFORD_DEP, defaultValue = "false")
+    private boolean useOldStanfordDep;
+
     public static final String PARAM_WRITE_NEW_ANNOTATED = "writeNewAnnotated";
     @ConfigurationParameter(name = PARAM_WRITE_NEW_ANNOTATED, defaultValue = "false", description = "Use together " +
             "with skipAnnotated, this will set a flag to true only for documents that are newly annotated.")
@@ -150,6 +154,11 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             if (parserMaxLen != null) {
                 logger.info("Parser will have a max length of " + parserMaxLen);
                 props.setProperty("parse.maxlen", String.valueOf(parserMaxLen));
+            }
+
+            if (useOldStanfordDep) {
+                logger.info("Produce old Stanford dependency type set");
+                props.setProperty("parse.originalDependencies", "true");
             }
 
             props.setProperty("dcoref.maxdist", String.valueOf(corefMaxLookback));
@@ -317,11 +326,6 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
         // Adding sentence level annotations.
         addSentenceLevelAnnotation(aJCas, document, textOffset);
-
-        // Adding coreference level annotations.
-//        addDCoreferenceAnnotation(aJCas, document, spanMentionMap, allMentions);
-
-//        addHCorefAnnotation(aJCas, document, spanMentionMap, allMentions);
 
         if (!splitOnly) {
             addCorefAnnotation(aJCas, document, spanMentionMap, allMentions);

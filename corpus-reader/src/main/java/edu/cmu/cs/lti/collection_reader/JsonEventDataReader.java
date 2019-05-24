@@ -201,7 +201,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                 EventMention.class));
     }
 
-    // TODO: bug, There are annotations that are not read into here.
     private void addAnnotations(JCas aJCas, AnnoDoc annoDoc) {
         Map<String, EntityMention> id2Ent = new HashMap<>();
 
