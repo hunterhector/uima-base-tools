@@ -7,9 +7,11 @@ import edu.cmu.cs.lti.uima.annotator.AbstractLoggingAnnotator;
 import edu.cmu.cs.lti.uima.util.UimaAnnotationUtils;
 import edu.cmu.cs.lti.uima.util.UimaConvenience;
 import edu.cmu.cs.lti.uima.util.UimaNlpUtils;
+import edu.cmu.cs.lti.utils.DebugUtils;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations;
 import edu.stanford.nlp.ling.ChineseCoreAnnotations;
+import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreAnnotations.*;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
@@ -66,6 +68,10 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
     public static final String PARAM_WHITESPACE_TOKENIZE = "whiteSpaceTokenize";
     @ConfigurationParameter(name = PARAM_WHITESPACE_TOKENIZE, defaultValue = "false")
     private boolean whiteSpaceTokenize;
+
+    public static final String PARAM_EOL_SENTENCE_ONLY = "eolSentenceSplit";
+    @ConfigurationParameter(name = PARAM_EOL_SENTENCE_ONLY, defaultValue = "false")
+    private boolean eolSentenceBreak;
 
     public static final String PARAM_PARSER_MAXLEN = "parserMaxLength";
     @ConfigurationParameter(name = PARAM_PARSER_MAXLEN, mandatory = false)
@@ -145,6 +151,12 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
 
             if (whiteSpaceTokenize) {
                 props.setProperty("tokenize.whitespace", "true");
+                logger.info("Will only split on white spaces.");
+            }
+
+            if (eolSentenceBreak) {
+                props.setProperty("ssplit.eolonly", "true");
+                logger.info("Will split sentence on line breaks only.");
             }
 
             if (shiftReduceParser) {
@@ -607,8 +619,17 @@ public class StanfordCoreNlpAnnotator extends AbstractLoggingAnnotator {
             int beginIndex = token.get(CharacterOffsetBeginAnnotation.class) + textOffset;
             int endIndex = token.get(CharacterOffsetEndAnnotation.class) + textOffset;
 
+            String pos = token.get(PartOfSpeechAnnotation.class);
+            String lemma = token.get(LemmaAnnotation.class);
+
+            if (pos == null && lemma == null) {
+                // Skipping empty tokens created by some tokenizers.
+                continue;
+            }
+
             // add token annotation
             StanfordCorenlpToken sToken = new StanfordCorenlpToken(aJCas, beginIndex, endIndex);
+
             sToken.setPos(token.get(PartOfSpeechAnnotation.class));
             sToken.setLemma(token.get(LemmaAnnotation.class));
             UimaAnnotationUtils.finishAnnotation(sToken, COMPONENT_ID, tokenId++, aJCas);
