@@ -61,6 +61,16 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         String node;
     }
 
+    class ArgMeta extends NodeMeta {
+        boolean incorporated;
+        boolean succeeding;
+        boolean implicit;
+    }
+
+    class EventMeta extends NodeMeta {
+        boolean from_gc;
+    }
+
     class JEventMention {
         String id;
         String annotation;
@@ -68,7 +78,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         List<Span> spans;
         List<JArgument> arguments;
         String type;
-        NodeMeta meta;
+        EventMeta meta;
     }
 
     class JArgument {
@@ -77,11 +87,6 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         ArgMeta meta;
     }
 
-    class ArgMeta extends NodeMeta {
-        boolean incorporated;
-        boolean succeeding;
-        boolean implicit;
-    }
 
     class JEntity {
         String id;
@@ -106,13 +111,14 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
     private TObjectIntMap<String> predicateCounts = new TObjectIntHashMap<>();
     private TObjectIntMap<String> predicateWithImplicit = new TObjectIntHashMap<>();
     private TObjectIntMap<String> slotsWithImplicit = new TObjectIntHashMap<>();
-    private TObjectIntMap<String> slotsWithNoIncorpImplicit = new TObjectIntHashMap<>();
-    private TObjectIntMap<String> slotsWithNoPreceedingImplicit = new TObjectIntHashMap<>();
+
+    private TObjectIntMap<String> counters;
 
     @Override
     public void initialize(UimaContext aContext) throws ResourceInitializationException {
         super.initialize(aContext);
         gson = new Gson();
+        counters = new TObjectIntHashMap<>();
     }
 
     @Override
@@ -123,20 +129,29 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
         String[] predicates = predicateWithImplicit.keys(new String[]{});
         Arrays.sort(predicates);
 
-        System.out.println("Predicate\tPredicate Count\tImplicit Predicates\tImplicit Slots\tNon incorp implicit " +
-                "slots" +
-                "\tNon incop preceeding implicit slots");
+        System.out.println("Predicate\tPredicate Count\tImplicit Predicates\tImplicit Slots");
+
+        int[] sums = new int[3];
         for (String pred : predicates) {
-            System.out.println(String.format("%s\t%d\t%d\t%d\t%d\t%d",
+            System.out.println(String.format("%s\t%d\t%d\t%d",
                     pred,
                     predicateCounts.get(pred),
                     predicateWithImplicit.get(pred),
-                    slotsWithImplicit.get(pred),
-                    slotsWithNoIncorpImplicit.get(pred),
-                    slotsWithNoPreceedingImplicit.get(pred)
+                    slotsWithImplicit.get(pred)
             ));
+
+            sums[0] += predicateCounts.get(pred);
+            sums[1] += predicateWithImplicit.get(pred);
+            sums[2] += slotsWithImplicit.get(pred);
         }
 
+        System.out.println(String.format("%s\t%d\t%d\t%d", "total", sums[0], sums[1], sums[2]));
+
+        logger.info("Other statistics for the corpus:");
+        counters.forEachEntry((s, i) -> {
+            logger.info(String.format("%s : %d", s, i));
+            return true;
+        });
     }
 
     @Override
@@ -310,71 +325,33 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     UimaAnnotationUtils.finishAnnotation(evm, COMPONENT_ID, jMention.id, aJCas);
                 }
 
-                // Check the frame information from previous parsers.
-                StanfordCorenlpToken eventHead = (StanfordCorenlpToken) evm.getHeadWord();
-                FSList eventHeadArgsFS = eventHead.getChildSemanticRelations();
 
-                evm.setFrameName(eventHead.getFrameName());
                 UimaAnnotationUtils.addMeta(aJCas, evm, "node", jMention.meta.node);
+                UimaAnnotationUtils.addMeta(aJCas, evm, "from_gc", Boolean.toString(jMention.meta.from_gc));
 
-                // There may be duplicated arguments with the gold ones.
-                Map<Pair<Integer, Integer>, EventMentionArgumentLink> argumentLinkMap = new HashMap<>();
-
-                if (eventHeadArgsFS != null) {
-                    List<EventMentionArgumentLink> eventArgs = new ArrayList<>();
-                    for (SemanticRelation relation : FSCollectionFactory.create(eventHeadArgsFS,
-                            SemanticRelation.class)) {
-                        EventMentionArgumentLink argumentLink = new EventMentionArgumentLink((aJCas));
-                        SemanticArgument argument = relation.getChild();
-
-                        Pair<Integer, Integer> argumentBoundary = Pair.of(argument.getBegin(), argument.getEnd());
-
-                        EntityMention argEntMention;
-                        if (entitySpanMap.containsKey(argumentBoundary)) {
-                            argEntMention = entitySpanMap.get(argumentBoundary);
-                        } else {
-                            argEntMention = UimaNlpUtils.createArgMention(aJCas, argument
-                                    .getBegin(), argument.getEnd(), argument.getComponentId());
-                            Word argumentHead = argEntMention.getHead();
-
-                            if (entityHeadMap.containsKey(argumentHead)) {
-                                // Found entity mention sharing head, consider this mention to be coreferential.
-                                EntityMention existingMention = entityHeadMap.get(argumentHead);
-                                Entity entity = existingMention.getReferingEntity();
-                                UimaNlpUtils.addToEntityCluster(aJCas, entity, Arrays.asList(argEntMention));
-                            } else {
-                                // This is a new entity without clear cluster, create a singleton entity.
-                                createNewEntities(aJCas, Arrays.asList(argEntMention), "0");
-                            }
-
-                            entitySpanMap.put(Pair.of(argEntMention.getBegin(), argEntMention.getEnd()), argEntMention);
-                            entityHeadMap.put(argumentHead, argEntMention);
-                        }
-
-                        argumentLink.setArgument(argEntMention);
-                        eventArgs.add(argumentLink);
-
-                        if (relation.getPropbankRoleName() != null) {
-                            argumentLink.setPropbankRoleName(relation.getPropbankRoleName());
-                        }
-
-                        if (relation.getFrameElementName() != null) {
-                            argumentLink.setFrameElementName(relation.getFrameElementName());
-                        }
-
-                        argumentLinkMap.put(Pair.of(argument.getBegin(), argument.getEnd()), argumentLink);
-                        UimaAnnotationUtils.finishTop(argumentLink, relation.getComponentId(), 0, aJCas);
-                    }
-
-                    evm.setArguments(FSCollectionFactory.createFSList(aJCas, eventArgs));
+                if (jMention.meta.from_gc) {
+                    counters.adjustOrPutValue("GC predicates", 1, 1);
                 }
 
-                // Add the gold standard arguments to the mention.
+                // There may be duplicated arguments with the gold ones, we will reuse those.
                 List<EventMentionArgumentLink> argLinks = new ArrayList<>();
+                Map<Pair<Integer, Integer>, EventMentionArgumentLink> argumentLinkMap = new HashMap<>();
+                FSList existingArgsFS = evm.getArguments();
+                if (existingArgsFS != null) {
+                    for (EventMentionArgumentLink link :
+                            FSCollectionFactory.create(existingArgsFS, EventMentionArgumentLink.class)) {
+                        argLinks.add(link);
+                        argumentLinkMap.put(Pair.of(link.getArgument().getBegin(), link.getArgument().getEnd()), link);
+                    }
+                }
 
-                Set<String> implictArgs = new HashSet<>();
-                Set<String> nonIncorpImplicitArgs = new HashSet<>();
-                Set<String> preceedNonIncorpImplicitArgs = new HashSet<>();
+                StanfordCorenlpToken eventHead = (StanfordCorenlpToken) evm.getHeadWord();
+
+                Set<String> implicitArgs = new HashSet<>();
+                String predText = eventHead.getLemma().toLowerCase();
+                if (predText.equals("small-investor")) {
+                    predText = "investor";
+                }
 
                 for (JArgument argument : jMention.arguments) {
                     EntityMention argumentEntity = id2Ent.get(argument.arg);
@@ -408,37 +385,18 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "node", argument.meta.node);
 
                     if (argument.meta.implicit) {
-                        implictArgs.add(argument.role);
-                        if (!argument.meta.incorporated) {
-                            nonIncorpImplicitArgs.add(argument.role);
-                            if (!argument.meta.succeeding) {
-                                preceedNonIncorpImplicitArgs.add(argument.role);
-                            }
-                        }
+                        implicitArgs.add(argument.role);
+                        counters.adjustOrPutValue("Implicit Arguments", 1, 1);
                     }
-                }
-
-                String predText = eventHead.getLemma().toLowerCase();
-                if (predText.equals("small-investor")) {
-                    predText = "investor";
                 }
 
                 predicateCounts.adjustOrPutValue(predText, 1, 1);
-                if (!implictArgs.isEmpty()) {
-                    if (predText.equals("loss")) {
-                        System.out.println("implicit for loss in " + UimaConvenience.getArticleName(aJCas));
-                    }
-
+                if (!implicitArgs.isEmpty()) {
                     predicateWithImplicit.adjustOrPutValue(predText, 1, 1);
-                    slotsWithImplicit.adjustOrPutValue(predText, implictArgs.size(), implictArgs.size());
-                    slotsWithNoIncorpImplicit.adjustOrPutValue(predText, nonIncorpImplicitArgs.size(),
-                            nonIncorpImplicitArgs.size());
-                    slotsWithNoPreceedingImplicit.adjustOrPutValue(predText, preceedNonIncorpImplicitArgs.size(),
-                            preceedNonIncorpImplicitArgs.size());
+                    slotsWithImplicit.adjustOrPutValue(predText, implicitArgs.size(), implicitArgs.size());
                 }
 
-                evm.setArguments(UimaConvenience.extendFSList(aJCas, evm.getArguments(), argLinks,
-                        EventMentionArgumentLink.class));
+                evm.setArguments(FSCollectionFactory.createFSList(aJCas, argLinks));
             }
 
             if (event == null) {

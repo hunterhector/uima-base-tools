@@ -290,17 +290,17 @@ public class UimaNlpUtils {
     }
 
     public static Map<Word, EventMentionArgumentLink> indexArgs(EventMention eventMention) {
-        Map<Word, EventMentionArgumentLink> span2Arg = new HashMap<>();
+        Map<Word, EventMentionArgumentLink> argHead2Arg = new HashMap<>();
         FSList existingArgsFS = eventMention.getArguments();
         if (existingArgsFS != null) {
             Collection<EventMentionArgumentLink> existingArgs = FSCollectionFactory.create(eventMention
                     .getArguments(), EventMentionArgumentLink.class);
             for (EventMentionArgumentLink existingArg : existingArgs) {
                 EntityMention en = existingArg.getArgument();
-                span2Arg.put(en.getHead(), existingArg);
+                argHead2Arg.put(en.getHead(), existingArg);
             }
         }
-        return span2Arg;
+        return argHead2Arg;
     }
 
     public static EventMentionArgumentLink createArg(JCas aJCas, Map<Word, EntityMention> h2Entities,

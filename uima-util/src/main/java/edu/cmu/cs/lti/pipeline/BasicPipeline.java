@@ -74,6 +74,7 @@ public class BasicPipeline {
 
     private ProcessTrace processTrace;
 
+    private int progressFreq = 100;
 
     public BasicPipeline(CollectionReaderDescription reader, AnalysisEngineDescription... processors) throws
             UIMAException {
@@ -154,6 +155,11 @@ public class BasicPipeline {
         rawTaskQueue = new ArrayBlockingQueue<>(numWorkers);
 
         processTrace = new ProcessTrace_impl();
+    }
+
+
+    public void setProgressFreq(int progressFreq) {
+        this.progressFreq = progressFreq;
     }
 
     private static AnalysisEngineDescription getWriter(String workingDir, String outputDir, boolean zipOutput)
@@ -412,7 +418,7 @@ public class BasicPipeline {
                                             int submittedCount = numSubmittedDocs[taskStep].incrementAndGet();
 
                                             if (taskStep == analysisFunctions.size() - 1) {
-                                                if (submittedCount % 100 == 0) {
+                                                if (submittedCount % progressFreq == 0) {
                                                     showProgress(numSubmittedDocs);
                                                 }
                                             }
