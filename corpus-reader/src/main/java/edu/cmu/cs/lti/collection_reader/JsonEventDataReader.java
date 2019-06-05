@@ -358,7 +358,8 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                     Word argHead = argumentEntity.getHead();
 
                     if (argHead.getPos().equals("TO") || argHead.getPos().equals("IN")) {
-                        argumentEntity.setHead(UimaNlpUtils.findPrepTarget(eventHead, argHead));
+                        argumentEntity.setHead(UimaNlpUtils.findNonPrepHeadInRange(
+                                aJCas, eventHead, argHead, argumentEntity));
                     }
 
                     EventMentionArgumentLink argumentLink;

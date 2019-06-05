@@ -143,6 +143,35 @@ public class UimaNlpUtils {
         return target == null ? prepWord : target;
     }
 
+    /**
+     * Find the head of the phase without the preposition, within the range of argPhrase. If argPhrase is null then
+     * there will not be a range.
+     *
+     * @param jcas
+     * @param predHead
+     * @param prepWord
+     * @param argPhrase
+     * @param <T>
+     * @return
+     */
+    public static <T extends Word> T findNonPrepHeadInRange(JCas jcas, T predHead, T prepWord, Annotation argPhrase) {
+        T theHead = findPrepTarget(predHead, prepWord);
+
+        // Find a prep
+        if (theHead != prepWord) {
+            if (argPhrase != null) {
+                if (!(theHead.getBegin() >= argPhrase.getBegin() && theHead.getEnd() <= argPhrase.getEnd())) {
+                    theHead = prepWord;
+                }
+            }
+        }
+
+        if (argPhrase != null && theHead == prepWord) {
+            theHead = (T) findHeadFromStanfordWithoutLeadingPrep(jcas, argPhrase);
+        }
+
+        return theHead;
+    }
 
     public static <T extends Word> T findPrepTargetFromUD(T predHead, T prepWord) {
         for (Map.Entry<String, T> depWord : getDepChildByDep(predHead).entrySet()) {
@@ -163,7 +192,12 @@ public class UimaNlpUtils {
 
     public static <T extends Word> T findPrepTargetFromStanford(T depHead, T prepWord) {
         String depRel = "prep_" + prepWord.getLemma();
-        return (T) findChildOfDep(depHead, depRel);
+        T res = (T) findChildOfDep(depHead, depRel);
+        if (res == null) {
+            depRel = "prepc_" + prepWord.getLemma();
+            res = (T) findChildOfDep(depHead, depRel);
+        }
+        return res;
     }
 
     public static Word findChildOfDep(Word depHead, String targetDep) {
@@ -335,7 +369,7 @@ public class UimaNlpUtils {
     public static ArgumentMention createArgMention(JCas jcas, int begin, int end, String componentId) {
         ArgumentMention mention = new ArgumentMention(jcas, begin, end);
         UimaAnnotationUtils.finishAnnotation(mention, componentId, 0, jcas);
-        mention.setHead(findHeadFromStanfordWithoutPrep(mention));
+        mention.setHead(findHeadFromStanfordWithoutLeadingPrep(jcas, mention));
         return mention;
     }
 
@@ -409,9 +443,24 @@ public class UimaNlpUtils {
         return findHeadFromTree(findLargestContainingTree(anno, ZparTreeAnnotation.class), CharacterAnnotation.class);
     }
 
-    public static StanfordCorenlpToken findHeadFromStanfordWithoutPrep(Annotation anno) {
-        // TODO: Finish it.
-        return findHeadFromStanfordAnnotation(anno);
+    public static StanfordCorenlpToken findHeadFromStanfordWithoutLeadingPrep(JCas aJCas, Annotation anno) {
+        List<StanfordCorenlpToken> remaining = new ArrayList<>();
+        for (StanfordCorenlpToken token : JCasUtil.selectCovered(StanfordCorenlpToken.class, anno)) {
+            if (!(token.getPos().equals("IN") || token.getPos().equals("TO"))) {
+                remaining.add(token);
+            }
+        }
+
+        if (remaining.size() == 0) {
+            return findHeadFromStanfordAnnotation(anno);
+        } else {
+            int newBegin = remaining.get(0).getBegin();
+            int newEnd = remaining.get(remaining.size() - 1).getEnd();
+            Annotation tempAnno = new Annotation(aJCas, newBegin, newEnd);
+            StanfordCorenlpToken head = findHeadFromStanfordAnnotation(tempAnno);
+            tempAnno.removeFromIndexes();
+            return head;
+        }
     }
 
     public static StanfordCorenlpToken findHeadInRange(Annotation anno, StanfordCorenlpToken word,
