@@ -15,7 +15,6 @@ import org.apache.uima.cas.TypeSystem;
 import org.apache.uima.collection.CollectionException;
 import org.apache.uima.collection.CollectionReader;
 import org.apache.uima.collection.CollectionReaderDescription;
-import org.apache.uima.collection.metadata.CpeDescriptorException;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.resource.ResourceInitializationException;
@@ -25,7 +24,6 @@ import org.apache.uima.util.ProcessTrace;
 import org.apache.uima.util.impl.ProcessTrace_impl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -157,9 +155,9 @@ public class BasicPipeline {
         processTrace = new ProcessTrace_impl();
     }
 
-
-    public void setProgressFreq(int progressFreq) {
+    public BasicPipeline setProgressFreq(int progressFreq) {
         this.progressFreq = progressFreq;
+        return this;
     }
 
     private static AnalysisEngineDescription getWriter(String workingDir, String outputDir, boolean zipOutput)
