@@ -5,6 +5,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.utils.CollectionUtils;
+import edu.cmu.cs.lti.utils.DebugUtils;
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
@@ -446,7 +447,7 @@ public class UimaNlpUtils {
     public static StanfordCorenlpToken findHeadFromStanfordWithoutLeadingPrep(JCas aJCas, Annotation anno) {
         List<StanfordCorenlpToken> remaining = new ArrayList<>();
         for (StanfordCorenlpToken token : JCasUtil.selectCovered(StanfordCorenlpToken.class, anno)) {
-            if (!(token.getPos().equals("IN") || token.getPos().equals("TO"))) {
+            if (!isPrepWord(token)) {
                 remaining.add(token);
             }
         }
@@ -480,9 +481,38 @@ public class UimaNlpUtils {
         }
     }
 
+    public static StanfordCorenlpToken findOverlapTokenInParentTree(ParseTreeAnnotation childTree, Annotation anno) {
+        ParseTreeAnnotation parent = childTree.getParent();
+
+        if (parent == null) {
+            return null;
+        }
+
+        Word parentHead = parent.getHead();
+
+        StanfordCorenlpToken ancestorToken = findOverlapTokenInParentTree(parent, anno);
+
+        if (ancestorToken == null) {
+            if (parentHead.getBegin() >= anno.getBegin() && parentHead.getEnd() <= anno.getEnd()) {
+                if (!isPrepWord(parentHead))
+                    return (StanfordCorenlpToken) parentHead;
+                else
+                    return null;
+            } else {
+                return null;
+            }
+        } else {
+            return ancestorToken;
+        }
+    }
+
     public static StanfordCorenlpToken findHeadFromStanfordAnnotation(Annotation anno) {
-        StanfordCorenlpToken headWord = findHeadFromTree(findLargestContainingTree(anno,
-                StanfordTreeAnnotation.class), StanfordCorenlpToken.class);
+        StanfordTreeAnnotation largestTree = findLargestTreeWithoutLeadingPrep(anno, StanfordTreeAnnotation.class);
+        StanfordCorenlpToken headWord = findOverlapTokenInParentTree(largestTree, anno);
+
+        if (headWord == null) {
+            headWord = findHeadFromTree(largestTree, StanfordCorenlpToken.class);
+        }
 
         if (headWord == null) {
             headWord = UimaConvenience.selectCoveredFirst(anno, StanfordCorenlpToken.class);
@@ -536,8 +566,66 @@ public class UimaNlpUtils {
         return word.getPos().equals("$") || word.getPos().equals("CD");
     }
 
-    public static <T extends ParseTreeAnnotation> T findLargestContainingTree(
-            Annotation anno, Class<T> clazz) {
+    public static ParseTreeAnnotation findLeftTree(ParseTreeAnnotation tree, Word word) {
+        if (tree.getBegin() < word.getBegin()) {
+            return tree;
+        } else if (tree.getParent() == null) {
+            return null;
+        } else {
+            return findLeftTree(tree.getParent(), word);
+        }
+    }
+
+    public static Word findWhTarget(Word word) {
+        StanfordTreeAnnotation tree = findLargestContainingTree(word, StanfordTreeAnnotation.class);
+        ParseTreeAnnotation leftParent = findLeftTree(tree, word);
+
+        if (leftParent != null) {
+            Word parentHead = leftParent.getHead();
+            if (parentHead.getPos().startsWith("N")) {
+                return parentHead;
+            }
+        }
+        return null;
+    }
+
+    public static boolean isPrepWord(Word word) {
+        String pos = word.getPos();
+        return pos.equals("IN") || pos.equals("TO") || pos.equals("RP");
+    }
+
+    public static boolean isWhWord(Word word) {
+        String pos = word.getPos();
+        return pos.equals("WDT") || pos.equals("WP") || pos.equals("WP$");
+    }
+
+    public static <T extends ParseTreeAnnotation> T findLargestTreeWithoutLeadingPrep(Annotation anno, Class<T> clazz) {
+        List<T> nonPrepTrees = new ArrayList<>();
+        List<T> allTrees = new ArrayList<>();
+        for (T t : JCasUtil.selectCovered(clazz, anno)) {
+            boolean startWithPrep = false;
+            for (StanfordCorenlpToken token : JCasUtil.selectCovered(StanfordCorenlpToken.class, t)) {
+                if (isPrepWord(token)) {
+                    startWithPrep = true;
+                }
+                break;
+            }
+
+            if (!startWithPrep) {
+                nonPrepTrees.add(t);
+            }
+
+            allTrees.add(t);
+        }
+
+        if (nonPrepTrees.size() > 0) {
+            return findLargest(nonPrepTrees);
+        } else {
+            return findLargest(allTrees);
+        }
+    }
+
+    public static <T extends ParseTreeAnnotation> T findLargestContainingTree(Annotation anno, Class<T> clazz) {
         return findLargest(JCasUtil.selectCovered(clazz, anno));
     }
 
