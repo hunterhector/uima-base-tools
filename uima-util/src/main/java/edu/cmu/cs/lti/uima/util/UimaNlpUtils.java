@@ -482,6 +482,10 @@ public class UimaNlpUtils {
     }
 
     public static StanfordCorenlpToken findOverlapTokenInParentTree(ParseTreeAnnotation childTree, Annotation anno) {
+        if (childTree == null) {
+            return null;
+        }
+
         ParseTreeAnnotation parent = childTree.getParent();
 
         if (parent == null) {
@@ -489,7 +493,6 @@ public class UimaNlpUtils {
         }
 
         Word parentHead = parent.getHead();
-
         StanfordCorenlpToken ancestorToken = findOverlapTokenInParentTree(parent, anno);
 
         if (ancestorToken == null) {
