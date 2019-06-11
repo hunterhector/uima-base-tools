@@ -42,13 +42,18 @@ public class NoiseTextFormatter {
     };
 
 
-    private String xml10pattern = "[^"
-            + "\u0009\r\n"
-            + "\u0020-\uD7FF"
-            + "\uE000-\uFFFD"
-            + "\ud800\udc00-\udbff\udfff"
-            + "]";
+//    private String xml10pattern = "[^"
+//            + "\u0009"
+//            + "\u0020-\uD7FF"
+//            + "\uE000-\uFFFF"
+//            + "\ud800\udc00-\udbff\udfff"
+//            + "]";
 
+    private String xml11pattern = "[^"
+            + "\\u0001-\\uD7FF"
+            + "\\uE000-\\uFFFD"
+            + "\\ud800\\udc00-\\udbff\\udfff"
+            + "]+";
 
     private String text;
 
@@ -110,7 +115,8 @@ public class NoiseTextFormatter {
         }
 
         // Removing non-xml characters.
-        text = text.replaceAll(xml10pattern, " ");
+        text = text.replaceAll(xml11pattern, " ");
+//        text = text.replaceAll(anotherpattern, " ");
 
         return text;
     }
@@ -176,12 +182,12 @@ public class NoiseTextFormatter {
         return this;
     }
 
-    public static void main(String[] args) throws BoilerpipeProcessingException, IOException, SAXException,
-            TikaException {
-        String noisyText = FileUtils.readFileToString(
-                new File("/Users/zhengzhongliu/Documents/projects/uima-base-tools/uima-util/example/example.xml"));
+    public static void main(String[] args) throws IOException {
+        String inputFile = args[0];
 
-        String language = "zh";
+        String noisyText = FileUtils.readFileToString(new File(inputFile));
+
+        String language = "en";
 
         NoiseTextFormatter formatter = new NoiseTextFormatter(noisyText);
 
