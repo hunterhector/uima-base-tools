@@ -4,17 +4,26 @@ import com.google.common.collect.ArrayListMultimap;
 import edu.cmu.cs.lti.model.Span;
 import edu.cmu.cs.lti.script.type.Article;
 import edu.cmu.cs.lti.uima.annotator.AbstractCollectionReader;
+import edu.cmu.cs.lti.uima.io.writer.CustomAnalysisEngineFactory;
 import edu.cmu.cs.lti.uima.util.*;
+import edu.cmu.cs.lti.utils.Configuration;
 import net.htmlparser.jericho.Element;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.uima.UIMAException;
 import org.apache.uima.UimaContext;
+import org.apache.uima.analysis_engine.AnalysisEngineDescription;
 import org.apache.uima.collection.CollectionException;
+import org.apache.uima.collection.CollectionReaderDescription;
 import org.apache.uima.examples.SourceDocumentInformation;
 import org.apache.uima.fit.component.ViewCreatorAnnotator;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
+import org.apache.uima.fit.factory.CollectionReaderFactory;
+import org.apache.uima.fit.factory.TypeSystemDescriptionFactory;
+import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.resource.ResourceInitializationException;
+import org.apache.uima.resource.metadata.TypeSystemDescription;
 import org.apache.uima.util.FileUtils;
 import org.apache.uima.util.Progress;
 import org.apache.uima.util.ProgressImpl;
@@ -126,16 +135,16 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
         File file = textFiles.get(currentDocIndex++);
         String originalText = FileUtils.file2String(file, encoding);
 
-        String cleanedText = doNoiseFilter ? new NoiseTextFormatter(originalText).cleanAll() :
-                CasSerialization.cleanText(originalText);
+        // Basic XML cleaning is necessary.
+        originalText = new NoiseTextFormatter(originalText).cleanBasic();
+
+        String cleanedText = doNoiseFilter ? new NoiseTextFormatter(originalText).cleanAll() : originalText;
 
         ArrayListMultimap<String, Element> tagsByName = ForumStructureParser.indexTagByName(originalText);
 
 //        List<Span> quotedSpans = ForumStructureParser.getQuotesFromElement(tagsByName);
         List<Span> quotedSpans = quotedAreaFile == null ? ForumStructureParser.getQuotesFromElement(tagsByName) :
                 quotesFromFile.get(StringUtils.removeEnd(file.getName(), "." + suffix));
-
-//        System.out.println(String.format("%d spans in file %s", quotedSpans.size(), file.getName()));
 
         String documentText = removeQuotes ? ForumStructureParser.removeQuoteStr(cleanedText, quotedSpans) :
                 cleanedText;
@@ -172,6 +181,22 @@ public class PlainTextCollectionReader extends AbstractCollectionReader {
         return currentDocIndex < textFiles.size();
     }
 
-    public void close() throws IOException {
+
+    public static void main(String[] args) throws IOException, UIMAException {
+        TypeSystemDescription typeSystemDescription = TypeSystemDescriptionFactory
+                .createTypeSystemDescription("TaskEventMentionDetectionTypeSystem");
+
+        CollectionReaderDescription reader = CollectionReaderFactory.createReaderDescription(
+                PlainTextCollectionReader.class, typeSystemDescription,
+                PlainTextCollectionReader.PARAM_INPUTDIR, args[0],
+                PlainTextCollectionReader.PARAM_DO_NOISE_FILTER, true,
+                PlainTextCollectionReader.PARAM_TEXT_SUFFIX, "txt"
+        );
+
+        AnalysisEngineDescription writer = CustomAnalysisEngineFactory.createXmiWriter(args[1], args[2]);
+
+        SimplePipeline.runPipeline(reader, writer);
+
     }
+
 }

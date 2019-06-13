@@ -37,23 +37,21 @@ public class NoiseTextFormatter {
             "<\\s{0,3}P>", "<\\s?/\\s{0,3}P>", "<\\s{0,6}p>", "<\\s{0,6}/\\s{0,3}p>"
     };
 
-    private static String[] xmlPattern = {
+    private String[] xmlPattern = {
             "<\\?xml.*\\?>"
     };
 
 
-//    private String xml10pattern = "[^"
-//            + "\u0009"
-//            + "\u0020-\uD7FF"
-//            + "\uE000-\uFFFF"
-//            + "\ud800\udc00-\udbff\udfff"
-//            + "]";
+    private String xml10pattern = "[^"
+            + "\u0009\r\n"
+            + "\u0020-\uD7FF"
+            + "\uE000-\uFFFD"
+            + "\ud800\udc00-\udbff\udfff"
+            + "]";
 
-    private String xml11pattern = "[^"
-            + "\\u0001-\\uD7FF"
-            + "\\uE000-\\uFFFD"
-            + "\\ud800\\udc00-\\udbff\\udfff"
-            + "]+";
+    private String invalidXmlPattern = xml10pattern;
+
+    private String emoticonPattern = "[\ud83c\udf00-\ud83d\ude4f]|[\ud83d\ude80-\ud83d\udeff]";
 
     private String text;
 
@@ -104,19 +102,30 @@ public class NoiseTextFormatter {
         return this;
     }
 
+    public NoiseTextFormatter cleanXmlWithPattern(){
+        text = text.replaceAll(invalidXmlPattern, " ");
+        return this;
+    }
+
+    public NoiseTextFormatter cleanEmoticon(){
+        text = text.replaceAll(emoticonPattern, " ");
+        return this;
+    }
+
+    public String cleanBasic(){
+        cleanEmoticon().cleanXmlWithPattern().cleanXMLCharacters();
+        return text;
+    }
+
     public String cleanAll(String language) {
         cleanEscapeCharacter().cleanXMLCharacters().possibleStopBreaker(language).cleanForum().cleanNews()
-                .cleanXMLHeader().multiNewLineBreaker(language);
+                .cleanXMLHeader().multiNewLineBreaker(language).cleanEmoticon().cleanXmlWithPattern();
         if (text.length() != originalLength) {
             System.out.println(String.format(
                     "[ERROR] cleaned text length is %d, not the same as original length %d."
                     , text.length(), originalLength)
             );
         }
-
-        // Removing non-xml characters.
-        text = text.replaceAll(xml11pattern, " ");
-//        text = text.replaceAll(anotherpattern, " ");
 
         return text;
     }
