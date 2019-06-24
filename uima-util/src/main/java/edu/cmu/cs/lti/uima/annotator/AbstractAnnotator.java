@@ -32,6 +32,10 @@ public abstract class AbstractAnnotator extends JCasAnnotator_ImplBase {
             name = MULTI_THREAD, defaultValue = "false")
     protected boolean multithread;
 
-    public final String COMPONENT_ID = this.getClass().getSimpleName();
+    public final String COMPONENT_ID = simpleComponentName(this.getClass());
+
+    public static String simpleComponentName(Class clazz){
+        return clazz.getSimpleName();
+    }
 
 }
