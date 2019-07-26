@@ -5,7 +5,6 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Table;
 import edu.cmu.cs.lti.script.type.*;
 import edu.cmu.cs.lti.utils.CollectionUtils;
-import edu.cmu.cs.lti.utils.DebugUtils;
 import gnu.trove.iterator.TObjectIntIterator;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
@@ -324,47 +323,58 @@ public class UimaNlpUtils {
         return mentions;
     }
 
-    public static Map<Word, EventMentionArgumentLink> indexArgs(EventMention eventMention) {
-        Map<Word, EventMentionArgumentLink> argHead2Arg = new HashMap<>();
+    public static Map<EntityMention, EventMentionArgumentLink> indexArgs(EventMention eventMention) {
+        Map<EntityMention, EventMentionArgumentLink> argHead2Arg = new HashMap<>();
         FSList existingArgsFS = eventMention.getArguments();
         if (existingArgsFS != null) {
             Collection<EventMentionArgumentLink> existingArgs = FSCollectionFactory.create(eventMention
                     .getArguments(), EventMentionArgumentLink.class);
             for (EventMentionArgumentLink existingArg : existingArgs) {
                 EntityMention en = existingArg.getArgument();
-                argHead2Arg.put(en.getHead(), existingArg);
+                argHead2Arg.put(en, existingArg);
             }
         }
         return argHead2Arg;
     }
 
-    public static EventMentionArgumentLink createArg(JCas aJCas, Map<Word, EntityMention> h2Entities,
-                                                     EventMention eventMention, int begin, int end,
-                                                     String componentId) {
+    public static EventMentionArgumentLink createArg(JCas aJCas, EntityMentionManager manager,
+                                                     EventMention eventMention,
+                                                     int begin, int end, String componentId) {
         EventMentionArgumentLink argumentLink = new EventMentionArgumentLink(aJCas);
-        EntityMention argumentMention = UimaNlpUtils.createNonExistArg(aJCas, h2Entities, begin, end, componentId);
+        EntityMention argumentMention = manager.getOrCreateEntity(aJCas, begin, end, componentId);
         argumentLink.setArgument(argumentMention);
         argumentLink.setEventMention(eventMention);
         UimaAnnotationUtils.finishTop(argumentLink, componentId, 0, aJCas);
         return argumentLink;
     }
 
-    public static EntityMention createNonExistArg(JCas jcas, Map<Word, EntityMention> mentionTable,
-                                                  int begin, int end, String componentId) {
-        ComponentAnnotation dummy = new ComponentAnnotation(jcas, begin, end);
-        StanfordCorenlpToken dummyHead = UimaNlpUtils.findHeadFromStanfordAnnotation(dummy);
+    public static EventMentionArgumentLink addEventArgument(
+            JCas aJCas, EventMention eventMention, EntityMentionManager manager,
+            Map<EntityMention, EventMentionArgumentLink> existingArgs, List<EventMentionArgumentLink> argumentLinks,
+            Word newArgHeadWord, String component_id) {
+        return addEventArgument(
+                aJCas, eventMention, manager, existingArgs, argumentLinks, newArgHeadWord, newArgHeadWord, component_id
+        );
+    }
 
-        if (mentionTable.containsKey(dummyHead)) {
-            EntityMention oldEn = mentionTable.get(dummyHead);
-            if (oldEn.getHead() == null) {
-                oldEn.setHead(UimaNlpUtils.findHeadFromStanfordAnnotation(oldEn));
-            }
-            return oldEn;
+    public static EventMentionArgumentLink addEventArgument(
+            JCas aJCas, EventMention eventMention, EntityMentionManager manager,
+            Map<EntityMention, EventMentionArgumentLink> existingArgs, List<EventMentionArgumentLink> argumentLinks,
+            ComponentAnnotation newArgAnnotation, Word newArgHeadWord, String component_id) {
+        EventMentionArgumentLink argumentLink;
+
+        // This ensures that if we are adding an argument with the same span, we will always get the same head word
+        // that is already stored, instead of creating a new one.
+        EntityMention existingMention = manager.getEntity(newArgAnnotation, newArgHeadWord);
+
+        if (existingMention != null && existingArgs.containsKey(existingMention)) {
+            argumentLink = existingArgs.get(existingMention);
         } else {
-            EntityMention newEn = createArgMention(jcas, begin, end, componentId);
-            mentionTable.put(newEn.getHead(), newEn);
-            return newEn;
+            argumentLink = UimaNlpUtils.createArg(aJCas, manager, eventMention,
+                    newArgAnnotation.getBegin(), newArgAnnotation.getEnd(), component_id);
+            argumentLinks.add(argumentLink);
         }
+        return argumentLink;
     }
 
     public static ArgumentMention createArgMention(JCas jcas, int begin, int end, String componentId) {
