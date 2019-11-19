@@ -374,7 +374,7 @@ public class JsonEventDataReader extends AbstractLoggingAnnotator {
                         argLinks.add(argumentLink);
                     }
 
-                    argumentLink.setPropbankRoleName(simplifyRole(argument.role));
+                    argumentLink.setArgumentRole(simplifyRole(argument.role));
 
                     UimaAnnotationUtils.addMeta(aJCas, argumentLink, "incorporated",
                             Boolean.toString(argument.meta.incorporated));
