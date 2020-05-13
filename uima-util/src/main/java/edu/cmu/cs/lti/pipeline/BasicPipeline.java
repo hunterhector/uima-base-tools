@@ -356,9 +356,12 @@ public class BasicPipeline {
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
-                        }
+                        } else if (numPendingTasks.get() == 0) {
+                            //If there is no more documents, and there is no pending tasks, we should be able to
+                            // shutdown the task dispatcher. It will finish the submitted task but won't accept new.
 
-                        if (numPendingTasks.get() == 0) {
+                            //TODO: There is defnitely a bug in this shut down process. double check.
+
                             logger.info("All pending tasks finished, sending shutdown signals to dispatcher.");
                             // Annotation task could take a while, set a longer timeout here.
                             shutdownExecutor(taskDispatcher, 20, TimeUnit.MINUTES);
@@ -370,11 +373,12 @@ public class BasicPipeline {
                 }
         );
 
-        // The submit thread.
+        // The task dispatcher thread.
         manager.submit(
                 () -> {
                     int taskCount = 0;
 
+                    // This thread will keep running if there are more raw docs, or still some pending tasks.
                     while (moreDocs.get() || numPendingTasks.get() > 0) {
                         try {
                             if (processingQueue.isEmpty()) {
@@ -387,13 +391,15 @@ public class BasicPipeline {
                                         try {
                                             int taskStep = nextTask.step.get();
 
-                                            // Run the next engine using one ofq the available thread in the executor pool.
+                                            // Run the next engine using one of the available thread in the executor
+                                            // pool.
                                             CAS cas = nextTask.cas;
                                             ProcessTrace t = analysisFunctions.get(taskStep).apply(cas);
 
+                                            // increment() will return False when it reach the max task step.
                                             if (nextTask.increment()) {
-                                                // If the tuple has not gone through all steps, put it to the buffer, the
-                                                // submitter will submit it to the job queue again.
+                                                // If the tuple has not gone through all steps, put it to the buffer,
+                                                // the submitter will submit it to the job queue again.
                                                 logger.debug(String.format("Put a task to queue for step [%d].",
                                                         nextTask.step.get()));
                                                 // Possible block when the processing queue is full.
@@ -424,6 +430,7 @@ public class BasicPipeline {
                                             e.printStackTrace();
                                         }
                                     });
+
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -478,7 +485,6 @@ public class BasicPipeline {
         // need the cas for recycling.
         return manager.submit(
                 () -> {
-//                    AtomicInteger numDocuments = new AtomicInteger();
                     int numDocuments = 0;
                     try {
                         while (cReader.hasNext()) {

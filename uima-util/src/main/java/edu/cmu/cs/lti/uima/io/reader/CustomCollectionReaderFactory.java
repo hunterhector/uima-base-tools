@@ -291,7 +291,9 @@ public class CustomCollectionReaderFactory {
         return CollectionReaderFactory.createReaderDescription(
                 GzippedXmiCollectionReader.class,
                 GzippedXmiCollectionReader.PARAM_DATA_PATH, inputDirName,
-                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
+                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown,
+                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz"
+        );
     }
 
     /**
@@ -308,7 +310,9 @@ public class CustomCollectionReaderFactory {
         return CollectionReaderFactory.createReaderDescription(
                 GzippedXmiCollectionReader.class, typeSystemDescription,
                 GzippedXmiCollectionReader.PARAM_DATA_PATH, inputDirName,
-                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown);
+                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, failOnUnkown,
+                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz"
+        );
     }
 
     /**
@@ -324,7 +328,9 @@ public class CustomCollectionReaderFactory {
         return CollectionReaderFactory.createReaderDescription(
                 GzippedXmiCollectionReader.class, typeSystemDescription,
                 GzippedXmiCollectionReader.PARAM_DATA_PATH, inputDirName,
-                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, false);
+                GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, false,
+                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz"
+        );
     }
 
     /**
@@ -342,7 +348,9 @@ public class CustomCollectionReaderFactory {
                 GzippedXmiCollectionReader.class, typeSystemDescription,
                 GzippedXmiCollectionReader.PARAM_DATA_PATH, inputDirName,
                 GzippedXmiCollectionReader.PARAM_FAIL_UNKNOWN, false,
-                GzippedXmiCollectionReader.PARAM_RECURSIVE, true);
+                GzippedXmiCollectionReader.PARAM_RECURSIVE, true,
+                GzippedXmiCollectionReader.PARAM_EXTENSION, ".xmi.gz"
+        );
     }
 
     /**

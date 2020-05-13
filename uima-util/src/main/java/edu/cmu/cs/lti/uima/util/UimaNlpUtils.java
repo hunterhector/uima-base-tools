@@ -213,6 +213,19 @@ public class UimaNlpUtils {
         return null;
     }
 
+    public static String findDirectDep(Word head, Word child) {
+        FSList childFS = head.getChildDependencyRelations();
+        if (childFS != null) {
+            for (Dependency dep : FSCollectionFactory.create(childFS,
+                    Dependency.class)) {
+                if (dep.getChild().equals(child)) {
+                    return dep.getDependencyType();
+                }
+            }
+        }
+        return null;
+    }
+
 
     public static String getLemmatizedAnnotation(Annotation a) {
         StringBuilder builder = new StringBuilder();
